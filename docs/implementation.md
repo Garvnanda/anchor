@@ -5,16 +5,30 @@ pass happens once, in Phase 7, before the demo.
 
 Status values: `NOT STARTED` · `IN PROGRESS` · `DONE` · `BLOCKED`.
 
+> 2026-10-28: scaffold code deleted to rebuild the MVP. Items marked *(rebuild)* were met by the removed
+> scaffold and must be met again by the new code before they count.
+
 ---
 
 ## Phase 0 — Model server
-**Status:** DONE
+**Status:** DONE *(rebuild)*
 **Prerequisites:** GPU with CUDA; Hugging Face access to Llama-3.2-3B-Instruct (token in `.env`, git-ignored).
-**Work:** load 4-bit model, `output_hidden_states`, FastAPI (`/health`, `/score`, `/steer`).
+**Work:** load 4-bit model, `output_hidden_states`, FastAPI (`/health`, `/score`, `/steer`, `/demo`).
 **Done when:**
-- [x] FastAPI server runs with live model (GPU + token) or mock mode (no GPU).
+- [x] FastAPI server runs with live model (GPU + token) or mock mode (no GPU). *(rebuild)*
 - [ ] VRAM and latency per call recorded on RTX 2050 (pending hardware).
-- [x] Token never appears in logs or repo (secret scan passes).
+- [x] Token never appears in logs or repo (secret scan passes). *(rebuild)*
+- [ ] Loud mock banner / `ANCHOR_REQUIRE_LIVE`.
+
+## Phase 0.5 — Correctness fixes
+**Status:** NOT STARTED
+**Prerequisites:** Phase 0.
+**Work:** fix the design flaws found in the scaffold (see `STATUS.md` → Known issues).
+**Done when:**
+- [ ] Taint logic: high score on a tool output taints the run; later side-effecting actions blocked.
+- [ ] Chat-template read position: user = task, tool = output, hidden state at assistant-turn start token.
+- [ ] Sync handlers + one GPU lock.
+- [ ] Test asserts Anchor agent `secret_leaked is False`.
 
 ## Phase 1 — Dataset
 **Status:** NOT STARTED
@@ -27,8 +41,8 @@ Status values: `NOT STARTED` · `IN PROGRESS` · `DONE` · `BLOCKED`.
 
 ## Phase 2 — Drift probe
 **Status:** NOT STARTED
-**Prerequisites:** Phases 0, 1.
-**Work:** extract Δ activations, compare layers and token positions, train linear probe, choose threshold on validation.
+**Prerequisites:** Phases 0, 0.5, 1.
+**Work:** extract Δ activations, compare layers (and assistant-start vs. last-token position), train linear probe, choose threshold on validation.
 **Done when:**
 - [ ] Layer / position choice recorded in `decisions.md` with the measured comparison.
 - [ ] TPR at the chosen FPR measured on held-out documents and on the held-out style.
@@ -39,18 +53,21 @@ Status values: `NOT STARTED` · `IN PROGRESS` · `DONE` · `BLOCKED`.
 **Prerequisites:** Phase 2.
 **Work:** block path, steering vector + forward hook, strength tuning, mode config.
 **Done when:**
-- [ ] Block refuses the pending action on a known-poisoned output.
+- [ ] Block refuses the pending side-effecting action on a tainted run.
+- [ ] `/steer` live implementation (it was a stub in the scaffold).
 - [ ] Steer reduces attack success vs. no steer; clean-task quality change measured.
-- [ ] Default mode chosen and recorded.
+- [ ] Default mode chosen and recorded; `ANCHOR_MODE` wired up.
 
-## Phase 4 — Agent loop and scripted tools
-**Status:** DONE
+## Phase 4 — Agent loop and tools
+**Status:** IN PROGRESS
 **Prerequisites:** Phase 0.
-**Work:** loop, mock tools, vanilla and Anchor variants sharing code, turn cap.
+**Work:** loop, mock tools, vanilla and Anchor variants sharing code, turn cap, scripted and model-driven modes.
 **Done when:**
-- [x] Vanilla agent leaks the planted key on the poisoned page (attack reproduces).
-- [x] Anchor agent detects drift and blocks the action.
-- [x] Both variants finish within the turn cap.
+- [ ] Vanilla agent leaks the planted key on the poisoned page (attack reproduces) — scaffold version was scripted, does not count.
+- [ ] Model-driven action: after reading the page the model generates the next action (tool + args).
+- [ ] Anchor agent detects drift and blocks the action. *(rebuild)*
+- [ ] Anchor agent verified not leaking by test.
+- [ ] Both variants finish within the turn cap. *(rebuild)*
 
 ## Phase 5 — Integration with Pipelock
 **Status:** NOT STARTED
@@ -74,8 +91,9 @@ Status values: `NOT STARTED` · `IN PROGRESS` · `DONE` · `BLOCKED`.
 **Prerequisites:** Phases 0–6.
 **Work:** web demo (two agents side by side, drift-score trace), README, offline run check, secret scan.
 **Done when:**
-- [x] Web demo runs at localhost:8000 with side-by-side agent comparison.
-- [x] Interactive scoring playground works.
+- [ ] Web demo runs at localhost:8000 with side-by-side agent comparison. *(rebuild)*
+- [ ] Interactive scoring playground works. *(rebuild)*
+- [ ] UI shows live / mock mode badge.
 - [ ] Full test suite green, 0 skipped.
 - [ ] Demo runs with network off except localhost.
 - [ ] Demo works twice in a row from a cold start.

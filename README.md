@@ -7,6 +7,13 @@ Anchor reads an open-weight model's activations to catch prompt injection hidden
 
 Model: `Llama-3.2-3B-Instruct` (4-bit) · Runs locally · No closed APIs · No cloud during the demo
 
+> **Current status** (2026-10-28)
+> - Code: the first demo scaffold was removed; the MVP is being rebuilt from these docs.
+> - Drift scoring: placeholder only (keyword mock / uncalibrated norm) in the removed scaffold; no real probe yet.
+> - Drift probe: not built.
+> - Steering: not built.
+> - Details: [`docs/STATUS.md`](docs/STATUS.md).
+
 ---
 
 ## The problem
@@ -31,9 +38,9 @@ A closed API only shows you text. Open weights let us read what the model intend
 
 ```
 User task ─► Agent loop ─► Tool output ─► ANCHOR /score ─┬─► drift low  → act
-              (scripted      (web page       drift probe  │
-               tools)         / file)       Llama-3.2-3B  └─► drift high → block / steer
-                                  │
+                           (web page       drift probe  │
+                            / file)       Llama-3.2-3B  └─► drift high → run tainted:
+                                  │                          side-effect actions blocked / steer
                                   ▼  Layer 2 (network)
                            Pipelock egress proxy (unmodified) ─► Internet
 ```
@@ -46,24 +53,23 @@ For every tool output, Anchor computes:
 
 using residual-stream activations at a middle layer.
 
+**Where activations are read:** the input is built with the Llama chat template (user turn = task, tool turn = output), and the hidden state is taken at the assistant-turn start token — not the last token of raw text.
+
 1. **Drift probe**: a linear probe on Δ, trained on clean vs. injected tool outputs. Uses Hugging Face `output_hidden_states`.
-2. **Block or steer**: score above threshold → block the action, or add a steering vector (forward hook) that pulls the model back to the user's task.
-3. **Egress layer**: Pipelock, unmodified, catches secret exfiltration at the network level as a second line of defence.
+2. **Taint rule**: the score belongs to the tool output, not to the action. A tool output scoring above threshold **quarantines the run**: every later side-effecting action (`send_email`, outbound requests) is blocked, however harmless that action's own text looks. Read-only actions may continue.
+3. **Block or steer**: on a tainted run, side-effecting actions are blocked, or a steering vector (forward hook) pulls the model back to the user's task.
+4. **Egress layer**: Pipelock, unmodified, catches secret exfiltration at the network level as a second line of defence.
 
 ## Demo
 
-One poisoned page, two agents.
+One poisoned page, two agents. The hijack must come from the model reading the page, not from a scripted action.
 
 | | Vanilla agent | Agent + Anchor |
 |---|---|---|
 | 1 | fetch page | fetch page |
-| 2 | summarize | **drift spike** |
-| 3 | send email | **email blocked** |
+| 2 | summarize | **drift spike on fetched page → run tainted** |
+| 3 | send email | **email blocked (tainted run)** |
 | Result | API key leaked | Secret stays put |
-
-```bash
-python code/main.py demo
-```
 
 ## Open and local
 
@@ -88,50 +94,54 @@ python code/main.py demo
 ```bash
 git clone https://github.com/haragam22/anchor.git && cd anchor
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r code/requirements.txt
-cp .env.example .env                                    # add HF_TOKEN
-python code/model/smoke.py                              # one live call, prints VRAM and latency
+pip install -r code/requirements.txt                    # (MVP, rebuilding)
+# create .env with HF_TOKEN=...  (git-ignored)
 ```
 
 ### Run
+No code is in the repo right now. These are the MVP commands being rebuilt (first to land):
+
 ```bash
-python code/model/server.py                              # start the model server (/health, /score, /steer)
+python code/model/smoke.py                               # one live call, prints VRAM and latency
+python code/model/server.py                              # model server (/health, /score, /steer, /demo)
+python code/main.py demo                                 # vanilla agent vs agent + Anchor
+python -m pytest code/tests -q                           # unit tests
+```
+
+#### Coming next (planned)
+```bash
 python code/data/build.py                                # build clean + injected dataset
 python code/probe/train.py --layer <n>                   # train the drift probe
 python code/steer/train.py                               # compute the steering vector
-python code/main.py demo                                 # vanilla agent vs agent + Anchor
-```
-
-### Test and evaluate
-```bash
-python -m pytest code/tests -q                           # unit tests
 python code/evaluation/main.py --run-name eval_v1        # writes code/evaluation/evaluation_report.md
 ```
 
-> Commands reflect the planned layout in `docs/flow.md`. If a command differs in your checkout, `docs/flow.md` is the source of truth.
+> `docs/flow.md` is the source of truth for entry points and which ones exist.
 
 ## Configuration
 
 | Variable | Meaning | Default |
 |---|---|---|
 | `HF_TOKEN` | Hugging Face token (never commit) | none |
-| `ANCHOR_MODE` | `block`, `steer` or `both` | decided in Phase 3 |
+| `ANCHOR_REQUIRE_LIVE` | `1` → server refuses to start if the model fails to load (no mock) | `0` |
+| `ANCHOR_MODE` | `block`, `steer` or `both` — **not wired up yet** | decided in Phase 3 |
 | `ANCHOR_LAYER` | Layer used for the probe | decided in Phase 2 |
 | `ANCHOR_THRESHOLD` | Drift score cut-off | chosen on validation data |
 | `ANCHOR_MAX_TURNS` | Agent turn cap | 8 |
 
-## Repository layout
+## Repository layout (target)
 
 ```
 code/
   model/        model server (FastAPI), smoke test
   probe/        activation extraction, drift probe training
   steer/        steering vector + forward hook
-  agent/        agent loop, scripted tools (vanilla and Anchor variants)
+  agent/        agent loop, tools (vanilla and Anchor variants)
   data/         clean and injected tool outputs, split by document and style
   evaluation/   metrics, baselines, evaluation_report.md
   tests/        unit and security regression tests
-docs/           idea, technical, implementation, flow, testing, STATUS
+web/            demo UI
+docs/           idea, technical, implementation, flow, testing, decisions, STATUS
 ```
 
 ## Evaluation
@@ -147,12 +157,13 @@ We report only what is measured. Splits are by document and by injection style, 
 | Added latency per tool output | not yet measured |
 | VRAM | not yet measured |
 
-Full report: `code/evaluation/evaluation_report.md` (generated by `python code/evaluation/main.py`).
+Full report (planned): `code/evaluation/evaluation_report.md`.
 
 ## Safety design
 - **Fail closed**: model server down, out of memory or scoring error → the action is blocked.
+- **No silent fallback**: if the model fails to load, the server says mock loudly (or refuses to start with `ANCHOR_REQUIRE_LIVE=1`).
 - **Evidence is data**: tool outputs are never treated as instructions; scoring uses activations, not model replies.
+- **Taint, not per-action scoring**: a drifted tool output quarantines the run; later side-effecting actions are blocked.
 - **Layered**: Anchor (model level) and Pipelock (network level) each stop attacks the other can miss.
 - **No secrets in the repo**: `.env` is git-ignored; a secret scan runs before packaging.
 - **Pipelock unmodified**: integration is routing only.
-

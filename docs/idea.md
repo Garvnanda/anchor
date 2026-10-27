@@ -8,10 +8,12 @@ text or the network; none sees whether the model's goal moved.
 
 ## Our approach in one paragraph
 We run an **open-weight model locally** and read its activations. For every tool output we compare the
-residual-stream state for `task` alone against `task + output`. A **linear drift probe** scores the difference.
-Score below threshold → the agent acts. Score above threshold → we **block** the action or add a **steering vector**
-that pulls the model back to the user's task. **Pipelock** (unmodified) stays in front as a second layer at the
-network level.
+residual-stream state for `task` alone against `task + output`. Activations are read from input built with the
+Llama chat template (user turn = task, tool turn = output), at the assistant-turn start token — not the last
+token of raw text. A **linear drift probe** scores the difference. Score below threshold → the agent acts.
+Score above threshold → the tool output **taints the run**: every later side-effecting action (`send_email`,
+outbound requests) is blocked, or a **steering vector** pulls the model back to the user's task. **Pipelock**
+(unmodified) stays in front as a second layer at the network level.
 
 ## Why this shape
 | Gap in today's guardrails | What we do |
@@ -26,6 +28,7 @@ network level.
 - Correct the agent (block or steer), not only alert.
 - Run fully local on a laptop GPU; no closed APIs, no cloud during the demo.
 - Reproducible one-command demo: one poisoned page, vanilla agent vs agent + Anchor.
+- The hijack must come from the model reading the page, not from a scripted action.
 - Honest evaluation: report only what is measured.
 
 ## Non-goals
@@ -40,6 +43,8 @@ network level.
 - Claiming detection rates that were not measured.
 - Modifying Pipelock and calling it "unmodified".
 - Secrets or model tokens in code, logs or the repo.
+- Scripted attack presented as a model being hijacked.
+- Mock keyword scorer shown as Anchor without a visible mock label.
 
 ## Model (decided)
 - **Llama-3.2-3B-Instruct, 4-bit**, plain Hugging Face `output_hidden_states` + a forward hook, served behind FastAPI.
