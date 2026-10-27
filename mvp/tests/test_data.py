@@ -10,7 +10,7 @@ import pytest
 OFFLINE = Path(__file__).resolve().parents[1] / "offline"
 sys.path.insert(0, str(OFFLINE))
 from templates import (  # noqa: E402
-    AI_WORDS, BENIGN, BENIGN_HINDI, BENIGN_SPLIT, HARD_NEGATIVE_DOCS, INJECTIONS, INNOCENT_TRIGGERS, TEMPLATE_SPLIT,
+    AI_WORDS, BENIGN, BENIGN_MULTI, MULTI_SPLIT, BENIGN_HINDI, BENIGN_SPLIT, HARD_NEGATIVE_DOCS, INJECTIONS, INNOCENT_TRIGGERS, TEMPLATE_SPLIT,
     TRAINED_STYLES, TRIGGER_SPLIT, by_split, keyword_hit,
 )
 
@@ -76,12 +76,45 @@ def test_every_clean_main_row_has_benign_insertion(rows):
             assert r["insertion"] in BENIGN and r["insertion"] in r["output"]
 
 
-def test_clean_and_injected_lengths_match(rows):
+def test_clean_and_injected_lengths_match_per_format(rows):
     main = [r for r in rows if r["split"] != "heldout" and r["style"] != "hard_negative"]
-    clean = [len(r["output"].split()) for r in main if r["label"] == 0]
-    inj = [len(r["output"].split()) for r in main if r["label"] == 1]
-    mc, mi = sum(clean) / len(clean), sum(inj) / len(inj)
-    assert abs(mc - mi) / mi <= 0.10, (mc, mi)
+    for is_json in (False, True):
+        grp = [r for r in main if r["style"].startswith("json") == is_json]
+        clean = [len(r["output"].split()) for r in grp if r["label"] == 0]
+        inj = [len(r["output"].split()) for r in grp if r["label"] == 1]
+        mc, mi = sum(clean) / len(clean), sum(inj) / len(inj)
+        assert abs(mc - mi) / mi <= 0.10, ("json" if is_json else "prose", mc, mi)
+
+
+def test_each_format_is_balanced_between_labels(rows):
+    """Neither format may be mostly one label, or format itself becomes the cue."""
+    main = [r for r in rows if r["split"] != "heldout" and r["style"] != "hard_negative"]
+    js = [r["label"] for r in main if r["style"].startswith("json")]
+    assert js and sum(js) == len(js) / 2
+
+
+def test_json_rows_are_valid_json_and_carry_their_insertion(rows):
+    for r in rows:
+        if r["style"].startswith("json"):
+            json.loads(r["output"])
+            assert r["insertion"] in r["output"] and r["position"] in ("article", "product", "email", "event")
+
+
+def test_json_injection_templates_disjoint_across_splits(rows):
+    for split in SPLITS:
+        for r in rows:
+            if r["style"] == "json_tool" and r["split"] == split:
+                ids = list(range(len(INJECTIONS[r["kind"]])))
+                assert r["template_id"] in by_split(ids, TEMPLATE_SPLIT, split), r["id"]
+
+
+def test_benign_multilingual_pool_split_and_disjoint_from_heldout_controls(rows):
+    assert not set(BENIGN_MULTI) & set(BENIGN_HINDI)
+    for split in SPLITS:
+        used = {r["insertion"] for r in rows if r["style"] == "benign_multilingual" and r["split"] == split}
+        assert used and used <= set(by_split(BENIGN_MULTI, MULTI_SPLIT, split)), split
+    assert any(any("ऀ" <= c <= "ॿ" for c in r["insertion"])
+               for r in rows if r["style"] == "benign_multilingual" and r["split"] == "train")
 
 
 def test_templates_disjoint_across_train_val_test(rows):
@@ -149,7 +182,8 @@ def test_every_trained_style_on_every_main_doc(rows):
     for r in rows:
         if r["doc_id"].startswith("d") and r["split"] != "heldout":
             styles[r["doc_id"]].add(r["style"])
-    assert all(s == set(TRAINED_STYLES) | {"clean"} for s in styles.values())
+    expected = set(TRAINED_STYLES) | {"clean", "benign_multilingual", "json_clean", "json_tool"}
+    assert all(s == expected for s in styles.values())
 
 
 def test_hard_negative_docs_cover_three_kinds():

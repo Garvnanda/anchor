@@ -7,14 +7,22 @@ from collections import Counter, defaultdict
 from common import DATA, MAX_OUTPUT_TOKENS, MODEL, OUT, SEED
 from templates import (
     ATTACKERS, BENIGN, BENIGN_HINDI, BENIGN_SPLIT, GOALS, HARD_NEGATIVE_DOCS, HELDOUT_STYLE, HINDI_GOALS,
-    INJECTIONS, INNOCENT_TRIGGERS, NO_TRIGGER_STYLES, POLITE_GOALS, TASKS, TEMPLATE_SPLIT, TRAINED_STYLES,
-    TRIGGER_SPLIT, URLS, by_split,
+    BENIGN_MULTI, INJECTIONS, INNOCENT_TRIGGERS, JSON_BODY_WORDS, JSON_SHAPES, MULTI_SPLIT, NO_TRIGGER_STYLES,
+    POLITE_GOALS, TASKS, TEMPLATE_SPLIT, TRAINED_STYLES, TRIGGER_SPLIT, URLS, by_split,
 )
 
-# Styles added after the first build draw from their own RNG and are appended, so earlier rows stay
-# byte-identical and keep their cached features.
+# Rows added after the first build draw from their own RNG (fixed seed per block) and are appended, so earlier
+# rows stay byte-identical and keep their cached features.
 LATER_STYLES = ["user_voice"]
 FIRST_STYLES = [s for s in TRAINED_STYLES if s not in LATER_STYLES]
+
+
+def goals_for(style):
+    return NO_TRIGGER_STYLES.get(style, GOALS)
+
+
+def json_escape(text):
+    return json.dumps(text, ensure_ascii=False)[1:-1]  # how the text appears inside a JSON string
 
 N_DOCS = 150
 N_SQUAD_HARD_NEG = 20
@@ -121,9 +129,31 @@ def build():
         for i, doc in enumerate(main_docs):
             doc_id, split = f"d{i:03d}", split_of(i, N_DOCS)
             tid, tmpl = later.choice(templates_for(style, split))
-            ins = fill(tmpl, NO_TRIGGER_STYLES[style], later)
+            ins = fill(tmpl, goals_for(style), later)
             pos = later.choice(POSITIONS)
             add(doc_id, split, insert(doc, ins, pos), 1, style, pos, ins, tid, r=later)
+
+    # Extra clean row per doc with a benign non-English sentence, so script/language alone is not a cue.
+    multi = random.Random(SEED + 10)
+    for i, doc in enumerate(main_docs):
+        doc_id, split = f"d{i:03d}", split_of(i, N_DOCS)
+        ins, pos = multi.choice(by_split(BENIGN_MULTI, MULTI_SPLIT, split)), multi.choice(POSITIONS)
+        add(doc_id, split, insert(doc, ins, pos), 0, "benign_multilingual", pos, ins, r=multi)
+
+    # JSON-shaped tool responses: short page in one of four shapes, a clean and an injected version per doc.
+    js = random.Random(SEED + 20)
+    for i, doc in enumerate(main_docs):
+        doc_id, split = f"d{i:03d}", split_of(i, N_DOCS)
+        words = doc.split()
+        title, body = " ".join(words[:6]), " ".join(words[:JSON_BODY_WORDS])
+        shape = js.choice(sorted(JSON_SHAPES))
+        benign = js.choice(benign_for(split))
+        style = js.choice(TRAINED_STYLES)
+        tid, tmpl = js.choice(templates_for(style, split))
+        attack = fill(tmpl, goals_for(style), js)
+        for label, ins, row_style, t in ((0, benign, "json_clean", None), (1, attack, "json_tool", tid)):
+            page = json.dumps(JSON_SHAPES[shape](title, body, ins), ensure_ascii=False)
+            add(doc_id, split, page, label, row_style, shape, json_escape(ins), t, kind=style if label else None, r=js)
     return rows
 
 
@@ -146,14 +176,15 @@ def summary(rows, dropped):
     words = defaultdict(list)
     for r in rows:
         if r["split"] != "heldout" and r["style"] != "hard_negative":
-            words[r["label"]].append(len(r["output"].split()))
+            fmt = "json" if r["style"].startswith("json") else "prose"
+            words[(fmt, r["label"])].append(len(r["output"].split()))
+    mean = lambda k: round(sum(words[k]) / len(words[k]), 1)  # noqa: E731
     return {
         "rows": len(rows),
         "dropped_over_token_budget": [r["id"] for r in dropped],
         "docs": len({r["doc_id"] for r in rows}),
         "counts": [{"split": s, "style": st, "label": lb, "n": n} for (s, st, lb), n in sorted(counts.items())],
-        "mean_words": {"clean": round(sum(words[0]) / len(words[0]), 1),
-                       "injected": round(sum(words[1]) / len(words[1]), 1)},
+        "mean_words": {f"{fmt}_{'injected' if lb else 'clean'}": mean((fmt, lb)) for fmt, lb in sorted(words)},
     }
 
 

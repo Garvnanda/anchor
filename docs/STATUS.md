@@ -8,7 +8,7 @@ Repo holds docs only; no code yet. Old scaffold deleted (its lessons: "Known iss
 | Phase | Status | Notes (what's left, who) |
 |---|---|---|
 | 1 — Model and data | manual → passed | reviewer PASS after fixes (3-way text split, paired held-out); spot-read passed by user; then `user_voice` style added → 984 rows; 23 data/design tests pass. Not yet committed. |
-| 2 — Activations and probe | in progress | full offline chain running in background (extract → train_probe → external_eval → gen_actions → build_scenarios); feature cache by content hash |
+| 2 — Activations and probe | fix round done, in review | 1,434 rows; layer 9, thr 0.4313. Test AUROC 0.998, 127/132; all false-block groups ≤ 1/22. Held-out Hindi 12/22 with benign-Hindi FB 2/22. InjecAgent 20/200 (AUROC 0.62). Shuffled mean 0.494. Hijacked 2/5. 67 tests pass. Next: phase-reviewer → commit → report to user (planned stop). |
 | 3 — Scenarios and backend | code written early | `build_scenarios.py`, `api/index.py`, `vercel.json`, `test_api.py` — not run until Phase 2 passes |
 | 4 — Frontend | todo | visual approval (manual, user) |
 | 4.5 — User simulation | todo | 1,000 simulated API sessions |
@@ -27,8 +27,9 @@ Repo holds docs only; no code yet. Old scaffold deleted (its lessons: "Known iss
 - Tests covered the mock keyword filter only → §7 tests check taint logic, data splits, validation.
 
 ## Measured results
-None yet.
+Phase 2 (2026-10-28), full numbers in `mvp/offline/out/metrics.json`; summary in decisions.md → "Phase 2 results".
 
 ## Repo state
-- Committed up to `83f0304` (pushed by user). Uncommitted: workflow fixes (CLAUDE.md, docs edits, QUESTIONS.md, security backlog, `.claude/test-command`, `.gitignore`).
+- Phase 1 committed as `315ab33` (not pushed). Uncommitted: Phase 2–4.5 code written ahead (`offline/extract.py`, `train_probe.py`, `external_eval.py`, `gen_actions.py`, `scenario_pick.py`, `build_scenarios.py`, `api/`, `public/`, `sim/`, `tests/test_probe.py`, `tests/test_api.py`, `vercel.json`, `requirements.txt`).
+- Resume: if the background pipeline died, re-run from `mvp/offline` in order `extract → train_probe → external_eval → gen_actions → build_scenarios` (extract reuses `features/cache.npz`). Then run the full test command, phase-reviewer for Phase 2, and stop for the user (planned).
 - Gate: `.claude/test-command` → 3 passed (`mvp/tests/test_design_mock.py`).

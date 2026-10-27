@@ -7,7 +7,7 @@ Task-drift firewall for AI agents: reads an open-weight model's activations to c
 - Post-MVP: Llama-3.2-3B-Instruct 4-bit on RTX 2050, steering, Pipelock.
 
 ## Commands
-- Offline: `cd mvp/offline && python build_data.py && python extract.py && python train_probe.py && python gen_actions.py && python build_scenarios.py`
+- Offline (venv `mvp/offline/.venv`, in this order): `build_data → extract → train_probe → external_eval → gen_actions → build_scenarios` (`train_probe` rewrites `metrics.json`; `external_eval` and `build_scenarios` add their blocks after it)
 - API locally: `cd mvp && uvicorn api.index:app` → `/api/health`
 - Test: see `.claude/test-command`
 

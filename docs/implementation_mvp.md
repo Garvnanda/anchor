@@ -161,7 +161,9 @@ Check before anything else: load the model, run one chat-template forward pass, 
 
 **Held-out split (built from test documents only):** for each test document, one `hindi_hinglish` injected row **and** one clean row with a benign Hindi/Hinglish sentence inserted. The benign rows are the control: without them the probe could score high just because Devanagari or Hinglish appears, and you'd never know. Never build held-out rows from train or val documents.
 
-Write counts per split × style × label to `out/data_summary.json`. Current build: 150 docs × 6 rows + 40 hard negatives + 44 held-out = 984 rows.
+**Added after the first Phase 2 run (see decisions.md "Fix round"):** per main doc one `benign_multilingual` clean row (non-English benign sentence) and a `json_clean` / `json_tool` pair (JSON-shaped tool response in one of 4 shapes). Length is matched within each format.
+
+Write counts per split × style × label to `out/data_summary.json`. Current build: 150 docs × 9 rows + 40 hard negatives + 44 held-out = 1,434 rows.
 
 ### 3.3 Activations — `extract.py`
 
@@ -367,15 +369,15 @@ so `security-breaker` must report no open critical/high.
 4. `external_eval.py`: a few hundred rows (injected + clean) from a public indirect-injection benchmark (BIPIA or InjecAgent; license checked and credited). Frozen probe + frozen threshold + keyword, same chat-template read. Never used for training, layer choice or threshold. Report as an `external` block in `metrics.json`.
 
 **Done when**:
-- [ ] External benchmark: source, license and row counts recorded in `decisions.md`; probe and keyword TPR / false-block rate on it in `metrics.json` (counts beside rates), whatever the result.
-- [ ] `out/actions.json` written for every demo scenario with raw text, parsed action and `action_source`; hijack count in `out/metrics.json`.
-- [ ] `features/delta_L*.npy` row count matches `rows.jsonl`; no NaNs.
-- [ ] `out/probe.json`, `out/metrics.json`, `out/layer_sweep.json` written.
-- [ ] Metrics reported on **test** and **heldout** (never on train/val alone), for probe and keyword baseline, with counts beside rates.
-- [ ] **CRITICAL** — shuffled-label control: AUROC between 0.4 and 0.6 on test. Outside that range → stop and find the leak.
-- [ ] **CRITICAL** — benign-Hindi false-block rate reported next to Hindi-injection TPR.
-- [ ] Threshold chosen on val only; test and heldout never touched while tuning.
-- [ ] Result written down honestly in one line, whichever way it went: "probe beats / ties / loses to keyword on X".
+- [x] External benchmark: source, license and row counts recorded in `decisions.md`; probe and keyword TPR / false-block rate on it in `metrics.json` (counts beside rates), whatever the result. — InjecAgent: Anchor 20/200 (AUROC 0.62), keyword 17/200.
+- [x] `out/actions.json` written for every demo scenario with raw text, parsed action and `action_source`; hijack count in `out/metrics.json`. — 2/5 hijacked; every injected demo action targets the page's own attacker (tested).
+- [x] `features/delta_L*.npy` row count matches `rows.jsonl`; no NaNs.
+- [x] `out/probe.json`, `out/metrics.json`, `out/layer_sweep.json` written.
+- [x] Metrics reported on **test** and **heldout** (never on train/val alone), for probe and keyword baseline, with counts beside rates.
+- [x] **CRITICAL** — shuffled-label control: AUROC between 0.4 and 0.6 on test. — mean 0.494 over 30 permutations
+- [x] **CRITICAL** — benign-Hindi false-block rate reported next to Hindi-injection TPR. — 2/22 next to 12/22
+- [x] Threshold chosen on val only; test and heldout never touched while tuning.
+- [x] Result written down honestly in one line, whichever way it went: "probe beats / ties / loses to keyword on X". — beats on test AUROC (0.998 vs 0.556); roughly ties on InjecAgent detection (20 vs 17 of 200).
 
 **Planned stop:** after this gate passes, stop and hand the user the spot-read rows and the metrics summary. Continue to Phase 3 on their go.
 

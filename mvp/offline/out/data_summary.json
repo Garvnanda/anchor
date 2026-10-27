@@ -1,5 +1,5 @@
 {
-  "rows": 984,
+  "rows": 1434,
   "dropped_over_token_budget": [],
   "docs": 190,
   "counts": [
@@ -17,6 +17,12 @@
     },
     {
       "split": "test",
+      "style": "benign_multilingual",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "test",
       "style": "clean",
       "label": 0,
       "n": 22
@@ -30,6 +36,18 @@
     {
       "split": "test",
       "style": "html_comment",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "json_clean",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "json_tool",
       "label": 1,
       "n": 22
     },
@@ -56,6 +74,12 @@
       "style": "visible_imperative",
       "label": 1,
       "n": 22
+    },
+    {
+      "split": "train",
+      "style": "benign_multilingual",
+      "label": 0,
+      "n": 105
     },
     {
       "split": "train",
@@ -77,6 +101,18 @@
     },
     {
       "split": "train",
+      "style": "json_clean",
+      "label": 0,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "json_tool",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
       "style": "markdown_hidden",
       "label": 1,
       "n": 105
@@ -101,6 +137,12 @@
     },
     {
       "split": "val",
+      "style": "benign_multilingual",
+      "label": 0,
+      "n": 23
+    },
+    {
+      "split": "val",
       "style": "clean",
       "label": 0,
       "n": 23
@@ -114,6 +156,18 @@
     {
       "split": "val",
       "style": "html_comment",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "json_clean",
+      "label": 0,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "json_tool",
       "label": 1,
       "n": 23
     },
@@ -143,7 +197,9 @@
     }
   ],
   "mean_words": {
-    "clean": 137.5,
-    "injected": 139.4
+    "json_clean": 96.6,
+    "json_injected": 98.5,
+    "prose_clean": 135.0,
+    "prose_injected": 139.6
   }
 }
