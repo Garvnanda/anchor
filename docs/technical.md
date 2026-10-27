@@ -1,5 +1,9 @@
 # Technical design
 
+> **MVP overrides** (`implementation_mvp.md`, `decisions.md`): model `Qwen2.5-0.5B-Instruct` on CPU; activations
+> computed offline; site is a replay on Vercel (no model server, no mock mode, no `/steer`); block-only mode.
+> The design below is the full product.
+
 Language: Python. Entry point: `python code/main.py` (planned). Model: Llama-3.2-3B-Instruct, 4-bit.
 Libraries (planned): `transformers`, `bitsandbytes`, `torch`, `scikit-learn`, `fastapi`, `pydantic`, `pytest`.
 Unmodified external component: **Pipelock** egress proxy.
@@ -29,7 +33,7 @@ user task ─► [1 AGENT LOOP] ─► tool call ─► tool output (web page / 
 
 ### 1.2 Drift probe (`code/probe/`)
 - Δ = act(task + output) − act(task), from the residual stream at one middle layer (layer chosen in Phase 2, recorded in `decisions.md`).
-- Input format: Llama chat template, user turn = task, tool turn = output.
+- Input format: model chat template, user turn = task, then an assistant `fetch_page` call, then the output in the native `tool` role (decided 2026-10-28).
 - Token position: assistant-turn start token. Last token of raw output stays a Phase 2 comparison only.
 - Probe: linear classifier (logistic regression) on Δ, trained on clean vs. injected tool outputs. CPU, seconds.
 - Output: `drift_score` in [0, 1] + the layer / probe version used.

@@ -8,7 +8,7 @@ Anchor reads an open-weight model's activations to catch prompt injection hidden
 Model: `Llama-3.2-3B-Instruct` (4-bit) · Runs locally · No closed APIs · No cloud during the demo
 
 > **Current status** (2026-10-28)
-> - Code: the first demo scaffold was removed; the MVP is being rebuilt from these docs.
+> - Code: the first demo scaffold was removed; the MVP is being built from [`docs/implementation_mvp.md`](docs/implementation_mvp.md) (Qwen2.5-0.5B on CPU, results replayed on Vercel).
 > - Drift scoring: placeholder only (keyword mock / uncalibrated norm) in the removed scaffold; no real probe yet.
 > - Drift probe: not built.
 > - Steering: not built.

@@ -1,4 +1,8 @@
-# Implementation plan
+# Implementation plan — post-MVP roadmap
+
+> **Not the active plan.** The workflow hooks track `docs/implementation_mvp.md`. This file is the full-product
+> roadmap (Llama-3.2-3B on GPU, steering, Pipelock) picked up after the MVP ships. Its status markers are
+> informational and are converted to the hook format when it becomes active.
 
 Hackathon mode: each phase has light gates (its own tests pass + a quick smoke check). The full safety/quality
 pass happens once, in Phase 7, before the demo.

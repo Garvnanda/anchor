@@ -49,3 +49,4 @@ outbound requests) is blocked, or a **steering vector** pulls the model back to 
 ## Model (decided)
 - **Llama-3.2-3B-Instruct, 4-bit**, plain Hugging Face `output_hidden_states` + a forward hook, served behind FastAPI.
 - Target hardware: laptop RTX 2050 (4 GB). Deck claim: about 2–2.5 GB VRAM for the model (to be measured).
+- **MVP:** `Qwen2.5-0.5B-Instruct` on CPU, same pipeline; 3B is the next step (`implementation_mvp.md`).

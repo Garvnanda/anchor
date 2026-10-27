@@ -1,13 +1,29 @@
+# environments and secrets
 .env
 .venv/
+**/.venv/
 __pycache__/
 *.pyc
-code/.cache/
 *.egg-info/
+.pytest_cache/
 dist/
 build/
 .DS_Store
 node_modules/
-web/node_modules/
-.pytest_cache/
-code/.pytest_cache/
+
+# Hugging Face / torch caches if pointed inside the repo
+.cache/
+hf_cache/
+
+# large regenerable artifacts
+mvp/offline/features/
+*.npy
+*.pt
+*.safetensors
+*.bin
+
+# Vercel local state
+.vercel/
+
+# Claude workflow backups
+.claude/backup-*/

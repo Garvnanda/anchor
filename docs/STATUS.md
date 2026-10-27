@@ -1,55 +1,34 @@
-# Status — resume point
+# Status / resume point
+Updated 2026-10-28. Read this first when resuming.
 
-**Date:** 2026-10-28
-**Phase:** Demo scaffold complete; core detection not built. Scaffold code then **deleted** (2026-10-28) to rebuild the MVP from these docs. Repo holds docs only.
+Active plan: `docs/implementation_mvp.md` (same-day MVP). Post-MVP roadmap: `docs/implementation.md`.
+Repo holds docs only; no code yet. Old scaffold deleted (its lessons: "Known issues" below).
 
-## Facts known
-- Model: Llama-3.2-3B-Instruct, 4-bit; deck claims ~2–2.5 GB VRAM.
-- Hardware target: laptop RTX 2050, 4 GB.
-- Probe and steering vector train on CPU "in seconds" (claim, unmeasured).
-- No fine-tuning; Hugging Face hidden states + a forward hook; no closed APIs; no cloud during the demo.
-- Pipelock used unmodified as the network layer.
+## Phases (MVP)
+| Phase | Status | Notes (what's left, who) |
+|---|---|---|
+| 1 — Model and data | todo | next; blocked on `docs/QUESTIONS.md` (RAM / internet) |
+| 2 — Activations and probe | todo | incl. required `gen_actions.py` |
+| 3 — Scenarios and backend | todo | security-breaker on `mvp/api` |
+| 4 — Frontend | todo | visual approval (manual, user) |
+| 4.5 — User simulation | todo | 1,000 simulated API sessions |
+| 5 — Deploy and submit | todo | Vercel import, push, submission (manual, user) |
 
-## What the removed scaffold did (deleted locally; not to be restored)
-- Model server (`/health`, `/score`, `/steer`, `/demo`) with live or mock mode.
-- Agent actions were **fully scripted** — the model did not choose them.
-- Live scoring was the **L2 norm of Δ through a fixed sigmoid**, not a probe.
-- `/steer` was a **stub** in live mode.
-- Web demo (side-by-side + scoring playground) read the `/demo` JSON response.
-- Tests: 8 (server endpoints + secret scan), mock scorer only.
+## Pending before/at resume
+1. User answers `docs/QUESTIONS.md` (deadline, Vercel account, RAM/internet).
+2. User runs the two blocked setup commands (quiz hook, project registration) — see testing.md → Workflow setup.
+3. Start Phase 1: create `mvp/` layout, update `.gitignore`, venv, model smoke pass.
 
-## Known issues (in the removed scaffold — the rebuild must not repeat them)
-- Anchor agent may leak in mock mode: block decision scored on the email text, not the poisoned page.
-- Last-token read without chat template.
-- Norm score grows with output length, so clean long pages may be flagged.
-- Silent fallback to mock.
-- Tests cover the mock keyword filter only.
+## Known issues (from the removed scaffold — MVP must not repeat)
+- Block decision scored on the email text, not the poisoned page → fixed by the taint rule.
+- Last-token read without chat template → fixed: chat template, tool role, assistant-start.
+- Norm score grew with output length → replaced by a trained probe; clean rows carry length-matched insertions.
+- Silent fallback to mock → MVP shows `REPLAY` badge; no mock scorer exists.
+- Tests covered the mock keyword filter only → §7 tests check taint logic, data splits, validation.
 
 ## Measured results
-None from the real model yet.
-
-| Run | Probe (layer / position) | TPR @ FPR | False-block rate | Attack success (off → on) | Latency / output | Held-out style |
-|---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — |
-
-## Final configuration (to freeze)
-- Model: Llama-3.2-3B-Instruct, 4-bit.
-- Read position: assistant-turn start token, chat template (see `decisions.md`).
-- Layer, threshold, mode (`block` / `steer` / `both`): **undecided** — requires GPU runs.
-
-## Next steps
-1. Taint fix: score attached to the tool output; high score taints the run; later side-effecting actions blocked.
-2. Chat-template read: user = task, tool = output, hidden state at assistant-turn start token.
-3. Rebuild MVP: model server (sync handlers + GPU lock, loud mock / `ANCHOR_REQUIRE_LIVE`), agent loop, `main.py demo`, tests (Phase 0, 0.5, 4).
-4. Model generates the email action (not scripted) — model-driven agent mode.
-5. Run model server on RTX 2050 with real HF_TOKEN — measure VRAM and latency.
-6. Build dataset with document-level split and held-out injection style.
-7. Train drift probe, compare layers, choose threshold on validation.
-8. Compute steering vector, implement live `/steer`, measure clean-task quality impact.
-9. Full evaluation pass, write report.
-10. Integrate Pipelock as Layer 2.
-11. Rehearse demo twice cold before pitch date.
+None yet.
 
 ## Repo state
-- Repo `anchor/` (remote `github.com/haragam22/anchor`). Local tree: `README.md`, `.gitignore`, `docs/` only.
-- `code/`, `web/`, `.env.example` deleted from disk; docs + README refactored. Not yet committed or pushed (user pushes later).
+- Committed up to `83f0304` (pushed by user). Uncommitted: workflow fixes (CLAUDE.md, docs edits, QUESTIONS.md, security backlog, `.claude/test-command`, `.gitignore`).
+- Gate: `.claude/test-command` → no tests yet (pytest would collect 0; first Phase 1 item sets up the harness).

@@ -1,50 +1,39 @@
-# Flow
-
-Update this file whenever an entry point or data path changes.
-
-> 2026-10-28: all code deleted for the MVP rebuild. "Rebuild" = existed in the removed scaffold, first to come back.
+# Code flow
+Update whenever an entry point or data path changes. MVP layout from `implementation_mvp.md` §2. Nothing exists yet; every row is **planned**.
 
 ## Entry points
-| Command | Purpose | Status |
+| Command / route | What starts here | Status |
 |---|---|---|
-| `python code/main.py demo` | Run the poisoned-page demo: vanilla agent vs agent + Anchor | rebuild (existed) |
-| `python code/main.py server` | Start the server via the main entry point | rebuild (existed) |
-| `python code/model/server.py` | Start FastAPI model server (`/health`, `/score`, `/steer`, `/demo`) | rebuild (existed) |
-| `GET /demo` (server endpoint) | Run both agents, return JSON; the web UI calls it | rebuild (existed) |
-| `python code/model/smoke.py` | Dev: one live model call + VRAM print | rebuild (existed) |
-| `python code/data/build.py` | Build clean + injected dataset with document-level split | planned |
-| `python code/probe/train.py --layer <n>` | Extract Δ activations, train probe, write `code/.cache/probe/` | planned |
-| `python code/steer/train.py` | Compute steering vector | planned |
-| `python code/evaluation/main.py --run-name <n>` | Score probe and agents → `code/evaluation/evaluation_report.md` | planned |
-| `python code/package.py` | Build zip (excludes caches, secrets, model weights) | planned |
+| `mvp/offline/build_data.py` | SQuAD docs + injections + hard negatives → `offline/data/rows.jsonl`, `out/data_summary.json` | planned |
+| `mvp/offline/extract.py` | rows → Δ activations per layer → `offline/features/delta_L{n}.npy` | planned |
+| `mvp/offline/train_probe.py` | probe per layer, threshold, keyword baseline, shuffled control → `out/probe.json`, `metrics.json`, `layer_sweep.json` | planned |
+| `mvp/offline/gen_actions.py` | model picks next action per demo scenario → `out/actions.json` | planned |
+| `mvp/offline/build_scenarios.py` | 8 test/heldout scenarios + scores → `out/scenarios.json`; copies JSON into `api/data/` | planned |
+| `GET /api/health` | mode, model, layer, threshold, built_at | planned |
+| `GET /api/scenarios` | scenario list | planned |
+| `POST /api/run` | three defence traces for one scenario + threshold | planned |
+| `GET /api/metrics` | metrics + layer sweep | planned |
+| `mvp/public/index.html` | site UI, calls `/api/*` | planned |
+| `mvp/sim/` | Phase 4.5 simulated users against the local API | planned |
 
-## Per-tool-output pipeline
-`agent.loop` → tool returns output → `anchor.check(task, output)` → `/score` → `drift_score` →
-`drift_score ≥ threshold` → mark run **tainted** → later side-effect actions (`send_email`, outbound requests) blocked
-(or `steer.apply`); read-only actions may continue · below threshold and run untainted: action proceeds →
-outbound requests pass through Pipelock → result and score logged.
+## Data flow — offline (laptop, CPU)
+1. `build_data.py`: SQuAD validation contexts → 150 docs → per doc: 1 clean row with benign insertion + 1 row per trained style; 40 hard negatives; split by `doc_id` 70/15/15; held-out Hindi/Hinglish rows (injected + benign control) from test docs only.
+2. `extract.py`: for each row, chat template `system → user(task) → assistant(fetch_page call) → tool(page)` + generation prompt; hidden state at the last token (assistant start) for layers 6/9/12/15/18; `Δ = state(task, page) − state(task, None)`.
+3. `train_probe.py`: scaler + logistic regression per layer on train; best layer by val AUROC; threshold at 5 % val FPR; metrics on test + heldout; keyword baseline; shuffled-label control.
+4. `gen_actions.py`: same prompt, greedy generation of `{"tool":"send_email",...}` → `action_source` = `model` if it emails the attacker, else `scripted`.
+5. `build_scenarios.py`: 8 scenarios with `probe_score`, `keyword_hit`, `action_source`, steps → `api/data/`.
 
-Logging: `code/.cache/runs/<run>/events.jsonl` is **planned**. The scaffold's web demo read the `/demo` JSON response instead.
+## Data flow — site (Vercel)
+`public/app.js` → `POST /api/run {scenario_id, threshold}` → `api/index.py` loads `api/data/*.json` once at import → for each defence (`none`, `keyword`, `anchor`): read step sets score; `score ≥ threshold` → run **tainted** → later `send_email` (side effect) **blocked**; unblocked email containing `SECRET` → `leaked` → verdict `leaked` / `safe` / `false_block` → JSON → UI columns.
 
-## Scoring
-Chat template (user = task, tool = output) → `activations(task)` and `activations(task + output)` → residual stream
-at layer L, **assistant-turn start token** → `Δ = act(task + output) − act(task)` → linear probe → `drift_score` →
-compare to threshold.
+## Modules
+| Module | Responsibility | Talks to |
+|---|---|---|
+| `mvp/offline/` | real model work, writes all numbers | HF hub (first download), local files |
+| `mvp/api/index.py` | taint rule + serve JSON; no ML imports | `api/data/*.json` |
+| `mvp/public/` | UI | `/api/*` |
+| `mvp/tests/` | pytest on data + API | `offline/data`, `offline/out`, `api` |
 
-## Data path (per demo run)
-1. User task + tools loaded.
-2. Agent turn: model picks action (model-driven mode); tool runs; output returned.
-3. Anchor check on each tool output:
-   1. Two forward passes (task alone, task + output) with the chat template, hidden states captured.
-   2. Δ computed, probe scores it.
-   3. Score logged with layer, probe version, threshold.
-4. Score ≥ threshold → run tainted.
-5. Decision for each later action: read-only → act · side-effecting on tainted run → block · steer (+ re-generate the turn with the hook on).
-6. Outbound call (e.g. `send_email`) → Pipelock egress proxy → mock Internet.
-7. Web demo draws the drift-score trace for each agent (from `/demo` JSON now; `events.jsonl` planned).
-
-## Data path (training)
-1. `data/build.py` → rows (`task, output, label, injection_style`) split by document and style.
-2. `probe/train.py` → Δ per row → fit probe → pick threshold on validation.
-3. `steer/train.py` → mean activation difference → steering vector file.
-4. Artifacts saved under `code/.cache/probe/`, keyed by model, layer and data hash.
+## External services
+- Hugging Face Hub: model + SQuAD download, offline only, first run.
+- Vercel: hosts `mvp/` (Root Directory = `mvp`).

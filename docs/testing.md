@@ -1,46 +1,39 @@
-# Testing
-
-> 2026-10-28: code and tests deleted for the MVP rebuild. Everything below is the plan for the new code.
+# Testing guide
+MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock, live mode) lives with `implementation.md` and is added back when those phases start.
 
 ## Automated
-- `python -m pytest code/tests -q` — unit tests (added per phase).
-- `python code/evaluation/main.py` — probe + agent scoring (Phase 6, planned).
+- Full suite: `.claude/test-command` → `cd mvp && python -m pytest tests -q`. Tests read JSON/JSONL only; no torch needed.
+- Planned tests (`implementation_mvp.md` §7):
+  - `test_data.py` — split leakage, held-out from test docs only, benign-Hindi controls, length match, template split, insertion survives truncation.
+  - `test_taint.py` — high read score → later `send_email` blocked even with a clean-looking body.
+  - `test_clean_passes` — clean scenario never `leaked`; anchor result matches stored score.
+  - `test_keyword_threshold_fixed` — slider never changes keyword verdict.
+  - `test_no_ml_imports` — `api/index.py` imports no torch / numpy / sklearn.
+  - `test_data_from_pipeline` — every scenario score exists in `offline/out/`.
+  - `test_validation.py` — bad `scenario_id` → 404; bad threshold → 422.
+  - `test_action_source.py` — `action_source` matches `out/actions.json`.
+- Simulation (Phase 4.5): `mvp/sim/` — 1,000 seeded users against `uvicorn api.index:app`; report in `docs/user-sim-report.md`.
 
-Unit tests fake only external boundaries (GPU model call, Pipelock process, clock). No network in tests.
+## Manual (live)
+### Phase 1 — model and data
+1. `cd mvp/offline && python -c "<smoke>"` (one forward pass) — expected: 25 hidden states, < 1 s, rendered prompt shows page inside `<tool_response>`.
+2. Spot-read 10 injected + 5 benign-insertion rows in `rows.jsonl` — expected: natural text, correct labels.
+### Phase 4 — frontend
+1. `cd mvp && uvicorn api.index:app`, open `/` — expected: `REPLAY` badge, 8 scenarios, three columns, metrics match `out/metrics.json`.
+2. Browser at 375 px width — expected: no horizontal scroll, no console errors.
+### Phase 5 — deploy
+1. `npx vercel dev` from a fresh clone of `mvp/` — expected: site + `/api/*` work without running `offline/`.
+2. Deployed URL on desktop and phone; check github.com for no `.env`, `.npy`, weights.
 
-## Evaluation (local model, no paid calls)
-- `python code/evaluation/main.py --run-name eval_vN` — prints TPR at fixed FPR, false-block rate, attack success
-  with / without Anchor, latency per tool output, VRAM; per injection style and per language; writes
-  `code/evaluation/evaluation_report.md`. Use a new run name per probe / threshold change.
-- Splits are by document and injection style; the held-out style is never used for tuning.
-- Baselines always reported: no defence, keyword filter.
+## Workflow setup (run once, by the user)
+- Quiz pre-commit hook: `cd anchor && bash ~/.claude/skills/quiz/install.sh`
+- Register project: add to `~/.claude/workflow/projects.md`:
+  `| anchor | C:/Users/harag/Documents/coding/anchor | docs/implementation_mvp.md | on |`
 
-## Behaviour checks
-- Vanilla agent leaks the planted key on the poisoned page; agent + Anchor does not.
-- The leak comes from the model's own generated action, not a scripted one.
-- Clean pages: Anchor does not block (false-block rate reported, not assumed zero).
-- Injection text aimed at the checker ("ignore the drift check") does not change the score path.
-- Model server killed mid-run: action is blocked, not allowed.
-- Pipelock off: Anchor alone stops the demo attack. Anchor off: Pipelock alone stops the direct exfiltration attempt.
+## Test data / accounts
+- Dataset: SQuAD validation contexts (CC BY-SA 4.0) + hand-written hard negatives and templates.
+- Planted secret: fake `sk-demo-…`, stored in `probe_meta.json`.
 
-## Planned tests
-- `code/tests/test_server.py` — endpoints. `test_score_clean` / `test_score_injection` validate the **mock scorer only**; skipped or replaced in live mode.
-- `code/tests/test_demo_outcome.py` — vanilla leaks; Anchor `secret_leaked is False`.
-- Taint test — high score on the page → later `send_email` blocked even if the email text looks clean.
-- Mock-label test — `/health` and `/score` report `mode: "mock"` when no model is loaded.
-
-## Security regression tests
-- `code/tests/test_secrets.py` — no token or planted demo key in repo, logs or package. Note: the scaffold version only checked README; the rebuild must scan logs and the package too.
-- `code/tests/test_fail_closed.py` — server down, OOM, score error → action blocked. *(planned)*
-- `code/tests/test_pipelock_untouched.py` — Pipelock files unchanged (version / hash). *(planned)*
-
-## Manual checks
-- `python code/model/smoke.py` → prints one generation, hidden-state shape, VRAM, latency.
-- Start without a model → mock banner in logs and mock badge in UI; with `ANCHOR_REQUIRE_LIVE=1` → server refuses to start.
-- Demo from a cold start, twice, with the network off except localhost.
-- Packaged zip: inspect names, scan for the token and for model weights.
-
-## Packaging
-- `python code/package.py [--out code.zip]` — README + code without caches, weights, `.env`. *(planned)*
-
-Add new commands and manual checks here as they are created.
+## Known gaps
+- Test sets are small (~20–30 rows per style); one row moves a rate ~4 points — counts always shown beside rates.
+- No live-model test on the deployed site (replay only).
