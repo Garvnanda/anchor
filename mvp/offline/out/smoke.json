@@ -1,0 +1,7 @@
+{
+  "hidden_states": 25,
+  "tokens": 116,
+  "load_s": 16.7,
+  "pass_s": 0.67,
+  "torch": "2.14.1+cpu"
+}

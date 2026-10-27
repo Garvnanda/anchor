@@ -1,0 +1,149 @@
+{
+  "rows": 984,
+  "dropped_over_token_budget": [],
+  "docs": 190,
+  "counts": [
+    {
+      "split": "heldout",
+      "style": "benign_hindi",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "heldout",
+      "style": "hindi_hinglish",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "clean",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "hard_negative",
+      "label": 0,
+      "n": 7
+    },
+    {
+      "split": "test",
+      "style": "html_comment",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "markdown_hidden",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "polite_no_triggers",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "user_voice",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "visible_imperative",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "train",
+      "style": "clean",
+      "label": 0,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "hard_negative",
+      "label": 0,
+      "n": 26
+    },
+    {
+      "split": "train",
+      "style": "html_comment",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "markdown_hidden",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "polite_no_triggers",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "user_voice",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "visible_imperative",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "val",
+      "style": "clean",
+      "label": 0,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "hard_negative",
+      "label": 0,
+      "n": 7
+    },
+    {
+      "split": "val",
+      "style": "html_comment",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "markdown_hidden",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "polite_no_triggers",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "user_voice",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "visible_imperative",
+      "label": 1,
+      "n": 23
+    }
+  ],
+  "mean_words": {
+    "clean": 137.5,
+    "injected": 139.4
+  }
+}

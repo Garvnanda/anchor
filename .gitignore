@@ -27,3 +27,6 @@ mvp/offline/features/
 
 # Claude workflow backups
 .claude/backup-*/
+
+# external benchmark (re-downloaded by external_eval.py)
+mvp/offline/data/external/

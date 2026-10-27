@@ -2,8 +2,15 @@
 MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock, live mode) lives with `implementation.md` and is added back when those phases start.
 
 ## Automated
-- Full suite: `.claude/test-command` → `cd mvp && python -m pytest tests -q`. Tests read JSON/JSONL only; no torch needed.
-- Planned tests (`implementation_mvp.md` §7):
+- Full suite: `.claude/test-command` → `cd mvp && offline/.venv/Scripts/python -m pytest tests -q` (project venv: has fastapi + httpx for API tests). Tests read JSON/JSONL only; no torch imported. Artifact tests fail until the offline pipeline has run.
+- Existing:
+  - `test_design_mock.py` — `design/mock.html` has light + dark token sets for every colour family, plus the auto/light/dark switch.
+  - `test_data.py` (Phase 1) — no doc in two splits; held-out from test docs only, paired one-to-one with benign-Hindi controls; length match; templates, benign and trigger sentences disjoint across train/val/test; insertion survives (no truncation); polite style has no keyword markers. 21 passing with the design tests.
+  - `test_probe.py` (Phase 2) — features/scores cover every row; best layer on val; threshold is the smallest with val FPR ≤ 5 %; shuffled-label AUROC in [0.4, 0.6]; test/heldout/external metrics with counts; actions for all 8 scenarios.
+  - `test_api.py` (Phase 3) — taint rule, verdicts per scenario, validation (404/422/413), no ML imports, every served number traced to `offline/out/`.
+- Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` → `sim/report.json`, exits non-zero if the pass bar fails.
+- Re-run the offline pipeline: see flow.md → run order.
+- Planned tests (`implementation_mvp.md` §7), now covered by the files above:
   - `test_data.py` — split leakage, held-out from test docs only, benign-Hindi controls, length match, template split, insertion survives truncation.
   - `test_taint.py` — high read score → later `send_email` blocked even with a clean-looking body.
   - `test_clean_passes` — clean scenario never `leaked`; anchor result matches stored score.

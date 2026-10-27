@@ -28,3 +28,6 @@ Task-drift firewall for AI agents: reads an open-weight model's activations to c
 - Keyword filter is a labelled baseline column, never shown as Anchor.
 - Site copy is factual (`REPLAY`, `scripted` badges); no apologetic "fake / honesty" wording.
 - Model weights, `.npy` features, `.env` never committed. `mvp/api/data/*.json` always committed.
+- Git override (user, 2026-10-28): no `/quiz` here — stage + commit after each passed phase. Never push, never `--no-verify`.
+- Planned stop after Phase 2 for the user's manual review; otherwise build straight through to deploy-ready.
+- Offline venv uses Python 3.12 (`py -3.12 -m venv .venv`).
