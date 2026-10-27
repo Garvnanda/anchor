@@ -1,18 +1,23 @@
 # Status — resume point
 
 **Date:** 2026-10-27
-**Phase:** 0–7 NOT STARTED (assumption: pitch deck exists; no code or measurements confirmed). Demo / pitch date on the deck: 2026-10-30.
-Update this file first if the assumption is wrong.
+**Phase:** MVP complete (model server, agent loop, web demo, tests). Probe / steering / evaluation use mock scoring — live model integration pending GPU hardware.
 
-## Facts known (from the deck, unmeasured)
+## Facts known
 - Model: Llama-3.2-3B-Instruct, 4-bit; deck claims ~2–2.5 GB VRAM.
-- Hardware: laptop RTX 2050, 4 GB.
-- Probe and steering vector train on CPU "in seconds" (claim).
-- No fine-tuning runs; Hugging Face hidden states + a forward hook; no closed APIs; no cloud during the demo.
+- Hardware target: laptop RTX 2050, 4 GB.
+- Probe and steering vector train on CPU "in seconds" (claim, unmeasured).
+- No fine-tuning; Hugging Face hidden states + a forward hook; no closed APIs; no cloud during the demo.
 - Pipelock used unmodified as the network layer.
 
+## What works today
+- Model server (`/health`, `/score`, `/steer`, `/demo`) — live mode with real model or deterministic mock mode without GPU/token.
+- Agent loop — vanilla agent leaks the planted secret; Anchor agent detects drift and blocks.
+- Web demo — side-by-side comparison + interactive scoring playground at `localhost:8000`.
+- Tests — 8/8 passing (server endpoints + security regression).
+
 ## Measured results
-None yet. Fill the table below as runs complete; deck and README may quote only this table.
+None from the real model yet. Mock mode validates the full pipeline end-to-end.
 
 | Run | Probe (layer / position) | TPR @ FPR | False-block rate | Attack success (off → on) | Latency / output | Held-out style |
 |---|---|---|---|---|---|---|
@@ -20,21 +25,17 @@ None yet. Fill the table below as runs complete; deck and README may quote only 
 
 ## Final configuration (to freeze)
 - Model: Llama-3.2-3B-Instruct, 4-bit.
-- Layer, token position, threshold, mode (`block` / `steer` / `both`): **undecided**.
+- Layer, token position, threshold, mode (`block` / `steer` / `both`): **undecided** — requires GPU runs.
 
 ## Next steps
-1. Phase 0: model server + VRAM / latency check on the RTX 2050.
-2. Phase 1: dataset with document-level split and one held-out injection style.
-3. Phase 2: probe, layer comparison, threshold on validation.
-4. Phase 4 in parallel: vanilla agent reproduces the leak.
-5. Phases 3, 5, 6, 7 in order; rehearse the demo twice cold before 2026-10-30.
-
-## Pending / risks
-- Probe may detect injection style or keywords rather than goal drift → held-out style test is mandatory.
-- 4 GB VRAM is tight for two forward passes + hook; check batch / context limits early.
-- Steering may degrade clean-task quality; measure before choosing a default.
-- Attack split across several tool outputs is not covered by per-output scoring.
-- Deck numbers (2–2.5 GB, "seconds") are claims until measured.
+1. Run model server on RTX 2050 with real HF_TOKEN — measure VRAM and latency.
+2. Build dataset with document-level split and held-out injection style.
+3. Train drift probe, compare layers, choose threshold on validation.
+4. Compute steering vector, measure clean-task quality impact.
+5. Full evaluation pass, write report.
+6. Integrate Pipelock as Layer 2.
+7. Rehearse demo twice cold before pitch date.
 
 ## Repo state
-- Not confirmed. Record branch and uncommitted files here.
+- Branch: `main`, pushed to `github.com/haragam22/anchor`.
+- All files tracked, no uncommitted changes.

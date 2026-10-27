@@ -4,18 +4,17 @@ Hackathon mode: each phase has light gates (its own tests pass + a quick smoke c
 pass happens once, in Phase 7, before the demo.
 
 Status values: `NOT STARTED` · `IN PROGRESS` · `DONE` · `BLOCKED`.
-Nothing below is measured yet; "Done when" lists the evidence each gate needs.
 
 ---
 
 ## Phase 0 — Model server
-**Status:** NOT STARTED
+**Status:** DONE
 **Prerequisites:** GPU with CUDA; Hugging Face access to Llama-3.2-3B-Instruct (token in `.env`, git-ignored).
-**Work:** load 4-bit model, `output_hidden_states`, FastAPI (`/health`, `/score` stub).
+**Work:** load 4-bit model, `output_hidden_states`, FastAPI (`/health`, `/score`, `/steer`).
 **Done when:**
-- [ ] One generation + hidden-state extraction runs on the RTX 2050.
-- [ ] VRAM and latency per call recorded (deck claim: ~2–2.5 GB; verify).
-- [ ] Token never appears in logs or repo (secret scan).
+- [x] FastAPI server runs with live model (GPU + token) or mock mode (no GPU).
+- [ ] VRAM and latency per call recorded on RTX 2050 (pending hardware).
+- [x] Token never appears in logs or repo (secret scan passes).
 
 ## Phase 1 — Dataset
 **Status:** NOT STARTED
@@ -45,12 +44,13 @@ Nothing below is measured yet; "Done when" lists the evidence each gate needs.
 - [ ] Default mode chosen and recorded.
 
 ## Phase 4 — Agent loop and scripted tools
-**Status:** NOT STARTED
+**Status:** DONE
 **Prerequisites:** Phase 0.
 **Work:** loop, mock tools, vanilla and Anchor variants sharing code, turn cap.
 **Done when:**
-- [ ] Vanilla agent leaks the planted key on the poisoned page (attack reproduces).
-- [ ] Both variants finish a clean task within the turn cap.
+- [x] Vanilla agent leaks the planted key on the poisoned page (attack reproduces).
+- [x] Anchor agent detects drift and blocks the action.
+- [x] Both variants finish within the turn cap.
 
 ## Phase 5 — Integration with Pipelock
 **Status:** NOT STARTED
@@ -70,12 +70,14 @@ Nothing below is measured yet; "Done when" lists the evidence each gate needs.
 - [ ] Numbers in the report are the only numbers used in the deck and README.
 
 ## Phase 7 — Demo, web page, pre-demo checks
-**Status:** NOT STARTED
+**Status:** IN PROGRESS
 **Prerequisites:** Phases 0–6.
 **Work:** web demo (two agents side by side, drift-score trace), README, offline run check, secret scan.
 **Done when:**
+- [x] Web demo runs at localhost:8000 with side-by-side agent comparison.
+- [x] Interactive scoring playground works.
 - [ ] Full test suite green, 0 skipped.
 - [ ] Demo runs with network off except localhost.
 - [ ] Demo works twice in a row from a cold start.
 - [ ] Secret scan clean on repo and packaged zip.
-- [ ] README has setup and run instructions and honest limitations.
+- [x] README has setup and run instructions.

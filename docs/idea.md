@@ -44,11 +44,3 @@ network level.
 ## Model (decided)
 - **Llama-3.2-3B-Instruct, 4-bit**, plain Hugging Face `output_hidden_states` + a forward hook, served behind FastAPI.
 - Target hardware: laptop RTX 2050 (4 GB). Deck claim: about 2–2.5 GB VRAM for the model (to be measured).
-
-## Team
-| Person | Role |
-|---|---|
-| Har Agam Deep Singh | Team lead; AI/ML, adversarial ML, mechanistic interpretability (steering vectors, activation probes) |
-| Garv Nanda | Research and AI development |
-| Harasis Singh Lamba | Core ideation, research, pitch deck |
-| Piyush Verma | Web development |
