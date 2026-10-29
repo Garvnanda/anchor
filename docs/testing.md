@@ -7,6 +7,8 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
   - `test_design_mock.py` — `design/mock.html` has light + dark token sets for every colour family, plus the auto/light/dark switch.
   - `test_data.py` (Phase 1) — no doc in two splits; held-out from test docs only, paired one-to-one with benign-Hindi controls; length match; templates, benign and trigger sentences disjoint across train/val/test; insertion survives (no truncation); polite style has no keyword markers. 21 passing with the design tests.
   - `test_probe.py` (Phase 2) — features/scores cover every row; best layer on val; threshold is the smallest with val FPR ≤ 5 %; shuffled-label AUROC in [0.4, 0.6]; test/heldout/external metrics with counts; actions for all 9 scenarios; scenario 9 is a held-out Hindi miss; per-kind hard-negative false blocks count only hard-negative rows; `metrics.hijacked` = `actions.hijacked`.
+  - `test_frontend.py` (Phase 4) — exact val threshold sent on load/reset; held-out cards keep injected/clean tag; no innerHTML/eval; theme follows system with manual override; UI reads only `/api/*`, no literal scores.
+  - `tests/browser_check.js` (Phase 4, browser) — paste into DevTools on the running site (or run via Chrome automation): every scenario's verdict/BLOCKED/TAINTED/source badge equals `/api/run`, metrics table equals `/api/metrics`, badge, no horizontal scroll. Returns `{ok: true}`.
   - `test_api.py` (Phase 3) — taint rule, verdicts per scenario, validation (404/422/413), no ML imports, every served number traced to `offline/out/`.
 - Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` → `sim/report.json`, exits non-zero if the pass bar fails.
 - Re-run the offline pipeline: see flow.md → run order.
@@ -27,7 +29,8 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
 2. Spot-read 10 injected + 5 benign-insertion rows in `rows.jsonl` — expected: natural text, correct labels.
 ### Phase 4 — frontend
 1. `cd mvp && uvicorn api.index:app`, open `/` — expected: `REPLAY` badge, 9 scenarios, three columns, metrics match `out/metrics.json`.
-2. Browser at 375 px width — expected: no horizontal scroll, no console errors.
+2. Run `tests/browser_check.js` in the console → `ok: true`. Then at 375 px width (DevTools device mode; an iframe also works for measuring, but its `prefers-color-scheme` follows the parent, so don't judge the theme there) — expected: no horizontal scroll, no console errors.
+3. Theme: clear `localStorage['anchor-theme']`, reload → follows the system; the toggle switches and persists.
 ### Phase 5 — deploy
 1. `npx vercel dev` from a fresh clone of `mvp/` — expected: site + `/api/*` work without running `offline/`.
 2. Deployed URL on desktop and phone; check github.com for no `.env`, `.npy`, weights.

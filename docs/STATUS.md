@@ -9,7 +9,7 @@ Active plan: `docs/implementation_mvp.md` (same-day MVP). Post-MVP roadmap: `doc
 | 1 — Model and data | done | committed `315ab33`; spot-read passed by user |
 | 2 — Activations and probe | done | reviewer PASS on re-review 2026-10-29 (per-kind hard-negative fix); user cleared the planned stop |
 | 3 — Scenarios and backend | done | reviewer PASS 2026-10-29; 9 scenarios (9 = held-out Hindi Anchor miss); security F1 high fixed, F4/F6 low in backlog |
-| 4 — Frontend | in progress | browser check in Chrome: all 9 scenarios match `/api/run`, no overflow at desktop width. Fixed: exact val threshold on load/reset, injected+held-out tags. Left: 375 px, light/dark, console, metrics-vs-file check, reviewer, user visual approval |
+| 4 — Frontend | done | reviewer PASS 2026-10-29 (re-ran browser_check.js headless at 375 px light/dark + 1280 px); user approved the look |
 | 4.5 — User simulation | harness written, never run | run `sim/simulate.py`, write `docs/user-sim-report.md`, clear backlog, full security run |
 | 5 — Deploy and submit | todo | README MVP section, metrics check script, `npx vercel dev`; push/import/submit are the user's |
 
@@ -18,8 +18,9 @@ Active plan: `docs/implementation_mvp.md` (same-day MVP). Post-MVP roadmap: `doc
 
 ## Repo state
 - Commits: `315ab33` Phase 1, `c60f82e` Phase 2, `3062580` wip Phases 3–4.5 code. Not pushed.
-- Phase 2+3 fixes committed 2026-10-29 (see `git log`). Uncommitted: Phase 4 frontend fixes (`public/app.js`).
-- Gate: `.claude/test-command` → 83 passed.
+- Phases 2–4 committed 2026-10-29 (see `git log`).
+- After Phase 4.5: user wants to start the post-MVP roadmap `docs/implementation.md` (full project), not Phase 5 yet (2026-10-29).
+- Gate: `.claude/test-command` → 91 passed.
 - Pipeline re-run order (from `mvp/offline`): `train_probe → external_eval → gen_actions → build_scenarios` (extract reuses the feature cache; gen_actions ~10 min on CPU).
 - `pip-audit` was installed into `mvp/offline/.venv` by the security run (dev-only, not in requirements).
 

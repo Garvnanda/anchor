@@ -407,7 +407,7 @@ so `security-breaker` must report no open critical/high.
 ---
 
 ### Phase 4 — Frontend
-**Status**: todo
+**Status**: done
 **Prerequisites:** Phase 3 gate passed; API running locally.
 **Work (§5, in this order):**
 1. Header with mode badge from `/api/health`.
@@ -417,13 +417,13 @@ so `security-breaker` must report no open critical/high.
 5. Threshold slider and layer-sweep chart (last, cuttable).
 
 **Done when**:
-- [ ] All 9 scenarios render with correct verdicts, checked against the `/run` JSON (browser check, scripted).
-- [ ] Metrics card numbers match `out/metrics.json` exactly.
-- [ ] Mode badge shows `REPLAY`, model name and layer; email steps show `model` / `scripted` badge.
-- [ ] Works at phone width (375 px) with no horizontal scroll.
-- [ ] Light and dark mode: follows `prefers-color-scheme` by default, with a manual light/dark toggle; both checked in the browser.
-- [ ] No console errors.
-- [ ] (manual) Visual look approved by the user.
+- [x] All 9 scenarios render with correct verdicts, checked against the `/run` JSON (browser check, scripted). — `tests/browser_check.js` in Chrome 2026-10-29: 9/9 match.
+- [x] Metrics card numbers match `out/metrics.json` exactly. — browser_check: table = `/api/metrics`; `/api/metrics` = `out/metrics.json` (`test_scenarios_and_metrics_endpoints`).
+- [x] Mode badge shows `REPLAY`, model name and layer; email steps show `model` / `scripted` badge. — `REPLAY · Qwen2.5-0.5B-Instruct · layer 9 · probe v1`; badges checked per scenario.
+- [x] Works at phone width (375 px) with no horizontal scroll. — 375 px frame: scrollWidth = clientWidth, no element past the edge.
+- [x] Light and dark mode: follows `prefers-color-scheme` by default, with a manual light/dark toggle; both checked in the browser. — system dark → dark with no stored choice; toggle → light/dark, persisted.
+- [x] No console errors. — Chrome console clean after reload and all scenario clicks.
+- [x] (manual) Visual look approved by the user. — approved 2026-10-29 (Chrome, localhost).
 
 **Fallback:** cut in this order: layer chart → slider → how-it-works diagram (replace with 3 sentences). Never cut the three columns, the metrics card or the mode badge.
 

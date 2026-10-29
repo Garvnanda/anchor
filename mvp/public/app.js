@@ -41,16 +41,18 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintToggl
 paintToggle();
 
 // ---- scenarios -----------------------------------------------------------------------------
-function labelTag(s) {
-  if (s.split === "heldout") return h("span", { class: "tag heldout" }, "held-out");
-  return h("span", { class: `tag ${s.label ? "injected" : "clean"}` }, s.label ? "injected" : "clean");
+function labelTags(s) {
+  const tags = [h("span", { class: `tag ${s.label ? "injected" : "clean"}` }, s.label ? "injected" : "clean")];
+  if (s.split === "heldout") tags.push(h("span", { class: "tag heldout" }, "held-out"));
+  return tags;
 }
 
 function renderPicker() {
   $("#scenarios").replaceChildren(...state.scenarios.map((s) =>
     h("button", { class: "scn", type: "button", "aria-pressed": String(s.id === state.current), "data-id": s.id },
-      h("span", { class: "t" }, s.title), labelTag(s),
-      h("span", { class: "tag style" }, s.kind || s.style))));
+      h("span", { class: "t" }, s.title), labelTags(s),
+      s.style === "clean" ? null : h("span", { class: "tag style" },
+        s.style === "hard_negative" ? `hard_negative · ${s.kind}` : s.style))));
 }
 
 function renderPage(scn) {
@@ -113,8 +115,9 @@ $("#scenarios").addEventListener("click", (e) => {
 });
 
 // ---- threshold -----------------------------------------------------------------------------
-function setThreshold(v) {
-  state.threshold = Math.round(v * 1000) / 1000;
+// Slider moves snap to thousandths; the val-chosen threshold is sent unrounded so the default run matches the measurement.
+function setThreshold(v, exact = false) {
+  state.threshold = exact ? v : Math.round(v * 1000) / 1000;
   $("#th").value = state.threshold;
   $("#thv").textContent = state.threshold.toFixed(3);
 }
@@ -124,7 +127,11 @@ $("#th").addEventListener("input", (e) => {
   clearTimeout(debounce);
   debounce = setTimeout(runScenario, 80);
 });
-$("#reset").addEventListener("click", () => { setThreshold(state.health.threshold); runScenario(); });
+$("#reset").addEventListener("click", () => {
+  if (!state.health) return; // boot failed: nothing to reset to
+  setThreshold(state.health.threshold, true);
+  runScenario();
+});
 
 // ---- metrics -------------------------------------------------------------------------------
 function pct(m) {
@@ -186,7 +193,7 @@ function renderMetrics({ metrics: m, layer_sweep: sweep }) {
       ` · ${health.model.split("/").pop()} · layer ${health.probe_layer} · probe ${health.probe_version}`);
     $("#f-model").textContent = `${health.model}, CPU, fp32. Probe ${health.probe_version} on layer ${health.probe_layer}, built ${health.built_at}.`;
     $("#thnote").textContent = `validation-chosen: ${health.threshold.toFixed(3)}`;
-    setThreshold(health.threshold);
+    setThreshold(health.threshold, true);
     renderMetrics(metrics);
     state.current = (scenarios.find((s) => s.label === 1) || scenarios[0]).id;
     renderPicker();

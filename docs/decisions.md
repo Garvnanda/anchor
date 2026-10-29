@@ -153,3 +153,9 @@ gets date, choice, evidence once decided.
 - **Decision**: body cap is a pure ASGI middleware (`BodyCap`) that buffers and counts received bytes (≤ 2 KB) instead of trusting `Content-Length`; `RunRequest` is strict (no string/bool coercion; JSON ints still valid for threshold 0/1); validation errors use a custom 422 handler that omits the echoed input; `mvp/requirements.txt` pins `fastapi==0.162.0`, `starlette==1.10.0` (the versions tests run on).
 - **Why**: security-breaker F1 (high, chunked bypass), F2, F3, F5. Vercel's own ~4.5 MB limit would have bounded F1 in production, but the app's control has to work by itself.
 - **Alternatives**: `StrictInt`/`StrictFloat` per field (same effect, noisier); leave pins loose (unreproducible builds).
+
+## 2026-10-29 — Frontend fixes found in the Phase 4 browser check
+- **Exact default threshold**: the slider rounds to thousandths, so the default run used 0.431 instead of the val-chosen 0.431316. The value from `/api/health` is now sent unrounded on load and reset (`setThreshold(v, exact)`); slider moves still snap. A score between the two would otherwise get a verdict that differs from the measurement.
+- **Picker tags**: held-out cards showed only "held-out"; they now show injected/clean plus held-out. Clean cards no longer repeat "clean" as a style tag.
+- **Browser automation**: Claude in Chrome on localhost (user connected it 2026-10-29). Check script kept as `mvp/tests/browser_check.js` so it can be re-run by hand.
+- **Reviewer advisories fixed**: hard-negative cards show `hard_negative · <kind>` (§5.2 style tag); reset is a no-op if boot failed (no TypeError); empty data-URI favicon (no `/favicon.ico` 404). Open: `browser_check.js` is run by hand, not by pytest.
