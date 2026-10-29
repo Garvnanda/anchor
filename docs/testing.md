@@ -47,6 +47,7 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
 2. Run `tests/browser_check.js` in the console → `ok: true`. Then at 375 px width (DevTools device mode; an iframe also works for measuring, but its `prefers-color-scheme` follows the parent, so don't judge the theme there) — expected: no horizontal scroll, no console errors.
 3. Theme: clear `localStorage['anchor-theme']`, reload → follows the system; the toggle switches and persists.
 ### Phase 5 — deploy
+0. After every deploy: fetch `https://<deployment>/api/health` and `/api/scenarios` — expected 200 JSON. A local uvicorn run cannot reproduce Vercel's routing (the 2026-10-29 rewrite bug passed locally).
 1. `npx vercel dev` from a fresh clone of `mvp/` — expected: site + `/api/*` work without running `offline/`.
 2. Deployed URL on desktop and phone; check github.com for no `.env`, `.npy`, weights.
 

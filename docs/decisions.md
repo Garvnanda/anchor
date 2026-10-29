@@ -222,3 +222,9 @@ gets date, choice, evidence once decided.
 - **Decision** (user): deploy the MVP from `mvp/` and keep that folder as shipped. The full product is built in a new top-level folder (written `v2/` until named at H0), mirroring the MVP layout; MVP code is copied in and changed there. Work is split by person and laptop: **H** (Haragam, Core Ultra 7 155H, CPU + Arc iGPU) builds and tests all code with Qwen2.5-0.5B and runs everything without 3B (data, attacks, CPU baselines, benchmark sets, server, agent, site, simulation, security); **G** (Garv, i5-H + RTX 2050 4 GB) runs every Llama-3.2-3B step (activations, probe, agent-bench scoring, agent runs, adaptive attacks, steering, live demo host). Phases `H0–H9, H-X` and `G1–G7` in `implementation.md`, hand-off through git commits of `out/*.json`.
 - **Why**: the deployed MVP must not change under the new work; H's CPU cannot run 3B (no native bf16, measured), G's RTX 2050 can (4-bit).
 - **Supersedes**: "keep the code in `mvp/`" (same day).
+
+## 2026-10-29 — First Vercel deploy: API 404 → rewrite removed
+- **Symptom**: https://anchor-nu-three.vercel.app served the static site, but every `/api/*` returned 404 with FastAPI's body `{"detail":"Not Found"}` (so the function ran, the route did not match).
+- **Root cause**: `vercel.json` rewrote `/api/(.*)` → `/api/index`. Vercel now routes `/api/*` to `api/index.py` itself with the original path; the rewrite made FastAPI see `/api/index`, which has no route. Our local checks (uvicorn, fresh clone) cannot reproduce Vercel's routing, so they passed.
+- **Fix**: removed `rewrites` (headers kept); regression test `test_vercel_does_not_rewrite_api_paths`. Source: Vercel Academy "Python on Vercel — deploy to prod" (no vercel.json needed; `/api` prefix stays in the route paths).
+- **Lesson**: deploy checks must include fetching `/api/health` on the live URL, not only a local run.

@@ -283,17 +283,14 @@ def run_defence(scn, defence, anchor_threshold):
 - No torch, no numpy, no sklearn.
 - `mvp/requirements.txt`: `fastapi`. That's it.
 
-`vercel.json`:
-
-```json
-{
-  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index" }]
-}
-```
+`vercel.json`: **no rewrites** — only the security `headers` block (Phase 4.5). Vercel routes `/api/*` to
+`api/index.py` itself and passes the original path. (A rewrite to `/api/index` was in this spec until the first
+deploy on 2026-10-29: FastAPI then saw `/api/index` and returned 404 on every endpoint; removed, regression test
+`test_vercel_does_not_rewrite_api_paths`.)
 
 Vercel detects a FastAPI `app` in `api/index.py`. Static files in `public/` are served at `/`.
 
-**Route trap:** after the rewrite, FastAPI still sees the original path (`/api/run`), so declare routes **with** the prefix: `@app.post("/api/run")`, not `@app.post("/run")`. Locally, run `uvicorn api.index:app` and hit `/api/health`; before deploying, run `vercel dev` once to check the rewrite and static serving together.
+**Route trap:** FastAPI sees the original path (`/api/run`), so declare routes **with** the prefix: `@app.post("/api/run")`, not `@app.post("/run")`. Locally, run `uvicorn api.index:app` and hit `/api/health`. A local uvicorn run cannot reproduce Vercel's routing; after each deploy, fetch `/api/health` on the live URL.
 
 ## 5. Spec — frontend (Phase 4): `mvp/public/` (vanilla HTML/JS, no build step)
 

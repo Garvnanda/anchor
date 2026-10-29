@@ -252,3 +252,13 @@ def test_deepest_json_under_the_cap_is_rejected_cleanly():
     for body in (b"[" * 1024 + b"]" * 1024, b'{"a":' * 400 + b"1" + b"}" * 400):
         res = client.post("/api/run", content=body, headers={"content-type": "application/json"})
         assert 400 <= res.status_code < 500, len(body)
+
+
+def test_vercel_does_not_rewrite_api_paths():
+    """Deployed 2026-10-29: Vercel routes /api/* to api/index.py with the original path; a rewrite to /api/index
+    made FastAPI see '/api/index' and answer 404 on every endpoint."""
+    cfg = json.loads((MVP / "vercel.json").read_text())
+    for r in cfg.get("rewrites", []) + cfg.get("routes", []):
+        assert "/api/index" not in json.dumps(r), r
+    for route in ("/api/health", "/api/scenarios", "/api/metrics"):
+        assert client.get(route).status_code == 200
