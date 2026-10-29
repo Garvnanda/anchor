@@ -72,7 +72,7 @@ def test_clean_scenarios_never_leak():
 
 def test_clean_report_scenario_passes_none_and_keyword():
     r = run(1)
-    assert r["none"]["verdict"] == "safe" and r["keyword"]["verdict"] in ("safe", "false_block")
+    assert r["none"]["verdict"] == "safe" and r["keyword"]["verdict"] == "safe"
     expected = "false_block" if SCENARIOS[1]["probe_score"] >= META["threshold"] else "safe"
     assert r["anchor"]["verdict"] == expected
 
@@ -81,6 +81,13 @@ def test_anchor_verdict_follows_stored_score():
     for sid, s in SCENARIOS.items():
         blocked = s["probe_score"] >= META["threshold"]
         assert run(sid)["anchor"]["turns"][1]["blocked"] == blocked, sid
+
+
+def test_demo_includes_a_real_anchor_miss():
+    """Scenario 9 is a held-out Hindi injection the probe scores below the threshold: Anchor lets it leak."""
+    s = SCENARIOS[9]
+    assert s["split"] == "heldout" and s["style"] == "hindi_hinglish" and s["probe_score"] < META["threshold"]
+    assert run(9)["anchor"]["verdict"] == "leaked"
 
 
 def test_keyword_threshold_fixed():
@@ -96,7 +103,7 @@ def test_health_reports_replay_mode():
 
 
 def test_scenarios_and_metrics_endpoints():
-    assert len(client.get("/api/scenarios").json()) == 8
+    assert len(client.get("/api/scenarios").json()) == 9
     m = client.get("/api/metrics").json()
     assert m["metrics"] == json.loads((OUT / "metrics.json").read_text()) and m["layer_sweep"]
 
@@ -109,9 +116,46 @@ def test_scenarios_and_metrics_endpoints():
     ({"scenario_id": "x"}, 422),
     ({"scenario_id": 1, "extra": 1}, 422),
     ({}, 422),
+    ({"scenario_id": True}, 422),
+    ({"scenario_id": "1"}, 422),
+    ({"scenario_id": 1, "threshold": "0.5"}, 422),
+    ({"scenario_id": 1, "threshold": True}, 422),
+    ({"scenario_id": 1, "threshold": 0}, 200),
+    ({"scenario_id": 1, "threshold": 1}, 200),
 ])
 def test_validation(body, status):
     assert client.post("/api/run", json=body).status_code == status
+
+
+@pytest.mark.parametrize("value", ["NaN", "Infinity", "-Infinity"])
+def test_non_finite_threshold_is_422_not_500(value):
+    res = client.post("/api/run", content=f'{{"scenario_id": 1, "threshold": {value}}}'.encode(),
+                      headers={"content-type": "application/json"})
+    assert res.status_code == 422
+
+
+def test_chunked_oversized_body_rejected():
+    """No Content-Length header: the cap must count the bytes that actually arrive."""
+    def chunks():
+        yield b'{"scenario_id": 1, "threshold": 0.5'
+        for _ in range(10):
+            yield b" " * 1024
+        yield b"}"
+    res = client.post("/api/run", content=chunks(), headers={"content-type": "application/json"})
+    assert res.status_code == 413
+
+
+def test_chunked_small_body_accepted():
+    def chunks():
+        yield b'{"scenario_id": 1,'
+        yield b' "threshold": 0.5}'
+    res = client.post("/api/run", content=chunks(), headers={"content-type": "application/json"})
+    assert res.status_code == 200
+
+
+def test_requirements_pinned():
+    lines = [l.strip() for l in (MVP / "requirements.txt").read_text().splitlines() if l.strip()]
+    assert lines and all("==" in l for l in lines), lines
 
 
 def test_oversized_body_rejected():

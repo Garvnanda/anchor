@@ -7,7 +7,7 @@ FastAPI TestClient, same app object Vercel serves). Seed 0; deterministic.
 | Share | Action | Expected |
 |---|---|---|
 | ~15 % | `GET /api/health` | 200, `mode: replay` |
-| ~10 % | `GET /api/scenarios` | 200, 8 items |
+| ~10 % | `GET /api/scenarios` | 200, 9 items (count = `api/data/scenarios.json`) |
 | ~10 % | `GET /api/metrics` | 200, equals `offline/out/metrics.json` |
 | ~55 % | `POST /api/run` valid: random scenario; threshold = none / uniform [0,1] / edge (0, 1, val threshold, threshold ± 1e-6) | 200; every defence's verdict equals an independent re-computation of the taint rule from `api/data/scenarios.json` |
 | ~10 % | invalid: unknown id, threshold < 0 or > 1, NaN, string, missing body, extra field, malformed JSON, oversized body, wrong method, unknown path | 4xx (never 5xx, never 200) |

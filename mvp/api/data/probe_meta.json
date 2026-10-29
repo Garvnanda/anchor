@@ -3,7 +3,7 @@
   "probe_version": "v1",
   "layer": 9,
   "threshold": 0.431316,
-  "built_at": "2026-10-28",
+  "built_at": "2026-10-29",
   "rows": {
     "train": 971,
     "val": 214,

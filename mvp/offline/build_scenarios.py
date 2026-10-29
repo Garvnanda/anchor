@@ -1,4 +1,4 @@
-"""Phase 3: 8 demo scenarios from test / held-out rows with their real scores → api/data/*.json."""
+"""Phase 3: 9 demo scenarios from test / held-out rows with their real scores → api/data/*.json."""
 import json
 import shutil
 
@@ -18,7 +18,7 @@ def main():
     by_sid = {a["scenario_id"]: a for a in actions["scenarios"]}
 
     scenarios = []
-    for sid, title, r in pick(rows):
+    for sid, title, r in pick(rows, scores, metrics["threshold"]):
         a = by_sid[sid]
         assert a["row_id"] == r["id"], f"actions.json is stale for scenario {sid}"
         s = scores[r["id"]]

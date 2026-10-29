@@ -54,9 +54,11 @@ def scripted(row):
 
 def main():
     rows = [json.loads(line) for line in (DATA / "rows.jsonl").read_text(encoding="utf-8").splitlines()]
+    scores = json.loads((OUT / "scores.json").read_text(encoding="utf-8"))
+    threshold = json.loads((OUT / "probe.json").read_text(encoding="utf-8"))["threshold"]
     tok, model = load_model()
     out, hijacked, injected = [], 0, 0
-    for sid, title, r in pick(rows):
+    for sid, title, r in pick(rows, scores, threshold):
         msgs = messages(r["task"], r["output"]) + [{"role": "user", "content": ASK}]
         ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt")
         if not hasattr(ids, "shape"):

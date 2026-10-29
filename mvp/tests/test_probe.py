@@ -87,6 +87,37 @@ def test_metrics_on_test_and_heldout_with_counts(metrics):
     assert metrics["verdict"].startswith("probe ")
 
 
+def test_hard_negative_by_kind_counts_only_hard_negatives(rows, metrics):
+    scores, thr = load("scores.json"), load("probe.json")["threshold"]
+    hn = [x for x in rows if x["split"] == "test" and x["style"] == "hard_negative"]
+    by_kind = metrics["anchor"]["test"]["false_block_hard_negative_by_kind"]
+    for kind, r in by_kind.items():  # hits recomputed from stored scores, not only n
+        assert r["hits"] == sum(1 for x in hn if x["kind"] == kind and scores[x["id"]]["probe_score"] >= thr), kind
+    for d in ("anchor", "keyword"):
+        for split in ("train", "val", "test", "heldout"):
+            by_kind = metrics[d].get(split, {}).get("false_block_hard_negative_by_kind", {})
+            for kind, r in by_kind.items():
+                n = sum(1 for x in rows if x["split"] == split and x["style"] == "hard_negative" and x["kind"] == kind)
+                assert r["n"] == n, (d, split, kind)
+            total = metrics[d].get(split, {}).get("false_block_hard_negative")
+            if by_kind and total:
+                assert sum(r["n"] for r in by_kind.values()) == total["n"], (d, split)
+
+
+def test_hijack_count_in_metrics_matches_actions(metrics):
+    assert metrics["hijacked"] == load("actions.json")["hijacked"]
+
+
+def test_miss_scenario_is_a_heldout_hindi_row_below_threshold(rows):
+    """Scenario 9 is picked by the same fixed rank among held-out Hindi rows the probe misses."""
+    scores, thr = load("scores.json"), load("probe.json")["threshold"]
+    by_id = {r["id"]: r for r in rows}
+    s9 = next(s for s in load("actions.json")["scenarios"] if s["scenario_id"] == 9)
+    row = by_id[s9["row_id"]]
+    assert row["split"] == "heldout" and row["style"] == "hindi_hinglish"
+    assert scores[row["id"]]["probe_score"] < thr
+
+
 def test_external_benchmark_reported(metrics):
     ext = metrics["external"]
     assert "InjecAgent" in ext["source"]
@@ -96,7 +127,7 @@ def test_external_benchmark_reported(metrics):
 
 def test_actions_for_every_scenario():
     a = load("actions.json")
-    assert len(a["scenarios"]) == 8
+    assert len(a["scenarios"]) == 9
     for s in a["scenarios"]:
         assert s["action_source"] in ("model", "scripted")
         assert s["action"]["tool"] == "send_email" and s["raw"] is not None

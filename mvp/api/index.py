@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -26,16 +27,53 @@ DEFENCES = ("none", "keyword", "anchor")
 app = FastAPI(title="Anchor", docs_url=None, redoc_url=None, openapi_url=None)
 
 
-@app.middleware("http")
-async def cap_body(request: Request, call_next):
-    size = request.headers.get("content-length")
-    if size is not None and (not size.isdigit() or int(size) > MAX_BODY):
-        return JSONResponse({"detail": "request body too large"}, status_code=413)
-    return await call_next(request)
+class BodyCap:
+    """Reads the request body up front and answers 413 once it passes MAX_BODY bytes.
+    Counts what actually arrives, so a chunked body without Content-Length is capped too."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        too_large = JSONResponse({"detail": "request body too large"}, status_code=413)
+        size = dict(scope["headers"]).get(b"content-length")
+        if size is not None and (not size.isdigit() or int(size) > MAX_BODY):
+            return await too_large(scope, receive, send)
+        body, more = b"", True
+        while more:
+            msg = await receive()
+            if msg["type"] == "http.disconnect":
+                return
+            body += msg.get("body", b"")
+            more = msg.get("more_body", False)
+            if len(body) > MAX_BODY:
+                return await too_large(scope, receive, send)
+        replayed = False
+
+        async def replay():
+            nonlocal replayed
+            if not replayed:
+                replayed = True
+                return {"type": "http.request", "body": body, "more_body": False}
+            return await receive()
+
+        await self.app(scope, replay, send)
+
+
+app.add_middleware(BodyCap)
+
+
+@app.exception_handler(RequestValidationError)
+async def invalid_request(request: Request, exc: RequestValidationError):
+    # Drop the echoed input: a NaN / Infinity value would make the 422 body unserialisable (500).
+    errors = [{"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]} for e in exc.errors()]
+    return JSONResponse({"detail": errors}, status_code=422)
 
 
 class RunRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", strict=True)
     scenario_id: int
     threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0, allow_inf_nan=False)
 

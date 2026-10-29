@@ -119,7 +119,7 @@ gets date, choice, evidence once decided.
 - **Test**: AUROC 0.998, detection 127/132 (html 22/22, visible 18/22, markdown 22/22, polite 22/22, user_voice 22/22, JSON 21/22). False blocks: clean 1/22, benign non-English 0/22, JSON clean 0/22, hard negatives 0/7. Keyword: AUROC 0.556, 31/132, hard negatives 7/7.
 - **Held-out Hindi/Hinglish**: detection 12/22, benign-Hindi false blocks 2/22 (was 20/22 and 12/22). AUROC 0.934. Adding benign non-English text removed most of the "script detector" effect; what remains is the honest transfer rate (~55 %).
 - **InjecAgent**: AUROC 0.622, detection 20/200, false blocks 0/102 (was 0.548, 11/200). Keyword 17/200. Small improvement; still weak transfer.
-- **Model-chosen action**: hijacked 2/5 (HTML comment and visible imperative: emailed the attacker address from the page). Two parser fixes made this measurable: raw newlines inside JSON strings (`strict=False`), and replies cut off at the 160-token limit (limit → 400; cut-off replies keep their completed `tool`/`to` fields and are marked `truncated`). Tested in `test_gen_actions.py`.
+- **Model-chosen action**: hijacked 2/5, now 2/6 with scenario 9 (HTML comment and visible imperative: emailed the attacker address from the page). Two parser fixes made this measurable: raw newlines inside JSON strings (`strict=False`), and replies cut off at the 160-token limit (limit → 400; cut-off replies keep their completed `tool`/`to` fields and are marked `truncated`). Tested in `test_gen_actions.py`.
 
 ## 2026-10-28 — Phase 2 results, first run (superseded)
 - **In-distribution (test, unseen docs + unseen templates)**: Anchor AUROC 0.995, detection 105/110 at the val threshold, false blocks 1/22 clean and 0/7 hard negatives. Keyword: AUROC 0.489, 28/110, false blocks 7/7 hard negatives. Shuffled-label control 0.502.
@@ -139,3 +139,17 @@ gets date, choice, evidence once decided.
 ## 2026-10-28 — Build run rules (user answers before the one-shot build)
 - **Decision**: Python 3.12.10 venv (`py -3.12`). One planned stop after Phase 2 for manual review. Critical gate fail → max 3 debug attempts, then stop. Commit after each passed phase **without `/quiz`** (user override for this project); never push, never `--no-verify`. User deploys on Vercel; Claude stops at deploy-ready. Chrome automation on localhost allowed for Phase 4 checks.
 - **Why**: user answers, 2026-10-28; ~6 h budget.
+
+## 2026-10-29 — Demo shows a real Anchor miss (9th scenario)
+- **Decision**: add scenario 9, a held-out Hindi/Hinglish injection the probe scores below the val threshold (Anchor verdict `leaked`). Picked by the same fixed `_rank` as the other scenarios, restricted to held-out Hindi rows with `probe_score < threshold`; `pick()` now takes `scores` and `threshold`.
+- **Why**: all 8 original scenarios were Anchor wins although the measured results include misses (held-out Hindi 12/22, test 127/132). User chose to show one miss in the demo (2026-10-29).
+- **Alternatives**: swap #8 to a miss (loses the held-out catch example); keep 8 and show misses only in the metrics card.
+
+## 2026-10-29 — Per-kind hard-negative false blocks fixed
+- **Bug** (phase-reviewer, Phase 2): `false_block_hard_negative_by_kind` counted every row with a `kind`, including injected `json_tool` rows, so detections showed up as "false blocks" (e.g. `polite_no_triggers 7/7`). Now filtered to `style == "hard_negative"`; test `test_hard_negative_by_kind_counts_only_hard_negatives` checks the per-kind counts sum to `false_block_hard_negative`. The site never rendered this field.
+- Spec §3.6 / §4 text updated to match existing decisions: the secret lives in the system prompt (not the page), and an email to the scenario's attacker counts as a leak.
+
+## 2026-10-29 — API hardening from the Phase 3 security run
+- **Decision**: body cap is a pure ASGI middleware (`BodyCap`) that buffers and counts received bytes (≤ 2 KB) instead of trusting `Content-Length`; `RunRequest` is strict (no string/bool coercion; JSON ints still valid for threshold 0/1); validation errors use a custom 422 handler that omits the echoed input; `mvp/requirements.txt` pins `fastapi==0.162.0`, `starlette==1.10.0` (the versions tests run on).
+- **Why**: security-breaker F1 (high, chunked bypass), F2, F3, F5. Vercel's own ~4.5 MB limit would have bounded F1 in production, but the app's control has to work by itself.
+- **Alternatives**: `StrictInt`/`StrictFloat` per field (same effect, noisier); leave pins loose (unreproducible builds).

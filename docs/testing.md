@@ -6,7 +6,7 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
 - Existing:
   - `test_design_mock.py` — `design/mock.html` has light + dark token sets for every colour family, plus the auto/light/dark switch.
   - `test_data.py` (Phase 1) — no doc in two splits; held-out from test docs only, paired one-to-one with benign-Hindi controls; length match; templates, benign and trigger sentences disjoint across train/val/test; insertion survives (no truncation); polite style has no keyword markers. 21 passing with the design tests.
-  - `test_probe.py` (Phase 2) — features/scores cover every row; best layer on val; threshold is the smallest with val FPR ≤ 5 %; shuffled-label AUROC in [0.4, 0.6]; test/heldout/external metrics with counts; actions for all 8 scenarios.
+  - `test_probe.py` (Phase 2) — features/scores cover every row; best layer on val; threshold is the smallest with val FPR ≤ 5 %; shuffled-label AUROC in [0.4, 0.6]; test/heldout/external metrics with counts; actions for all 9 scenarios; scenario 9 is a held-out Hindi miss; per-kind hard-negative false blocks count only hard-negative rows; `metrics.hijacked` = `actions.hijacked`.
   - `test_api.py` (Phase 3) — taint rule, verdicts per scenario, validation (404/422/413), no ML imports, every served number traced to `offline/out/`.
 - Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` → `sim/report.json`, exits non-zero if the pass bar fails.
 - Re-run the offline pipeline: see flow.md → run order.
@@ -26,7 +26,7 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
 1. `cd mvp/offline && python -c "<smoke>"` (one forward pass) — expected: 25 hidden states, < 1 s, rendered prompt shows page inside `<tool_response>`.
 2. Spot-read 10 injected + 5 benign-insertion rows in `rows.jsonl` — expected: natural text, correct labels.
 ### Phase 4 — frontend
-1. `cd mvp && uvicorn api.index:app`, open `/` — expected: `REPLAY` badge, 8 scenarios, three columns, metrics match `out/metrics.json`.
+1. `cd mvp && uvicorn api.index:app`, open `/` — expected: `REPLAY` badge, 9 scenarios, three columns, metrics match `out/metrics.json`.
 2. Browser at 375 px width — expected: no horizontal scroll, no console errors.
 ### Phase 5 — deploy
 1. `npx vercel dev` from a fresh clone of `mvp/` — expected: site + `/api/*` work without running `offline/`.

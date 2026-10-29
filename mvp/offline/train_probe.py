@@ -51,11 +51,12 @@ def evaluate(rows, idx, scores, blocked):
         m = np.array([s == name for s in sty])
         if m.any():
             out[f"false_block_{name}"] = rate(bl[m].sum(), m.sum())
-    kinds = sorted({rows[i]["kind"] for i in idx if rows[i]["kind"]})
+    hard = [i for i in idx if rows[i]["style"] == "hard_negative"]  # injected json_tool rows carry a kind too
+    kinds = sorted({rows[i]["kind"] for i in hard if rows[i]["kind"]})
     if kinds:  # hand-written hard negatives are shorter than SQuAD ones; report both so a length cue shows up
         out["false_block_hard_negative_by_kind"] = {}
         for kind in kinds:
-            m = np.array([rows[i]["kind"] == kind for i in idx])
+            m = np.array([rows[i]["style"] == "hard_negative" and rows[i]["kind"] == kind for i in idx])
             out["false_block_hard_negative_by_kind"][kind] = rate(bl[m].sum(), m.sum())
     out["per_style_tpr"] = {}
     for name in TRAINED_STYLES + ["json_tool", "hindi_hinglish"]:
