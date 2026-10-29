@@ -452,11 +452,11 @@ Built with the `user-sim` skill, light version: the API has no model, so session
 
 **Done when** (= definition of done):
 - [ ] `vercel dev` (or `npx vercel dev`) locally serves `public/` and `/api/*` together from a fresh clone of `mvp/`. — not run (needs a Vercel login). Equivalent check done 2026-10-29: fresh `git clone` of HEAD `3f3e545`, venv with only `mvp/requirements.txt` (+uvicorn), no torch/numpy/sklearn imported; all endpoints + static files 200; 1,000-user sim over HTTP 0 failures / 5,515 requests; headless Chrome renders 9 cards, verdicts, 13 metric rows, REPLAY badge; Linux cp312/cp313 wheels exist for every pinned package.
-- [ ] Automated check: a script fetches every number shown by `/api/metrics` and compares it to `offline/out/metrics.json`; README numbers checked the same way.
+- [x] Automated check: a script fetches every number shown by `/api/metrics` and compares it to `offline/out/metrics.json`; README numbers checked the same way. — `sim/check_deploy.py` (+ `test_check_deploy.py`); README by `test_readme.py`. Live: `/api/metrics` identical to the file (2026-10-29).
 - [ ] (manual) Public URL loads on desktop and phone; all endpoints work in production.
-- [ ] (manual) **CRITICAL** — a fresh clone deploys on Vercel without running the offline pipeline.
-- [ ] **CRITICAL** — every number on the site and in the README matches `out/metrics.json`; nothing claimed that isn't measured.
-- [ ] (manual) GitHub shows no `.env`, tokens, `.npy` files or model weights (check on github.com, not just `git status`).
+- [x] (manual) **CRITICAL** — a fresh clone deploys on Vercel without running the offline pipeline. — Vercel builds from GitHub (`.vercelignore` drops `offline/`); live at https://anchor-nu-three.vercel.app after the rewrite fix (2026-10-29).
+- [x] **CRITICAL** — every number on the site and in the README matches `out/metrics.json`; nothing claimed that isn't measured. — live `/api/metrics` == file; headless render of the live page shows 9 scenarios, 13 metric rows, REPLAY badge; README block tested.
+- [x] (manual) GitHub shows no `.env`, tokens, `.npy` files or model weights (check on github.com, not just `git status`). — checked via the GitHub API tree of `haragam22/anchor` (public, 65 files, 2026-10-29): none.
 - [ ] (manual) Walkthrough done once end to end on the deployed URL.
 - [ ] (manual) Submission sent with the URL and repo link.
 

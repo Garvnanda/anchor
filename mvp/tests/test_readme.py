@@ -59,3 +59,7 @@ def test_prose_numbers_match_metrics():
 def test_readme_screenshot_exists():
     m = re.search(r"!\[[^\]]*\]\(([^)]+)\)", README[README.index("## MVP"):])
     assert m and (ROOT / m.group(1)).is_file()
+
+
+def test_readme_names_the_live_url():
+    assert "https://anchor-nu-three.vercel.app" in README[README.index("## MVP"):]

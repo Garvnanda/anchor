@@ -9,7 +9,8 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
   - `test_probe.py` (Phase 2) — features/scores cover every row; best layer on val; threshold is the smallest with val FPR ≤ 5 %; shuffled-label AUROC in [0.4, 0.6]; test/heldout/external metrics with counts; actions for all 9 scenarios; scenario 9 is a held-out Hindi miss; per-kind hard-negative false blocks count only hard-negative rows; `metrics.hijacked` = `actions.hijacked`.
   - `test_frontend.py` (Phase 4) — exact val threshold sent on load/reset; held-out cards keep injected/clean tag; no innerHTML/eval; theme follows system with manual override; UI reads only `/api/*`, no literal scores.
   - `tests/browser_check.js` (Phase 4, browser) — paste into DevTools on the running site (or run via Chrome automation): every scenario's verdict/BLOCKED/TAINTED/source badge equals `/api/run`, metrics table equals `/api/metrics`, badge, no horizontal scroll. Returns `{ok: true}`.
-  - `test_readme.py` (Phase 5) — every cell of the README MVP results table and every number in its prose equals `offline/out/metrics.json`; screenshot file exists. Update the README block whenever the pipeline is re-run.
+  - `test_check_deploy.py` (Phase 5) — `check_deploy.check()` passes on the real app and reports a metrics mismatch when the expected file differs.
+  - `test_readme.py` (Phase 5) — README names the live URL; every cell of the README MVP results table and every number in its prose equals `offline/out/metrics.json`; screenshot file exists. Update the README block whenever the pipeline is re-run.
   - `test_check_gpu.py` (full product, Phase 0) — `check_gpu.py` runs and writes its report on a machine without CUDA.
   - `test_api.py` (Phase 3) — taint rule, verdicts per scenario, validation (404/422/413), no ML imports, every served number traced to `offline/out/`.
 - Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` (in-process) → `sim/report.json`; add `--url http://127.0.0.1:8000` to run the same sessions over HTTP against a running server → `sim/report_http.json`. Exits non-zero if the pass bar fails. Restart the server after code changes (no `--reload`). Results: `docs/user-sim-report.md`.
@@ -47,7 +48,7 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
 2. Run `tests/browser_check.js` in the console → `ok: true`. Then at 375 px width (DevTools device mode; an iframe also works for measuring, but its `prefers-color-scheme` follows the parent, so don't judge the theme there) — expected: no horizontal scroll, no console errors.
 3. Theme: clear `localStorage['anchor-theme']`, reload → follows the system; the toggle switches and persists.
 ### Phase 5 — deploy
-0. After every deploy: fetch `https://<deployment>/api/health` and `/api/scenarios` — expected 200 JSON. A local uvicorn run cannot reproduce Vercel's routing (the 2026-10-29 rewrite bug passed locally).
+0. After every deploy: `cd mvp && offline/.venv/Scripts/python sim/check_deploy.py https://anchor-nu-three.vercel.app` → `OK: … matches the offline run`. Optional load check: `sim/simulate.py --url <deployment>` (slow over the internet, 20+ min; do not run it at the same time as `check_deploy.py` — they compete and requests time out). A local uvicorn run cannot reproduce Vercel's routing (the 2026-10-29 rewrite bug passed locally).
 1. `npx vercel dev` from a fresh clone of `mvp/` — expected: site + `/api/*` work without running `offline/`.
 2. Deployed URL on desktop and phone; check github.com for no `.env`, `.npy`, weights.
 

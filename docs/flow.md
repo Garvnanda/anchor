@@ -17,6 +17,7 @@ Update whenever an entry point or data path changes. MVP layout from `implementa
 | `POST /api/run` | three defence traces for one scenario + threshold | exists |
 | `GET /api/metrics` | metrics + layer sweep | exists |
 | `mvp/public/index.html` | site UI, calls `/api/*` | exists |
+| `mvp/sim/check_deploy.py <url>` | Phase 5: live deployment vs offline run — endpoints 200, `/api/metrics` == `offline/out/metrics.json`, every scenario's verdicts == independent oracle, bad input rejected; exits non-zero on mismatch | exists |
 | `mvp/sim/simulate.py` | Phase 4.5: 1,000 simulated users, in-process → `sim/report.json` or over HTTP (`--url`) → `sim/report_http.json` | exists |
 
 Run order (offline, from `mvp/offline`, venv Python 3.12): `smoke → build_data → extract → train_probe → external_eval → gen_actions → build_scenarios`. `scenario_pick.py` is shared by `gen_actions` and `build_scenarios` so both use the same 9 rows (`pick(rows, scores, threshold)`).

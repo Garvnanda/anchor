@@ -11,7 +11,7 @@ Active plan (hook-tracked): `docs/implementation_mvp.md` until the MVP is deploy
 | 3 — Scenarios and backend | done | reviewer PASS 2026-10-29; 9 scenarios (9 = held-out Hindi Anchor miss); security F1 high fixed, F4/F6 low in backlog |
 | 4 — Frontend | done | reviewer PASS 2026-10-29 (re-ran browser_check.js headless at 375 px light/dark + 1280 px); user approved the look |
 | 4.5 — User simulation | done | reviewer PASS 2026-10-29; sim 0 failures in-process and over HTTP (`docs/user-sim-report.md`); full security run 0 critical/high; backlog fixed or risk-accepted by user |
-| 5 — Deploy and submit | deploy-ready | fresh-clone check passed 2026-10-29 (deploy-only deps, all endpoints, 1,000-user sim, headless render). Left (user): push to GitHub, Vercel import with Root Directory = `mvp`, then live URL into README, check deployed `/api/metrics` vs `out/metrics.json`, phone check, submit |
+| 5 — Deploy and submit | live, partly manual | deployed https://anchor-nu-three.vercel.app (2026-10-29) after removing the `vercel.json` rewrite (API 404 bug); live metrics == file; GitHub tree clean; README has the URL. Left (user): phone check, walkthrough, submission |
 
 ## Measured results
 `mvp/offline/out/metrics.json`; summary in decisions.md → "Phase 2 results". Layer 9, threshold 0.4313; test AUROC 0.998 (127/132) vs keyword 0.556 (31/132); held-out Hindi 12/22, benign-Hindi FB 2/22; InjecAgent 20/200 (AUROC 0.62) vs keyword 17/200; shuffled 0.494; model hijacked 2/6 demo scenarios.

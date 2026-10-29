@@ -8,7 +8,7 @@ Anchor reads an open-weight model's activations to catch prompt injection hidden
 Full product: `Llama-3.2-3B-Instruct` (4-bit), local, no closed APIs (planned, [`docs/implementation.md`](docs/implementation.md)).
 MVP, built and measured: `Qwen2.5-0.5B-Instruct` on CPU, results replayed on Vercel (below).
 
-> **Current status** (2026-10-29): MVP Phases 1–4.5 done (data, probe, replay API, site, 1,000-user simulation, security pass); deploy (Phase 5) pending. Steering and Pipelock: not built. Details: [`docs/STATUS.md`](docs/STATUS.md).
+> **Current status** (2026-10-29): MVP deployed at https://anchor-nu-three.vercel.app (data, probe, replay API, site, 1,000-user simulation, security pass). Full product (Llama-3.2-3B, real baselines, live agent with Pipelock) planned in [`docs/implementation.md`](docs/implementation.md). Steering and Pipelock: not built. Details: [`docs/STATUS.md`](docs/STATUS.md).
 
 ## MVP
 
@@ -16,7 +16,7 @@ MVP, built and measured: `Qwen2.5-0.5B-Instruct` on CPU, results replayed on Ver
 
 A site where you pick a page the agent fetches and watch three defences handle the same run side by side: **no defence**, a **keyword filter** (baseline), and **Anchor** (a linear probe on the model's activations). Each column shows the trace (`fetch_page` → `send_email`), the score on the fetched page, the taint, whether the email was blocked, and whether the secret leaked. A slider moves Anchor's threshold.
 
-**Live URL:** not deployed yet (Phase 5). Run it locally: `cd mvp && pip install -r requirements.txt uvicorn && uvicorn api.index:app` → http://127.0.0.1:8000/
+**Live URL:** https://anchor-nu-three.vercel.app (replay of the offline run). Run it locally: `cd mvp && pip install -r requirements.txt uvicorn && uvicorn api.index:app` → http://127.0.0.1:8000/
 
 ### Measured vs replayed vs planned
 | | What it means |
