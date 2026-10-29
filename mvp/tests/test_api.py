@@ -197,3 +197,40 @@ def test_action_source_matches_actions_file():
 def test_api_data_matches_offline_out():
     for name in ("scenarios.json", "metrics.json", "layer_sweep.json", "probe_meta.json"):
         assert (MVP / "api" / "data" / name).read_text(encoding="utf-8") == (OUT / name).read_text(encoding="utf-8")
+
+
+def test_duplicate_json_keys_rejected():
+    """Security F4: '{"scenario_id":1,"scenario_id":2}' must not silently run scenario 2."""
+    res = client.post("/api/run", content=b'{"scenario_id": 1, "scenario_id": 2}',
+                      headers={"content-type": "application/json"})
+    assert res.status_code == 422
+    nested = client.post("/api/run", content=b'{"scenario_id": 1, "threshold": 0.5, "threshold": 0.9}',
+                         headers={"content-type": "application/json"})
+    assert nested.status_code == 422
+
+
+def test_absurd_content_length_is_413_not_500():
+    """Security (full run) F1: int() on a 4,400-digit header raises ValueError; must answer 413."""
+    import asyncio
+
+    sent = []
+
+    async def receive():
+        return {"type": "http.request", "body": b'{"scenario_id": 1}', "more_body": False}
+
+    async def send(msg):
+        sent.append(msg)
+
+    scope = {"type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1", "method": "POST",
+             "scheme": "http", "path": "/api/run", "raw_path": b"/api/run", "query_string": b"",
+             "root_path": "", "server": ("test", 80), "client": ("test", 1),
+             "headers": [(b"content-type", b"application/json"), (b"content-length", b"0" * 4400 + b"17")]}
+    asyncio.run(app(scope, receive, send))
+    assert sent[0]["type"] == "http.response.start" and sent[0]["status"] == 413
+
+
+def test_offline_requirements_pinned():
+    lines = [l.strip() for l in (MVP / "offline" / "requirements.txt").read_text().splitlines()
+             if l.strip() and not l.startswith("--")]
+    assert lines and all("==" in l for l in lines), lines
+    assert any(l.startswith("pydantic==") for l in (MVP / "requirements.txt").read_text().splitlines())

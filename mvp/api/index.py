@@ -27,9 +27,32 @@ DEFENCES = ("none", "keyword", "anchor")
 app = FastAPI(title="Anchor", docs_url=None, redoc_url=None, openapi_url=None)
 
 
+class _Duplicate(ValueError):
+    pass
+
+
+def _no_duplicates(pairs):
+    keys = [k for k, _ in pairs]
+    if len(keys) != len(set(keys)):
+        raise _Duplicate
+    return dict(pairs)
+
+
+def _has_duplicate_keys(body):
+    """True if any JSON object in the body repeats a key (json.loads would keep the last one silently)."""
+    try:
+        json.loads(body, object_pairs_hook=_no_duplicates)
+    except _Duplicate:
+        return True
+    except ValueError:  # not JSON: FastAPI answers 422 itself
+        return False
+    return False
+
+
 class BodyCap:
     """Reads the request body up front and answers 413 once it passes MAX_BODY bytes.
-    Counts what actually arrives, so a chunked body without Content-Length is capped too."""
+    Counts what actually arrives, so a chunked body without Content-Length is capped too.
+    Bodies with repeated JSON keys get 422."""
 
     def __init__(self, app):
         self.app = app
@@ -39,7 +62,7 @@ class BodyCap:
             return await self.app(scope, receive, send)
         too_large = JSONResponse({"detail": "request body too large"}, status_code=413)
         size = dict(scope["headers"]).get(b"content-length")
-        if size is not None and (not size.isdigit() or int(size) > MAX_BODY):
+        if size is not None and (not size.isdigit() or len(size) > 6 or int(size) > MAX_BODY):  # len: int() cap
             return await too_large(scope, receive, send)
         body, more = b"", True
         while more:
@@ -50,6 +73,8 @@ class BodyCap:
             more = msg.get("more_body", False)
             if len(body) > MAX_BODY:
                 return await too_large(scope, receive, send)
+        if body and _has_duplicate_keys(body):
+            return await JSONResponse({"detail": "duplicate JSON keys"}, status_code=422)(scope, receive, send)
         replayed = False
 
         async def replay():

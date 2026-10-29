@@ -430,17 +430,17 @@ so `security-breaker` must report no open critical/high.
 ---
 
 ### Phase 4.5 — User simulation (≥ 1,000 users) and security hardening
-**Status**: todo
+**Status**: done
 **Prerequisites:** Phase 4 gate passed.
 Built with the `user-sim` skill, light version: the API has no model, so sessions are cheap HTTP calls against `uvicorn api.index:app`.
 **Work:** `mvp/sim/` harness — 1,000 seeded simulated users, each a session of random actions: list scenarios, run random scenario at random/edge thresholds (0, 1, val threshold, ±ε), fetch metrics; ~10 % invalid inputs (unknown ids, out-of-range / non-numeric thresholds, malformed JSON, oversized bodies). Input mix documented in `mvp/sim/users.md`.
 **Done when**:
-- [ ] `mvp/sim/` harness simulates ≥ 1,000 seeded users with the documented input mix (`mvp/sim/users.md`).
-- [ ] Pass bar met: 0 crashes / 5xx / unhandled exceptions, valid-input error rate < 1 %, 100 % of invalid inputs rejected with 4xx, p95 latency < 200 ms locally.
-- [ ] Every `/run` response in the sim agrees with an independent re-computation of the taint rule from `scenarios.json`.
-- [ ] Every failure cluster has a reproducing test and a root-cause fix; `docs/user-sim-report.md` written.
-- [ ] `docs/security/backlog.md` cleared (fixed with tests, or risk accepted by the user).
-- [ ] `security-breaker` full-project run: 0 open critical/high findings.
+- [x] `mvp/sim/` harness simulates ≥ 1,000 seeded users with the documented input mix (`mvp/sim/users.md`). — seed 0; in-process and `--url` HTTP modes.
+- [x] Pass bar met: 0 crashes / 5xx / unhandled exceptions, valid-input error rate < 1 %, 100 % of invalid inputs rejected with 4xx, p95 latency < 200 ms locally. — 0 failures / 5,515 requests, invalid 556/556 → 4xx, p95 14.5 ms in-process, 4.5 ms HTTP.
+- [x] Every `/run` response in the sim agrees with an independent re-computation of the taint rule from `scenarios.json`. — `expected_verdicts` oracle; `test_sim.py` checks it against the API.
+- [x] Every failure cluster has a reproducing test and a root-cause fix; `docs/user-sim-report.md` written. — one cluster (stale server, repeated keys) → `test_duplicate_json_keys_rejected`; report written.
+- [x] `docs/security/backlog.md` cleared (fixed with tests, or risk accepted by the user). — all fixed with tests or risk-accepted by user 2026-10-29.
+- [x] `security-breaker` full-project run: 0 open critical/high findings. — 0 critical/high (2026-10-29).
 
 ---
 
@@ -449,7 +449,7 @@ Built with the `user-sim` skill, light version: the API has no model, so session
 **Prerequisites:** Phase 4.5 gate passed; repo pushed to GitHub (by the user) with `api/data/*.json` committed.
 **Work:**
 1. Import the repo in Vercel, Root Directory = `mvp`, deploy.
-2. README section: what the MVP is, the live URL, how to reproduce (`offline/` commands), what is measured vs replayed vs planned, SQuAD credit, one screenshot.
+2. README section: what the MVP is, the live URL, how to reproduce (`offline/` commands), what is measured vs replayed vs planned, SQuAD credit, one screenshot. — written 2026-10-29 (live URL placeholder until deploy); numbers checked by `tests/test_readme.py`.
 3. Rehearse a 60-second walkthrough: injected scenario → polite scenario → hard negative → metrics card.
 4. Submit.
 

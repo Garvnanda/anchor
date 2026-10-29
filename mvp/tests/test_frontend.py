@@ -47,3 +47,22 @@ def test_reset_does_nothing_without_health():
 
 def test_favicon_declared():
     assert 'rel="icon"' in (PUBLIC / "index.html").read_text(encoding="utf-8")
+
+
+def test_vercel_security_headers_match_inline_script():
+    """CSP allows only our own scripts plus the inline theme script by hash; re-hash when that script changes."""
+    import base64
+    import hashlib
+    import json
+
+    html = (PUBLIC / "index.html").read_text(encoding="utf-8")
+    inline = re.findall(r"<script>(.*?)</script>", html, re.S)
+    assert len(inline) == 1
+    digest = base64.b64encode(hashlib.sha256(inline[0].encode("utf-8")).digest()).decode()
+    cfg = json.loads((PUBLIC.parent / "vercel.json").read_text())
+    headers = {h["key"]: h["value"] for block in cfg["headers"] if block["source"] == "/(.*)" for h in block["headers"]}
+    csp = headers["Content-Security-Policy"]
+    assert f"'sha256-{digest}'" in csp and "script-src 'self'" in csp and "frame-ancestors 'none'" in csp
+    assert "'unsafe-inline'" not in csp.split("script-src")[1].split(";")[0]
+    assert headers["X-Content-Type-Options"] == "nosniff"
+    assert headers["Referrer-Policy"] == "no-referrer"

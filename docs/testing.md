@@ -9,8 +9,10 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
   - `test_probe.py` (Phase 2) — features/scores cover every row; best layer on val; threshold is the smallest with val FPR ≤ 5 %; shuffled-label AUROC in [0.4, 0.6]; test/heldout/external metrics with counts; actions for all 9 scenarios; scenario 9 is a held-out Hindi miss; per-kind hard-negative false blocks count only hard-negative rows; `metrics.hijacked` = `actions.hijacked`.
   - `test_frontend.py` (Phase 4) — exact val threshold sent on load/reset; held-out cards keep injected/clean tag; no innerHTML/eval; theme follows system with manual override; UI reads only `/api/*`, no literal scores.
   - `tests/browser_check.js` (Phase 4, browser) — paste into DevTools on the running site (or run via Chrome automation): every scenario's verdict/BLOCKED/TAINTED/source badge equals `/api/run`, metrics table equals `/api/metrics`, badge, no horizontal scroll. Returns `{ok: true}`.
+  - `test_readme.py` (Phase 5) — every cell of the README MVP results table and every number in its prose equals `offline/out/metrics.json`; screenshot file exists. Update the README block whenever the pipeline is re-run.
   - `test_api.py` (Phase 3) — taint rule, verdicts per scenario, validation (404/422/413), no ML imports, every served number traced to `offline/out/`.
-- Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` → `sim/report.json`, exits non-zero if the pass bar fails.
+- Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` (in-process) → `sim/report.json`; add `--url http://127.0.0.1:8000` to run the same sessions over HTTP against a running server → `sim/report_http.json`. Exits non-zero if the pass bar fails. Restart the server after code changes (no `--reload`). Results: `docs/user-sim-report.md`.
+  - `test_sim.py` (Phase 4.5) — the sim's independent taint-rule oracle agrees with the API on every scenario at 7 thresholds; every invalid sim input gets a 4xx.
 - Re-run the offline pipeline: see flow.md → run order.
 - Planned tests (`implementation_mvp.md` §7), now covered by the files above:
   - `test_data.py` — split leakage, held-out from test docs only, benign-Hindi controls, length match, template split, insertion survives truncation.

@@ -1,0 +1,19 @@
+{
+  "users": 1000,
+  "target": "http://127.0.0.1:8822",
+  "requests": 5515,
+  "by_kind": {
+    "run": 3197,
+    "invalid": 556,
+    "scenarios": 497,
+    "health": 768,
+    "metrics": 497
+  },
+  "failures": {},
+  "valid_error_rate": 0.0,
+  "invalid_rejected_rate": 1.0,
+  "p50_ms": 2.89,
+  "p95_ms": 4.46,
+  "examples": [],
+  "pass": true
+}

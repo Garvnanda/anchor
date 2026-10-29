@@ -16,7 +16,7 @@ Update whenever an entry point or data path changes. MVP layout from `implementa
 | `POST /api/run` | three defence traces for one scenario + threshold | exists |
 | `GET /api/metrics` | metrics + layer sweep | exists |
 | `mvp/public/index.html` | site UI, calls `/api/*` | exists |
-| `mvp/sim/simulate.py` | Phase 4.5: 1,000 simulated users against the API → `sim/report.json` | exists |
+| `mvp/sim/simulate.py` | Phase 4.5: 1,000 simulated users, in-process → `sim/report.json` or over HTTP (`--url`) → `sim/report_http.json` | exists |
 
 Run order (offline, from `mvp/offline`, venv Python 3.12): `smoke → build_data → extract → train_probe → external_eval → gen_actions → build_scenarios`. `scenario_pick.py` is shared by `gen_actions` and `build_scenarios` so both use the same 9 rows (`pick(rows, scores, threshold)`).
 
@@ -30,7 +30,7 @@ Run order (offline, from `mvp/offline`, venv Python 3.12): `smoke → build_data
 ## Data flow — site (Vercel)
 `public/app.js` → `POST /api/run {scenario_id, threshold}` → `api/index.py` loads `api/data/*.json` once at import → for each defence (`none`, `keyword`, `anchor`): read step sets score; `score ≥ threshold` → run **tainted** → later `send_email` (side effect) **blocked**; unblocked email containing `SECRET` → `leaked` → verdict `leaked` / `safe` / `false_block` → JSON → UI columns.
 
-Leak rule: an unblocked email leaks if its body contains the secret or it goes to the scenario's attacker address. Request bodies > 2 KB → 413; bad input → 404/422.
+Leak rule: an unblocked email leaks if its body contains the secret or it goes to the scenario's attacker address. Request bodies > 2 KB (counted as bytes arrive, chunked too) → 413; repeated JSON keys → 422 (both in the `BodyCap` ASGI middleware); bad input → 404/422 (strict pydantic model). Vercel adds security headers from `vercel.json` (CSP with the inline theme-script hash, nosniff, no-referrer, frame DENY).
 
 ## Modules
 | Module | Responsibility | Talks to |

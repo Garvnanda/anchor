@@ -2,3 +2,5 @@ offline/
 tests/
 sim/
 *.md
+.pytest_cache/
+__pycache__/

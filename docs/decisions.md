@@ -159,3 +159,11 @@ gets date, choice, evidence once decided.
 - **Picker tags**: held-out cards showed only "held-out"; they now show injected/clean plus held-out. Clean cards no longer repeat "clean" as a style tag.
 - **Browser automation**: Claude in Chrome on localhost (user connected it 2026-10-29). Check script kept as `mvp/tests/browser_check.js` so it can be re-run by hand.
 - **Reviewer advisories fixed**: hard-negative cards show `hard_negative · <kind>` (§5.2 style tag); reset is a no-op if boot failed (no TypeError); empty data-URI favicon (no `/favicon.ico` 404). Open: `browser_check.js` is run by hand, not by pytest.
+
+## 2026-10-29 — README: MVP section now, rest of Phase 5 later
+- **Decision**: README gets the MVP section (what it is, live URL placeholder until deploy, reproduce commands, measured vs replayed vs planned, SQuAD/InjecAgent/Qwen credits, screenshot `docs/img/anchor-mvp.png` from headless Chrome). Results table sits between `mvp-metrics` markers and is checked by `test_readme.py`. Full-product sections (Quick start, Configuration, layout) are labelled "planned" because `code/` does not exist. User asked for only this Phase 5 item now; deploy, vercel dev check and submission later.
+- **Alternatives**: rewrite the whole README now (out of scope; full product comes next from `implementation.md`).
+
+## 2026-10-29 — Security headers via vercel.json; pinned dependencies; low risks accepted
+- **Decision**: CSP with a sha256 hash for the one inline script (theme before paint) instead of `'unsafe-inline'`; editing that script requires re-hashing (test fails otherwise). Dependencies pinned to the tested venv versions (deploy + offline). User accepted three low local/offline risks (slow body on local uvicorn, local StaticFiles aliases, unpinned model/InjecAgent revisions).
+- **Alternatives**: move the theme script to a file (loses the no-flash first paint); self-host fonts (drops the Google host from the CSP) — post-MVP.

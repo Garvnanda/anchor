@@ -65,10 +65,18 @@ INVALID = [
     ("POST", "/api/health", {}),
     ("GET", "/api/does-not-exist", None),
     ("POST", "/api/run", [1, 2, 3]),
+    # from the Phase 3 security run
+    ("POST", "/api/run", b'{"scenario_id": 1, "threshold": Infinity}'),
+    ("POST", "/api/run", {"scenario_id": True}),
+    ("POST", "/api/run", {"scenario_id": 1, "threshold": "0.5"}),
+    ("POST", "/api/run", b'{"scenario_id": 1, "scenario_id": 2}'),
+    ("POST", "/api/run", ("chunked", [b'{"scenario_id": 1, "threshold": 0.5'] + [b" " * 1024] * 8 + [b"}"])),
 ]
 
 
 def send(client, method, path, body):
+    if isinstance(body, tuple):  # ("chunked", parts): no Content-Length, body streamed in parts
+        return client.request(method, path, content=iter(body[1]), headers={"content-type": "application/json"})
     if isinstance(body, bytes):
         return client.request(method, path, content=body, headers={"content-type": "application/json"})
     if body is None:
@@ -77,8 +85,15 @@ def send(client, method, path, body):
 
 
 def main():
+    """`--url http://127.0.0.1:8000` runs the same sessions over real HTTP (uvicorn / vercel dev); default in-process."""
     rng = random.Random(SEED)
-    client = TestClient(app, raise_server_exceptions=False)
+    url = sys.argv[sys.argv.index("--url") + 1] if "--url" in sys.argv else None
+    if url:
+        import httpx
+
+        client = httpx.Client(base_url=url, timeout=10)
+    else:
+        client = TestClient(app, raise_server_exceptions=False)
     lat, fails, stats = [], [], Counter()
     for user in range(N_USERS):
         for _ in range(rng.randint(3, 8)):
@@ -125,7 +140,7 @@ def main():
     valid_err = sum(by_kind[k] for k in ("valid_rejected", "health_mode", "scenario_count", "metrics_mismatch",
                                          "verdict_mismatch")) / max(valid_n, 1)
     report = {
-        "users": N_USERS, "requests": sum(stats.values()), "by_kind": dict(stats),
+        "users": N_USERS, "target": url or "in-process", "requests": sum(stats.values()), "by_kind": dict(stats),
         "failures": dict(by_kind), "valid_error_rate": round(valid_err, 5),
         "invalid_rejected_rate": round(1 - by_kind["invalid_accepted"] / max(stats["invalid"], 1), 5),
         "p50_ms": round(statistics.median(lat), 2), "p95_ms": round(p95, 2),
@@ -133,7 +148,7 @@ def main():
     }
     report["pass"] = (by_kind["crash"] == 0 and by_kind["5xx"] == 0 and valid_err < 0.01
                       and by_kind["invalid_accepted"] == 0 and by_kind["verdict_mismatch"] == 0 and p95 < 200)
-    (Path(__file__).parent / "report.json").write_text(json.dumps(report, indent=2, default=str))
+    (Path(__file__).parent / ("report_http.json" if url else "report.json")).write_text(json.dumps(report, indent=2, default=str))
     print(json.dumps({k: v for k, v in report.items() if k != "examples"}, indent=2))
     sys.exit(0 if report["pass"] else 1)
 
