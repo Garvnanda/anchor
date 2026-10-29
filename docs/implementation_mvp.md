@@ -454,7 +454,7 @@ Built with the `user-sim` skill, light version: the API has no model, so session
 4. Submit.
 
 **Done when** (= definition of done):
-- [ ] `vercel dev` (or `npx vercel dev`) locally serves `public/` and `/api/*` together from a fresh clone of `mvp/`.
+- [ ] `vercel dev` (or `npx vercel dev`) locally serves `public/` and `/api/*` together from a fresh clone of `mvp/`. — not run (needs a Vercel login). Equivalent check done 2026-10-29: fresh `git clone` of HEAD `3f3e545`, venv with only `mvp/requirements.txt` (+uvicorn), no torch/numpy/sklearn imported; all endpoints + static files 200; 1,000-user sim over HTTP 0 failures / 5,515 requests; headless Chrome renders 9 cards, verdicts, 13 metric rows, REPLAY badge; Linux cp312/cp313 wheels exist for every pinned package.
 - [ ] Automated check: a script fetches every number shown by `/api/metrics` and compares it to `offline/out/metrics.json`; README numbers checked the same way.
 - [ ] (manual) Public URL loads on desktop and phone; all endpoints work in production.
 - [ ] (manual) **CRITICAL** — a fresh clone deploys on Vercel without running the offline pipeline.

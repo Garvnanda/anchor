@@ -1,7 +1,7 @@
 # Status / resume point
 Updated 2026-10-29. Read this first when resuming.
 
-Active plan: `docs/implementation_mvp.md` (same-day MVP). Post-MVP roadmap: `docs/implementation.md`.
+Active plan (hook-tracked): `docs/implementation_mvp.md` until the MVP is deployed. Then `docs/implementation.md` (full product, H / G phases) becomes active.
 
 ## Phases (MVP)
 | Phase | Status | Notes (what's left, who) |
@@ -11,15 +11,41 @@ Active plan: `docs/implementation_mvp.md` (same-day MVP). Post-MVP roadmap: `doc
 | 3 — Scenarios and backend | done | reviewer PASS 2026-10-29; 9 scenarios (9 = held-out Hindi Anchor miss); security F1 high fixed, F4/F6 low in backlog |
 | 4 — Frontend | done | reviewer PASS 2026-10-29 (re-ran browser_check.js headless at 375 px light/dark + 1280 px); user approved the look |
 | 4.5 — User simulation | done | reviewer PASS 2026-10-29; sim 0 failures in-process and over HTTP (`docs/user-sim-report.md`); full security run 0 critical/high; backlog fixed or risk-accepted by user |
-| 5 — Deploy and submit | partial | README MVP section done (numbers tested, screenshot); rest deferred by user: live URL, `npx vercel dev`, metrics check vs deployed `/api/metrics`, push/import/submit |
+| 5 — Deploy and submit | deploy-ready | fresh-clone check passed 2026-10-29 (deploy-only deps, all endpoints, 1,000-user sim, headless render). Left (user): push to GitHub, Vercel import with Root Directory = `mvp`, then live URL into README, check deployed `/api/metrics` vs `out/metrics.json`, phone check, submit |
 
 ## Measured results
 `mvp/offline/out/metrics.json`; summary in decisions.md → "Phase 2 results". Layer 9, threshold 0.4313; test AUROC 0.998 (127/132) vs keyword 0.556 (31/132); held-out Hindi 12/22, benign-Hindi FB 2/22; InjecAgent 20/200 (AUROC 0.62) vs keyword 17/200; shuffled 0.494; model hijacked 2/6 demo scenarios.
+
+## Phases (full product, `implementation.md`) — none started; core work 2026-10-30
+| Phase | Owner | Status | Head start from MVP | Waits on | Notes |
+|---|---|---|---|---|---|
+| H0 — Scaffold new folder + model switch + `run_gpu.md` | Haragam | todo | large | MVP deployed; folder name | copy MVP pipeline, `--model`, `run_meta`, shared taint rule |
+| H1 — Attack families + dataset v2 (incl. Tamil) | Haragam | todo | medium | H0 | 8 new families, benign controls; manual spot-read by both |
+| H2 — Baselines on our data (CPU) | Haragam | todo | small | H1 | PG2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword, length+position control |
+| H3 — Agent-benchmark sets (CPU) | Haragam | todo | none | H0 | rebuild AgentDojo/τ-bench/BIPIA sets; check PG2 22M vs published |
+| H4 — Live scorer + playground API | Haragam | todo | medium | H0 | fail closed, attribution by measurement; security-breaker |
+| H5 — Live agent loop + Pipelock | Haragam | todo | small | H4 | Pipelock v3.7.1 installed here (`~/tools/pipelock`); security-breaker |
+| H6 — Black-box adaptive attacker (code) | Haragam | todo | none | H4 | runs on 0.5B here, on 3B in G5 |
+| H7 — Evaluation report + replay data | Haragam | todo | medium | G2, H2, G3–G5 | every number from output files |
+| H8 — Frontend redesign (Hallmark) + deploy | Haragam | todo | medium | H7 | security-breaker; manual look approval |
+| H9 — User sim + security + pre-demo checks | Haragam | todo | large | H8, G7 | ≥ 1,000 users vs live server |
+| H-X — Arc iGPU test (optional) | Haragam | todo | half | ≥ 7 GB free RAM, internet | half done: `torch 2.15.0+xpu` in a throwaway env |
+| G1 — GPU setup + 3B smoke, fix precision | Garv | todo | medium | repo pulled, HF token | run `mvp/offline/check_gpu.py` first |
+| G2 — 3B activations + probe | Garv | todo | large (code) | G1, H1 | layer + position comparison, 1 %/5 % FPR, controls |
+| G3 — Anchor-3B on agent benchmarks | Garv | todo | small | G2, H3 | frozen probe, 1 % FPR, comparable with arXiv 2610.03448 |
+| G4 — 3B model actions + live agent runs | Garv | todo | small | G2, H5 | model-sourced leak, Pipelock layer logs |
+| G5 — Adaptive attacks on 3B | Garv | todo | none | G2, H6 | black-box; GCG suffix stretch |
+| G6 — Steering | Garv | todo (stretch) | none | G4 | |
+| G7 — Live demo host | Garv | todo | small | G4, H8 | cold start ×2, network off |
 
 ## Repo state
 - Commits: `315ab33` Phase 1, `c60f82e` Phase 2, `3062580` wip Phases 3–4.5 code. Not pushed.
 - Phases 2–4.5 committed 2026-10-29 (see `git log`). MVP is deploy-ready apart from the deferred Phase 5 items.
 - After Phase 4.5: user wants to start the post-MVP roadmap `docs/implementation.md` (full project), not Phase 5 yet (2026-10-29).
+- Full product planned 2026-10-29: `docs/implementation.md` = phases **H0–H9, H-X** (Haragam, CPU laptop, all code + 0.5B tests) and **G1–G7** (Garv, RTX 2050, all 3B runs), dependency map at the top. `mvp/` frozen; new code in a new folder (`v2/`, named at H0). Design `technical.md`, rationale `decisions.md`, open items `QUESTIONS.md`.
+- Measured 2026-10-29: 3B cannot run on Haragam's CPU (no native bf16; bf16 matmul ~380× slower than fp32). Arc iGPU test (H-X) half done: `torch 2.15.0+xpu` in a throwaway env; stopped for low RAM + network drop.
+- Next: (1) deploy the MVP (`implementation_mvp.md` Phase 5); (2) core work 2026-10-30: Garv starts G1 (`mvp/offline/check_gpu.py`), Haragam starts H0.
+- Tools installed globally 2026-10-29: NVIDIA SkillSpector (`uv tool`), skills `skill-inspector` and `hallmark`; global `~/.claude/CLAUDE.md` now requires scanning skills before install and running Hallmark on frontend work.
 - Gate: `.claude/test-command` → 124 passed.
 - Pipeline re-run order (from `mvp/offline`): `train_probe → external_eval → gen_actions → build_scenarios` (extract reuses the feature cache; gen_actions ~10 min on CPU).
 - `pip-audit` was installed into `mvp/offline/.venv` by the security run (dev-only, not in requirements).

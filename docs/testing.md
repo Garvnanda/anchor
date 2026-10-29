@@ -10,6 +10,7 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
   - `test_frontend.py` (Phase 4) — exact val threshold sent on load/reset; held-out cards keep injected/clean tag; no innerHTML/eval; theme follows system with manual override; UI reads only `/api/*`, no literal scores.
   - `tests/browser_check.js` (Phase 4, browser) — paste into DevTools on the running site (or run via Chrome automation): every scenario's verdict/BLOCKED/TAINTED/source badge equals `/api/run`, metrics table equals `/api/metrics`, badge, no horizontal scroll. Returns `{ok: true}`.
   - `test_readme.py` (Phase 5) — every cell of the README MVP results table and every number in its prose equals `offline/out/metrics.json`; screenshot file exists. Update the README block whenever the pipeline is re-run.
+  - `test_check_gpu.py` (full product, Phase 0) — `check_gpu.py` runs and writes its report on a machine without CUDA.
   - `test_api.py` (Phase 3) — taint rule, verdicts per scenario, validation (404/422/413), no ML imports, every served number traced to `offline/out/`.
 - Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` (in-process) → `sim/report.json`; add `--url http://127.0.0.1:8000` to run the same sessions over HTTP against a running server → `sim/report_http.json`. Exits non-zero if the pass bar fails. Restart the server after code changes (no `--reload`). Results: `docs/user-sim-report.md`.
   - `test_sim.py` (Phase 4.5) — the sim's independent taint-rule oracle agrees with the API on every scenario at 7 thresholds; every invalid sim input gets a 4xx.
@@ -24,6 +25,18 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
   - `test_validation.py` — bad `scenario_id` → 404; bad threshold → 422.
   - `test_action_source.py` — `action_source` matches `out/actions.json`.
 - Simulation (Phase 4.5): `mvp/sim/` — 1,000 seeded users against `uvicorn api.index:app`; report in `docs/user-sim-report.md`.
+
+## Planned tests (full product, `implementation.md`)
+- Model switch: every offline script runs end to end with `--model qwen0.5b` on CPU in CI-sized form before any 3B run; outputs carry `run_meta` (asserted).
+- Precision match: scorer refuses a probe whose `run_meta` model/precision differs from the loaded model (test).
+- Attack families: each generator keeps the document split and template split; held-out families never appear in train/val (pytest on `rows.jsonl`); invisible-Unicode rows really contain TAG/zero-width code points; split payloads are only injected when both halves are present.
+- Control: length+position-only classifier AUROC reported; test fails if it is missing.
+- Baselines: same rows, same validation split, same FPR targets for every detector (pytest on `out/baselines.json`); pinned model revisions recorded.
+- Agent bench: Anchor's probe/threshold not fit on benchmark rows (assert); thresholds at 1 % FPR on each benchmark's benign outputs; our re-run baselines within a stated tolerance of the published numbers, else flagged.
+- Scorer: fail closed on error/timeout; split-payload Δ uses earlier outputs; attribution sentences come from the input text.
+- Live agent: vanilla vs Anchor on the same tools and turn cap; Anchor run never sends the secret when the scorer flags (test with a fake scorer at the boundary only); Pipelock in the path (outbound request without proxy fails).
+- Live API: same hardening tests as the MVP API (body cap, strict models, headers) + rate limit and input length cap on `/api/score`; user-sim harness reused with `--url`.
+- Site numbers: README + site tables checked against `out/*.json` (extends `test_readme.py`).
 
 ## Manual (live)
 ### Phase 1 — model and data

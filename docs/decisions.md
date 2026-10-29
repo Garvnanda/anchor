@@ -167,3 +167,58 @@ gets date, choice, evidence once decided.
 ## 2026-10-29 — Security headers via vercel.json; pinned dependencies; low risks accepted
 - **Decision**: CSP with a sha256 hash for the one inline script (theme before paint) instead of `'unsafe-inline'`; editing that script requires re-hashing (test fails otherwise). Dependencies pinned to the tested venv versions (deploy + offline). User accepted three low local/offline risks (slow body on local uvicorn, local StaticFiles aliases, unpinned model/InjecAgent revisions).
 - **Alternatives**: move the theme script to a file (loses the no-flash first paint); self-host fonts (drops the Google host from the CSP) — post-MVP.
+
+---
+# Full product (post-MVP) — decided 2026-10-29 with the user
+
+## 2026-10-29 — Llama-3.2-3B for every reported number; scripts written here, may run elsewhere
+- **Decision**: all full-product results (probe, agent, playground, adaptive attacks) use Llama-3.2-3B-Instruct. Code is written and tested end to end on this laptop with Qwen2.5-0.5B (CPU); 3B runs happen on one fixed machine + precision (this laptop in CPU bf16, or the RTX 2050 laptop in 4-bit — chosen after the speed spike). The user's HF token (Llama access) lives in git-ignored `mvp/offline/.env`.
+- **Why**: 0.5B is too weak (held-out Hindi 12/22); 3B is the product's model. Probe activations differ across precisions, so training and serving must match.
+- **Alternatives**: keep 0.5B (weak result); mix machines/precisions (probe mismatch).
+
+## 2026-10-29 — Real baselines replace keyword-only comparison
+- **Decision**: compare against Prompt Guard 2 (22M, 86M), Horizon-Labs guard-base, PIGuard, ProtectAI v2, Pipelock's response scanner, the MVP keyword list, and a length+position-only control — all on the same splits and FPR targets. Plus score Anchor-3B on the AgentDojo / τ-bench / BIPIA tool-output sets rebuilt with `lzwhehe/benign-instruction-bench` (MIT) at 1 % FPR, next to the 15 detectors published in arXiv 2610.03448 (their numbers labelled as theirs; 2–3 re-run by us to check the setup).
+- **Why**: keyword matching is a straw man; that paper shows detector rankings flip on agent tool outputs, which is exactly where Anchor should help. Same protocol → a directly comparable row.
+- **Alternatives**: full AgentDojo agent runs (small models' tool calling dominates the result); TaskTracker reproduction (probes are for 7–70B models) — cited as prior art instead.
+
+## 2026-10-29 — No translator in front of the probe
+- **Decision**: no translation step. Multilingual injections are scored as the model receives them; Hindi stays a held-out language; **Tamil** is the second held-out language (user, 2026-10-29: different script from Devanagari, tests script transfer).
+- **Why**: the agent acts on the original text, so scoring a translation scores something the model never read; attackers switch to other languages/encodings; it would void the held-out test. User agreed 2026-10-29.
+
+## 2026-10-29 — Attack scope: indirect / tool-borne attacks only, many families
+- **Decision**: add encoded, invisible-Unicode, homoglyph, split-payload, tool-description (MCP) poisoning, RAG-document poisoning, a second held-out language and markdown-link exfiltration; report a family × defence grid. Direct user-typed jailbreaks stay out of scope.
+- **Why**: user wants a wide attack range; all of these are "the agent's goal hijacked by something it read", which is Anchor's claim. Jailbreaks are a different threat model covered by Llama Guard.
+
+## 2026-10-29 — Adaptive attacks are mandatory
+- **Decision**: black-box rewrite attacker against the scorer (CPU) and, on the GPU laptop, the multi-probe GCG suffix of arXiv 2602.00750; report results whatever they are; suffix-augmentation defence if time allows.
+- **Why**: activation probes are known to be evadable by adaptive attackers (94–99.6 % evasion on TaskTracker probes); not testing it would be the first reviewer question.
+
+## 2026-10-29 — Control against position/length shortcuts
+- **Decision**: add a length+position-only classifier as a control on every split.
+- **Why**: arXiv 2610.18408 shows those features alone reach 0.91–0.98 AUROC on standard injection-probe evaluations. Our matched negatives should keep the control near chance; the control proves it.
+
+## 2026-10-29 — Pipelock: network layer and baseline, unmodified
+- **Decision**: Pipelock (pipelab-org/pipelock, Apache-2.0 core, v3.7.0) fronts all outbound traffic of the live agent (fetch proxy for pages, forward proxy for mail); its response scanner is also run as a baseline. Community build (source build or verified release); never modified.
+- **Why**: capability separation at the network layer + a real rule-based scanner to compare against.
+- **Install (user choice, 2026-10-29)**: prebuilt release v3.7.1 (no Go toolchain needed). Paid-tier code in the release stays inactive without a licence key; we use only Community features. Integrity: SHA-256 checked against the release `checksums.txt`; cosign signature not verified.
+
+## 2026-10-29 — Live demo on the laptop + deployed replay
+- **Decision**: the user presents live from the laptop (live scorer, playground, live agent with Pipelock). The Vercel link replays measured 3B results. A tunnel bridge from Vercel to the laptop is optional and built last, behind a security pass.
+- **Why**: user's answer; a deployed link must work when the laptop is off.
+
+## 2026-10-29 — Frontend redesign after features are fixed, with Hallmark
+- **Decision**: redesign once the feature list is locked, using the `hallmark` skill (installed globally 2026-10-29 after a SkillSpector scan; HIGH findings reviewed as false positives, user approved). Goal: less text, visual story (trace, drift gauge, highlighted sentences, attack grid).
+- **Why**: current site reads like a report; user wants interpretability over text.
+
+## 2026-10-29 — Prior art positioning
+- **Decision**: cite TaskTracker (same core signal), Attention Tracker, arXiv 2610.18408, 2602.00750, 2610.03448 in the README and site. Our claims: taint-and-block in a live agent, 3B on a laptop, agent-benchmark comparison, attack grid with adaptive attacks.
+- **Why**: the core idea is not new; claiming it as new would be wrong and easily caught.
+
+## 2026-10-29 — 3B cannot run on the dev laptop's CPU (measured)
+- **Evidence**: Core Ultra 7 155H, PyTorch reports AVX2 only; oneDNN bf16 supported = False; one 512×3072×3072 matmul takes 105 ms in fp32 and 39,738 ms in bf16 (~380× slower, emulated). The bf16 3B spike produced no pass in ~30 min and drove free RAM to ~1 GB. fp32 3B needs ~13 GB RAM (does not fit in 16 GB with the OS) and would take ~1 min per pass at the measured speed.
+- **Decision**: 3B work goes to the GPU laptop (RTX 2050). `mvp/offline/check_gpu.py` checks bf16 support, VRAM and the 4-bit path there before the precision is fixed.
+
+## 2026-10-29 — MVP frozen in `mvp/`; full product in a new folder; work split H / G
+- **Decision** (user): deploy the MVP from `mvp/` and keep that folder as shipped. The full product is built in a new top-level folder (written `v2/` until named at H0), mirroring the MVP layout; MVP code is copied in and changed there. Work is split by person and laptop: **H** (Haragam, Core Ultra 7 155H, CPU + Arc iGPU) builds and tests all code with Qwen2.5-0.5B and runs everything without 3B (data, attacks, CPU baselines, benchmark sets, server, agent, site, simulation, security); **G** (Garv, i5-H + RTX 2050 4 GB) runs every Llama-3.2-3B step (activations, probe, agent-bench scoring, agent runs, adaptive attacks, steering, live demo host). Phases `H0–H9, H-X` and `G1–G7` in `implementation.md`, hand-off through git commits of `out/*.json`.
+- **Why**: the deployed MVP must not change under the new work; H's CPU cannot run 3B (no native bf16, measured), G's RTX 2050 can (4-bit).
+- **Supersedes**: "keep the code in `mvp/`" (same day).

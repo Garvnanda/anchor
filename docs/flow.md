@@ -1,9 +1,10 @@
 # Code flow
-Update whenever an entry point or data path changes. MVP layout from `implementation_mvp.md` §2. Nothing exists yet; every row is **planned**.
+Update whenever an entry point or data path changes. MVP layout from `implementation_mvp.md` §2: rows marked `exists` are shipped. Full-product additions (`implementation.md`, `technical.md`) are listed under **Planned (full product)** below until built.
 
 ## Entry points
 | Command / route | What starts here | Status |
 |---|---|---|
+| `mvp/offline/check_gpu.py` | capability check for the 3B machine: CUDA, bf16/fp16 support + matmul speed, free VRAM, bitsandbytes 4-bit → `out/gpu_check.json` | exists |
 | `mvp/offline/smoke.py` | load model, one tool-role forward pass → `out/smoke.json` | exists |
 | `mvp/offline/build_data.py` | SQuAD docs + injections + hard negatives → `offline/data/rows.jsonl`, `out/data_summary.json` | exists |
 | `mvp/offline/extract.py` | rows → Δ activations per layer → `offline/features/delta_L{n}.npy` | exists |
@@ -41,5 +42,25 @@ Leak rule: an unblocked email leaks if its body contains the secret or it goes t
 | `mvp/tests/` | pytest on data + API | `offline/data`, `offline/out`, `api` |
 
 ## External services
-- Hugging Face Hub: model + SQuAD download, offline only, first run.
+- Hugging Face Hub: model + SQuAD download, offline only, first run. Llama-3.2-3B and Prompt Guard 2 are gated: token from git-ignored `mvp/offline/.env` (`HF_TOKEN`).
 - Vercel: hosts `mvp/` (Root Directory = `mvp`).
+- Planned: Pipelock binary (local, unmodified) in front of the live agent's outbound traffic; benign-instruction-bench + AgentDojo / τ-bench / BIPIA sources (downloaded once, offline).
+
+## Planned (full product) — not built yet
+Planned code goes in a new folder (`v2/`, named at H0); `mvp/` stays frozen. Paths below written as `mvp/...` map to `v2/...`. Every script takes `--model {qwen0.5b,llama3b}` and writes `run_meta`.
+
+| Command / route | What it will do |
+|---|---|
+| `mvp/offline/attacks.py` | attack-family generators (encoded, invisible Unicode, homoglyph, split payload, tool description, RAG document, second held-out language, exfil link) feeding `build_data.py` |
+| `mvp/offline/baselines.py` | Prompt Guard 2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword list, length+position control on the same splits → `out/baselines.json` |
+| `mvp/offline/agentbench.py` | rebuild AgentDojo / τ-bench / BIPIA tool-output sets (benign-instruction-bench), score frozen Anchor at 1 % FPR → `out/agentbench.json` |
+| `mvp/offline/adaptive.py` | black-box rewrite attacker (CPU) and GCG suffix (GPU laptop) against the scorer → `out/adaptive.json` |
+| `mvp/offline/run_gpu.md` | ordered commands for the GPU laptop run; which files to bring back |
+| `mvp/anchor/scorer.py` | load model + probe once; `score(task, outputs) → drift, attribution, run_meta`; fail closed |
+| `mvp/anchor/policy.py` | taint rule (from `api/index.py`), block / steer |
+| `mvp/agent/` | live multi-turn loop: model picks JSON action → tool → scorer → act or taint; tools served by a local mock server; outbound via Pipelock |
+| `POST /api/score` (live) | playground: text → drift score + highlighted sentences |
+| `POST /api/agent/run` (live) | one live agent run, vanilla vs Anchor, with per-layer log (Anchor / Pipelock) |
+| `GET /api/health` | adds `mode: live|replay` and `run_meta` |
+
+Planned data flow (live): user task → agent loop → tool call → (Pipelock fetch proxy) → tool output → scorer Δ at assistant start with all earlier outputs → probe → taint? → next action → side effect → (Pipelock forward proxy, DLP) → mock mail.
