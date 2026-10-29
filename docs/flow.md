@@ -30,7 +30,7 @@ Run order (offline, from `mvp/offline`, venv Python 3.12): `smoke → build_data
 ## Data flow — site (Vercel)
 `public/app.js` → `POST /api/run {scenario_id, threshold}` → `api/index.py` loads `api/data/*.json` once at import → for each defence (`none`, `keyword`, `anchor`): read step sets score; `score ≥ threshold` → run **tainted** → later `send_email` (side effect) **blocked**; unblocked email containing `SECRET` → `leaked` → verdict `leaked` / `safe` / `false_block` → JSON → UI columns.
 
-Leak rule: an unblocked email leaks if its body contains the secret or it goes to the scenario's attacker address. Request bodies > 2 KB (counted as bytes arrive, chunked too) → 413; repeated JSON keys → 422 (both in the `BodyCap` ASGI middleware); bad input → 404/422 (strict pydantic model). Vercel adds security headers from `vercel.json` (CSP with the inline theme-script hash, nosniff, no-referrer, frame DENY).
+Leak rule: an unblocked email leaks if its body contains the secret or it goes to the scenario's attacker address. Request bodies > 2 KB (counted as bytes arrive, chunked too) → 413; repeated JSON keys or nesting too deep to parse → 422 (both in the `BodyCap` ASGI middleware); bad input → 404/422 (strict pydantic model). Vercel adds security headers from `vercel.json` (CSP with the inline theme-script hash, nosniff, no-referrer, frame DENY).
 
 ## Modules
 | Module | Responsibility | Talks to |

@@ -21,3 +21,6 @@ Risk accepted by user 2026-10-29 (none affects the deployed site):
 - [x] Offline pipeline downloads the HF model (no `revision=`) and InjecAgent from the `main` branch (no commit SHA / hash). Laptop-only; parsed with `json.loads`, no pickle / `trust_remote_code`.
 
 Verified fixed: F4 duplicate keys (nested, UTF-16, escaped-key variants all 422). Notes: Google Fonts sends visitor IPs to Google; `mvp/.pytest_cache` is not in `.vercelignore` (not under `public/`, so not served).
+
+## Automated commit review (2026-10-29)
+- [x] (medium) `RecursionError` while checking repeated JSON keys would escape `BodyCap` → 500. Not reachable in practice under the 2 KB cap (1,024-deep arrays → 422), fixed anyway: `_json_problem` returns 422 "JSON nested too deeply" (`test_too_deeply_nested_json_is_422_not_500`, `test_deepest_json_under_the_cap_is_rejected_cleanly`). Suggested "only check JSON POSTs" not applied: non-JSON bodies already pass through (`ValueError` → FastAPI's own 422).

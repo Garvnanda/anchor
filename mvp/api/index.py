@@ -38,21 +38,24 @@ def _no_duplicates(pairs):
     return dict(pairs)
 
 
-def _has_duplicate_keys(body):
-    """True if any JSON object in the body repeats a key (json.loads would keep the last one silently)."""
+def _json_problem(body):
+    """Why the body can't be accepted as JSON, or None. Repeated keys (json.loads would keep the last one
+    silently) and nesting too deep to parse are rejected here; other invalid JSON gets FastAPI's own 422."""
     try:
         json.loads(body, object_pairs_hook=_no_duplicates)
     except _Duplicate:
-        return True
-    except ValueError:  # not JSON: FastAPI answers 422 itself
-        return False
-    return False
+        return "duplicate JSON keys"
+    except RecursionError:
+        return "JSON nested too deeply"
+    except ValueError:
+        return None
+    return None
 
 
 class BodyCap:
     """Reads the request body up front and answers 413 once it passes MAX_BODY bytes.
     Counts what actually arrives, so a chunked body without Content-Length is capped too.
-    Bodies with repeated JSON keys get 422."""
+    Bodies with repeated JSON keys or nesting too deep to parse get 422."""
 
     def __init__(self, app):
         self.app = app
@@ -73,8 +76,9 @@ class BodyCap:
             more = msg.get("more_body", False)
             if len(body) > MAX_BODY:
                 return await too_large(scope, receive, send)
-        if body and _has_duplicate_keys(body):
-            return await JSONResponse({"detail": "duplicate JSON keys"}, status_code=422)(scope, receive, send)
+        problem = _json_problem(body) if body else None
+        if problem:
+            return await JSONResponse({"detail": problem}, status_code=422)(scope, receive, send)
         replayed = False
 
         async def replay():

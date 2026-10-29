@@ -234,3 +234,21 @@ def test_offline_requirements_pinned():
              if l.strip() and not l.startswith("--")]
     assert lines and all("==" in l for l in lines), lines
     assert any(l.startswith("pydantic==") for l in (MVP / "requirements.txt").read_text().splitlines())
+
+
+def test_too_deeply_nested_json_is_422_not_500(monkeypatch):
+    """Automated review: a RecursionError while checking for repeated keys must not become a 500."""
+    import api.index as idx
+
+    def boom(*a, **k):
+        raise RecursionError("maximum recursion depth exceeded")
+
+    monkeypatch.setattr(idx.json, "loads", boom)
+    res = client.post("/api/run", content=b"[" * 1000 + b"]" * 1000, headers={"content-type": "application/json"})
+    assert res.status_code == 422
+
+
+def test_deepest_json_under_the_cap_is_rejected_cleanly():
+    for body in (b"[" * 1024 + b"]" * 1024, b'{"a":' * 400 + b"1" + b"}" * 400):
+        res = client.post("/api/run", content=body, headers={"content-type": "application/json"})
+        assert 400 <= res.status_code < 500, len(body)
