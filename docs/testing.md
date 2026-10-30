@@ -27,9 +27,33 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
   - `test_action_source.py` — `action_source` matches `out/actions.json`.
 - Simulation (Phase 4.5): `mvp/sim/` — 1,000 seeded users against `uvicorn api.index:app`; report in `docs/user-sim-report.md`.
 
+## Automated (full product, `v2/tests/`)
+Run: `.claude/test-command` (runs `mvp/tests` then `v2/tests`, both with `mvp/offline/.venv`). Before the tests,
+the qwen0.5b outputs must exist: `cd v2/offline && python seed_from_mvp.py` then the pipeline with `--model qwen0.5b`
+(see `flow.md`), plus `python smoke.py`.
+Do not run two copies of the v2 suite at once on the 16 GB laptop: `test_v2_extract_reproduces_the_seeded_mvp_cache`
+loads Qwen, and two runs together hit `MemoryError` (seen 2026-10-30). The test reads only its 5 cache rows.
+- `test_pipeline.py` (H0) — `--model/--precision` defaults and bad values; per-model folders; every script uses
+  `parse(argv)`; every qwen output has `run_meta` (model, precision, device); `RunMismatch` on another
+  model/precision for the probe loader and the feature cache; rows, metrics, scores, actions, scenarios equal the
+  MVP's; v2 extract reproduces 5 seeded cache rows (loads Qwen, ~30 s); Qwen render equals the MVP render; Llama
+  render has the fixed date and the insertion check accepts JSON-escaped text (needs the Llama tokenizer in the HF
+  cache); env loader order; git-ignore of `.env`/features; API uses `anchor.policy`; `mvp/` has no uncommitted
+  change; `run_gpu.md` lists the 3B steps; every committed `out/<model>/` (qwen now, llama3b after G2) is
+  consistent (one model/precision per folder, layer best on val, val FPR ≤ target, shuffled AUROC in [0.4, 0.6],
+  scores cover every row); `build_data` + `train_probe` re-run into `tmp_path` reproduce the stored qwen run (~40 s).
+- `test_kaggle.py` — notebook equals `make_notebook.render()` (regenerate after editing), cells parse, every
+  `step("x.py")` exists in the run_gpu order, token only from Kaggle Secrets and never written or printed, zip
+  excludes features and weights.
+- Ported MVP tests (`test_api`, `test_data`, `test_probe`, `test_frontend`, `test_sim`, `test_check_gpu`,
+  `test_gen_actions`, `test_check_deploy`) run against `v2/` and `out/qwen0.5b/`.
+
+## Manual (full product)
+- Kaggle: import `v2/kaggle/anchor_3b.ipynb`, set GPU T4 + Internet on, add secret `HF_TOKEN`, Run all. Expected:
+  step 4 prints `hidden_states 29`; step 7 prints `run_meta: llama3b nf4 cuda` and the metrics; the zip is
+  downloadable. Unzip into `v2/offline/`, run the tests, commit.
+
 ## Planned tests (full product, `implementation.md`)
-- Model switch: every offline script runs end to end with `--model qwen0.5b` on CPU in CI-sized form before any 3B run; outputs carry `run_meta` (asserted).
-- Precision match: scorer refuses a probe whose `run_meta` model/precision differs from the loaded model (test).
 - Attack families: each generator keeps the document split and template split; held-out families never appear in train/val (pytest on `rows.jsonl`); invisible-Unicode rows really contain TAG/zero-width code points; split payloads are only injected when both halves are present.
 - Control: length+position-only classifier AUROC reported; test fails if it is missing.
 - Baselines: same rows, same validation split, same FPR targets for every detector (pytest on `out/baselines.json`); pinned model revisions recorded.

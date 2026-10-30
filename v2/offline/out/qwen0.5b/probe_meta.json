@@ -1,0 +1,30 @@
+{
+  "run_meta": {
+    "model": "qwen0.5b",
+    "hf_id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "precision": "fp32",
+    "device": "cpu",
+    "versions": {
+      "python": "3.12.10",
+      "torch": "2.14.1+cpu",
+      "transformers": "5.21.0",
+      "scikit-learn": "1.9.1",
+      "numpy": "2.5.4",
+      "bitsandbytes": null
+    },
+    "date": "2026-10-30"
+  },
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "probe_version": "v2",
+  "layer": 9,
+  "threshold": 0.431316,
+  "built_at": "2026-10-30",
+  "rows": {
+    "train": 971,
+    "val": 214,
+    "test": 205,
+    "heldout": 44
+  },
+  "secret": "sk-demo-4f2a9c",
+  "user_email": "you@example.com"
+}

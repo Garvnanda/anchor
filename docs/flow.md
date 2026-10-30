@@ -43,12 +43,31 @@ Leak rule: an unblocked email leaks if its body contains the secret or it goes t
 | `mvp/tests/` | pytest on data + API | `offline/data`, `offline/out`, `api` |
 
 ## External services
-- Hugging Face Hub: model + SQuAD download, offline only, first run. Llama-3.2-3B and Prompt Guard 2 are gated: token from git-ignored `mvp/offline/.env` (`HF_TOKEN`).
+- Hugging Face Hub: model + SQuAD download, offline only, first run. Llama-3.2-3B and Prompt Guard 2 are gated: token from git-ignored `mvp/offline/.env` or `v2/offline/.env` (`HF_TOKEN`); on Kaggle from Kaggle Secrets.
 - Vercel: hosts `mvp/` (Root Directory = `mvp`).
 - Planned: Pipelock binary (local, unmodified) in front of the live agent's outbound traffic; benign-instruction-bench + AgentDojo / τ-bench / BIPIA sources (downloaded once, offline).
 
+## Full product (`v2/`, H0 built 2026-10-30)
+`mvp/` stays frozen. `v2/` is a copy of the MVP with the model switch. Run from `v2/offline/`, in the MVP order,
+each with `--model {qwen0.5b,llama3b}` (default `qwen0.5b`) and an optional `--precision` (qwen: `fp32`; llama:
+`nf4` = NF4 weights + fp16 compute, or `bf16`/`fp16`/`fp32`).
+
+| Entry point | What it does |
+|---|---|
+| `v2/offline/common.py` | `MODELS` table, `parse()` → `Run` (paths `data/<model>/`, `features/<model>/`, `out/<model>/`), `run_meta()`, `check_run_meta`/`load_probe` (raise `RunMismatch`), `load_env()` (HF token: `v2/offline/.env`, then `mvp/offline/.env`), `load_model(run)` → (tok, model, device), `render()` (fixed template date) |
+| `v2/offline/seed_from_mvp.py` | copies the MVP qwen feature cache into `features/qwen0.5b/` + meta.json with a `source` note |
+| `v2/offline/{smoke,build_data,extract,train_probe,external_eval,gen_actions,build_scenarios}.py` | same as the MVP steps; outputs in `out/<model>/`, each with `run_meta`; `build_scenarios` copies the given model's files into `v2/api/data/` |
+| `v2/offline/check_gpu.py` | unchanged copy → `out/gpu_check.json` |
+| `v2/offline/run_gpu.md` | ordered, resumable 3B commands (G1–G5), folder table, files to bring back |
+| `v2/kaggle/make_notebook.py` → `anchor_3b.ipynb` | Kaggle T4: clone repo, `HF_TOKEN` from Kaggle Secrets (env only), run `run_gpu.md` steps 1–8 with `--model llama3b --precision nf4`, zip `out/llama3b/` + `data/llama3b/` + `out/gpu_check_kaggle.json` |
+| `v2/anchor/policy.py` | `run_defence(scn, defence, threshold, secret)`: the taint rule, shared |
+| `v2/api/index.py` | MVP replay API importing `anchor.policy`; serves the model that `build_scenarios` copied; `/api/health` adds `run_meta` |
+| `v2/public/`, `v2/sim/` | MVP site and simulation copies; sim compares with `out/<served model>/` |
+
+Data flow (offline, per model): SQuAD + templates → `data/<model>/rows.jsonl` → Δ activations `features/<model>/` (meta.json = run_meta) → probe `out/<model>/probe.json` + metrics/scores → InjecAgent external block → actions → scenarios → `v2/api/data/`.
+
 ## Planned (full product) — not built yet
-Planned code goes in a new folder (`v2/`, named at H0); `mvp/` stays frozen. Paths below written as `mvp/...` map to `v2/...`. Every script takes `--model {qwen0.5b,llama3b}` and writes `run_meta`.
+Paths below written as `mvp/...` map to `v2/...`. Every script takes `--model {qwen0.5b,llama3b}` and writes `run_meta`.
 
 | Command / route | What it will do |
 |---|---|
@@ -56,9 +75,8 @@ Planned code goes in a new folder (`v2/`, named at H0); `mvp/` stays frozen. Pat
 | `mvp/offline/baselines.py` | Prompt Guard 2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword list, length+position control on the same splits → `out/baselines.json` |
 | `mvp/offline/agentbench.py` | rebuild AgentDojo / τ-bench / BIPIA tool-output sets (benign-instruction-bench), score frozen Anchor at 1 % FPR → `out/agentbench.json` |
 | `mvp/offline/adaptive.py` | black-box rewrite attacker (CPU) and GCG suffix (GPU laptop) against the scorer → `out/adaptive.json` |
-| `mvp/offline/run_gpu.md` | ordered commands for the GPU laptop run; which files to bring back |
 | `mvp/anchor/scorer.py` | load model + probe once; `score(task, outputs) → drift, attribution, run_meta`; fail closed |
-| `mvp/anchor/policy.py` | taint rule (from `api/index.py`), block / steer |
+| `mvp/anchor/policy.py` | steer mode (taint rule already in `v2/anchor/policy.py`) |
 | `mvp/agent/` | live multi-turn loop: model picks JSON action → tool → scorer → act or taint; tools served by a local mock server; outbound via Pipelock |
 | `POST /api/score` (live) | playground: text → drift score + highlighted sentences |
 | `POST /api/agent/run` (live) | one live agent run, vanilla vs Anchor, with per-layer log (Anchor / Pipelock) |
