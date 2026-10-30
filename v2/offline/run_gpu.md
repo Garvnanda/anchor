@@ -65,6 +65,11 @@ Pages shorter than 400 tokens run faster, so this is an upper bound.
 | 9 | G3 | `python agentbench.py --model llama3b` (written in H3) | `out/llama3b/agentbench.json` | — |
 | 10 | G5 | `python adaptive.py --model llama3b` (written in H6) | `out/llama3b/adaptive.json` | — |
 
+**Dataset v2 (H1, push #2):** ~2,870 rows, ≤ 40 min for step 4 at the G1 pass time. Features hold two read
+positions (`delta_L*.npy` assistant start, `delta_end_L*.npy` last tool-output token) × 8 layers × 3072 floats
+≈ 0.6 GB on disk and in RAM during step 5. A features folder from before H1 has no end position: step 4 treats it as
+empty and re-extracts everything (expected).
+
 **Resuming:** step 4 caches by row content. If it stops (crash, sleep, closed lid), run the same command again
 and it continues from the last checkpoint. When H1 changes the dataset, rerun steps 3–6; only new or changed rows
 are extracted.

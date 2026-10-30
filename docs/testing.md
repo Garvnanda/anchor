@@ -31,7 +31,7 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
 
 ## Automated (full product, `v2/tests/`)
 Run: `.claude/test-command` (runs `mvp/tests` then `v2/tests`, both with `mvp/offline/.venv`). Before the tests,
-the qwen0.5b outputs must exist: `cd v2/offline && python seed_from_mvp.py` then the pipeline with `--model qwen0.5b`
+the qwen0.5b outputs must exist: from `v2/offline`, the pipeline with `--model qwen0.5b` (extract ~1.5 h on CPU for dataset v2)
 (see `flow.md`), plus `python smoke.py`.
 Do not run two copies of the v2 suite at once on the 16 GB laptop: `test_v2_extract_reproduces_the_seeded_mvp_cache`
 loads Qwen, and two runs together hit `MemoryError` (seen 2026-10-30). The test reads only its 5 cache rows.
@@ -44,6 +44,14 @@ loads Qwen, and two runs together hit `MemoryError` (seen 2026-10-30). The test 
   change; `run_gpu.md` lists the 3B steps; every committed `out/<model>/` (qwen now, llama3b after G2) is
   consistent (one model/precision per folder, layer best on val, val FPR ≤ target, shuffled AUROC in [0.4, 0.6],
   scores cover every row); `build_data` + `train_probe` re-run into `tmp_path` reproduce the stored qwen run (~40 s).
+- `test_attacks.py` (H1) — v1 rows an unchanged prefix; every family in train/val/test (held-out ones only in
+  `heldout`, from test docs); templates disjoint across splits; each injection has a control within ±10 % length;
+  TAG / zero-width code points (decoded TAG text is the instruction); Cyrillic look-alikes; split halves in separate
+  outputs; encoded payloads decode to the instruction; JSON families parse; tool_description in a tool description;
+  exfil URLs only in injected rows; Tamil controls disjoint from the training pool; token budget.
+- `test_pipeline.py` H1 additions — cache key unchanged for single-page rows; end index = last tool-output token
+  (both tokenizers, ids equal the chat-template ids); an MVP-era cache is re-extracted; v1 start features equal
+  the MVP cache; a fresh re-extract (prose, JSON, split payload, TAG) matches the cache at both positions.
 - `test_kaggle.py` — notebook equals `make_notebook.render()` (regenerate after editing), cells parse, every
   `step("x.py")` exists in the run_gpu order, token only from Kaggle Secrets and never written or printed, zip
   excludes features and weights.

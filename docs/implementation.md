@@ -60,7 +60,7 @@ G6 steering (stretch, after G4)        H-X Arc iGPU test (optional, any time)
 **Progress (2026-10-30):** built. Whole MVP copied into `v2/` (offline pipeline, API → `anchor/policy.py`, site,
 sim, tests). `--model/--precision`, `run_meta`, per-model folders, mismatch refusal, `run_gpu.md` and the Kaggle
 notebook are in place. The qwen0.5b run equals the MVP exactly (rows, layer 9, threshold 0.431316, all 1,434
-scores). The qwen feature cache is seeded from the MVP's (`seed_from_mvp.py`); a test re-extracts sample rows with
+scores). The qwen feature cache was seeded from the MVP's (seed script removed in H1); a test re-extracts sample rows with
 v2 code. `phase-reviewer` PASS 2026-10-30 (its 4 non-blocking notes fixed). Left (manual): the G line — Garv or
 Kaggle runs `run_gpu.md` steps 1–2 after the user pushes `v2/`.
 **Reuse (head start: large):** whole offline pipeline (`mvp/offline/common.py`, `build_data.py`, `templates.py`, `extract.py` with content-hash feature cache, `train_probe.py`, `external_eval.py`, `gen_actions.py`, `scenario_pick.py`, `build_scenarios.py`), taint rule (`mvp/api/index.py` `run_defence`) and its tests, 127 tests as templates, `.claude/test-command` pattern. New: `--model`/precision switch, `run_meta`, `run_gpu.md`.
@@ -83,7 +83,11 @@ covering `v2/tests`; `.gitignore` entries for `v2/` artifacts.
 **Prerequisites:** H0.
 **Deliverables:** `v2/offline/attacks.py` generators (encoded, invisible_unicode, homoglyph, split_payload,
 tool_description, rag_document, Tamil held out with benign-Tamil controls, exfil_link) wired into `build_data.py`;
-`rows.jsonl` + `data_summary.json` v2.
+`rows.jsonl` + `data_summary.json` v2. Added for G2 (H writes all code): two read positions in `extract.py`
+(assistant start, last tool-output token) and thresholds at 5 % and 1 % val FPR in `train_probe.py`.
+**Progress (2026-10-30):** generators + build done (2,872 rows: 1,434 v1 prefix unchanged + 698 family pairs;
+held out: Hindi, Tamil, tool_description). Qwen re-extract (both positions) running; then train_probe →
+external_eval → gen_actions → build_scenarios, tests, phase review, push #2.
 **Done when**:
 - [ ] Every family present with counts per split; held-out families (Hindi, Tamil, + any family chosen as held out) only in test/heldout (pytest).
 - [ ] Invisible-Unicode rows contain TAG / zero-width code points; homoglyph rows contain non-ASCII look-alikes; split payloads have both halves in separate outputs (pytest).

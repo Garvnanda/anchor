@@ -57,7 +57,7 @@ each with `--model {qwen0.5b,llama3b}` (default `qwen0.5b`) and an optional `--p
 | Entry point | What it does |
 |---|---|
 | `v2/offline/common.py` | `MODELS` table, `parse()` → `Run` (paths `data/<model>/`, `features/<model>/`, `out/<model>/`), `run_meta()`, `check_run_meta`/`load_probe` (raise `RunMismatch`), `load_env()` (HF token: `v2/offline/.env`, then `mvp/offline/.env`), `load_model(run)` → (tok, model, device), `render()` (fixed template date) |
-| `v2/offline/seed_from_mvp.py` | copies the MVP qwen feature cache into `features/qwen0.5b/` + meta.json with a `source` note |
+| `v2/offline/attacks.py` | H1 attack families + Tamil: templates, encoders (base64/ROT13/hex, TAG, zero-width, Cyrillic), JSON shapes, length matching (`matched`, ±10 %) |
 | `v2/offline/{smoke,build_data,extract,train_probe,external_eval,gen_actions,build_scenarios}.py` | same as the MVP steps; outputs in `out/<model>/`, each with `run_meta`; `build_scenarios` copies the given model's files into `v2/api/data/` |
 | `v2/offline/check_gpu.py` | unchanged copy → `out/gpu_check.json` |
 | `v2/offline/run_gpu.md` | ordered, resumable 3B commands (G1–G5), folder table, files to bring back |
@@ -66,14 +66,13 @@ each with `--model {qwen0.5b,llama3b}` (default `qwen0.5b`) and an optional `--p
 | `v2/api/index.py` | MVP replay API importing `anchor.policy`; serves the model that `build_scenarios` copied; `/api/health` adds `run_meta` |
 | `v2/public/`, `v2/sim/` | MVP site and simulation copies; sim compares with `out/<served model>/` |
 
-Data flow (offline, per model): SQuAD + templates → `data/<model>/rows.jsonl` → Δ activations `features/<model>/` (meta.json = run_meta) → probe `out/<model>/probe.json` + metrics/scores → InjecAgent external block → actions → scenarios → `v2/api/data/`.
+Data flow (offline, per model): SQuAD + templates + `attacks.py` families (appended after the v1 rows; split payloads carry `prior_outputs`) → `data/<model>/rows.jsonl` → Δ activations at two positions (`delta_L*.npy` assistant start, `delta_end_L*.npy` last tool-output token) `features/<model>/` (meta.json = run_meta) → probe (position + layer chosen on val; thresholds at 5 % and 1 % val FPR) `out/<model>/probe.json` + metrics/scores → InjecAgent external block → actions → scenarios → `v2/api/data/`.
 
 ## Planned (full product) — not built yet
 Paths below written as `mvp/...` map to `v2/...`. Every script takes `--model {qwen0.5b,llama3b}` and writes `run_meta`.
 
 | Command / route | What it will do |
 |---|---|
-| `mvp/offline/attacks.py` | attack-family generators (encoded, invisible Unicode, homoglyph, split payload, tool description, RAG document, second held-out language, exfil link) feeding `build_data.py` |
 | `mvp/offline/baselines.py` | Prompt Guard 2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword list, length+position control on the same splits → `out/baselines.json` |
 | `mvp/offline/agentbench.py` | rebuild AgentDojo / τ-bench / BIPIA tool-output sets (benign-instruction-bench), score frozen Anchor at 1 % FPR → `out/agentbench.json` |
 | `mvp/offline/adaptive.py` | black-box rewrite attacker (CPU) and GCG suffix (GPU laptop) against the scorer → `out/adaptive.json` |
