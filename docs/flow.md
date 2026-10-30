@@ -6,6 +6,7 @@ Update whenever an entry point or data path changes. MVP layout from `implementa
 |---|---|---|
 | `mvp/offline/check_gpu.py` | capability check for the 3B machine: CUDA, bf16/fp16 support + matmul speed, free VRAM, bitsandbytes 4-bit → `out/gpu_check.json` | exists |
 | `v2/offline/check_gpu.py` | G1: same check (copy of the MVP script) on the RTX 2050 → `v2/offline/out/gpu_check.json` | exists |
+| `v2/offline/*.py --model llama3b` | G2: same pipeline on the RTX 2050 (nf4/bf16) → `data/llama3b/`, `features/llama3b/` (ignored), `out/llama3b/*.json` | exists (v1 run 2026-10-30) |
 | `v2/offline/smoke_llama3b.py` | G1: Llama-3.2-3B NF4/bf16 on CUDA; tool-role (`ipython`) prompt with fixed `date_string`; 5 timed passes on a 400-token page, peak VRAM, headroom, repeat-pass equality → `v2/offline/out/smoke_llama3b.json` | exists |
 | `mvp/offline/smoke.py` | load model, one tool-role forward pass → `out/smoke.json` | exists |
 | `mvp/offline/build_data.py` | SQuAD docs + injections + hard negatives → `offline/data/rows.jsonl`, `out/data_summary.json` | exists |

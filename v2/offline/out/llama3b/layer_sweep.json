@@ -1,0 +1,51 @@
+{
+  "run_meta": {
+    "model": "llama3b",
+    "hf_id": "meta-llama/Llama-3.2-3B-Instruct",
+    "precision": "nf4",
+    "device": "cuda",
+    "versions": {
+      "python": "3.12.14",
+      "torch": "2.14.1+cu130",
+      "transformers": "5.21.0",
+      "scikit-learn": "1.9.1",
+      "numpy": "2.5.4",
+      "bitsandbytes": "0.50.2"
+    },
+    "date": "2026-10-30"
+  },
+  "sweep": [
+    {
+      "layer": 6,
+      "val_auroc": 0.9923
+    },
+    {
+      "layer": 9,
+      "val_auroc": 0.9902
+    },
+    {
+      "layer": 12,
+      "val_auroc": 0.9952
+    },
+    {
+      "layer": 15,
+      "val_auroc": 0.9917
+    },
+    {
+      "layer": 18,
+      "val_auroc": 0.9926
+    },
+    {
+      "layer": 21,
+      "val_auroc": 0.987
+    },
+    {
+      "layer": 24,
+      "val_auroc": 0.9864
+    },
+    {
+      "layer": 27,
+      "val_auroc": 0.9843
+    }
+  ]
+}

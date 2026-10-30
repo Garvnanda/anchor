@@ -16,7 +16,6 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 ## Measured results
 `mvp/offline/out/metrics.json`; summary in decisions.md → "Phase 2 results". Layer 9, threshold 0.4313; test AUROC 0.998 (127/132) vs keyword 0.556 (31/132); held-out Hindi 12/22, benign-Hindi FB 2/22; InjecAgent 20/200 (AUROC 0.62) vs keyword 17/200; shuffled 0.494; model hijacked 2/6 demo scenarios.
 
-## Phases (full product, `implementation.md`) — G1 done 2026-10-30
 ## Phases (full product, `implementation.md`) — H0 built 2026-10-30
 | Phase | Owner | Status | Head start from MVP | Waits on | Notes |
 |---|---|---|---|---|---|
@@ -31,10 +30,8 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 | H8 — Frontend redesign (Hallmark) + deploy | Haragam | todo | medium | H7 | security-breaker; manual look approval |
 | H9 — User sim + security + pre-demo checks | Haragam | todo | large | H8, G7 | ≥ 1,000 users vs live server |
 | H-X — Arc iGPU test (optional) | Haragam | todo | half | ≥ 7 GB free RAM, internet | half done: `torch 2.15.0+xpu` in a throwaway env |
-| G1 — GPU setup + 3B smoke, fix precision | Garv | done | medium | — | 2026-10-30: NF4 + bf16 on RTX 2050; 0.8305 s/pass (400-tok page), 1.354 GB headroom; `v2/offline/out/` |
-| G2 — 3B activations + probe | Garv | todo | large (code) | G1, H1 | layer + position comparison, 1 %/5 % FPR, controls |
-| G1 — GPU setup + 3B smoke, confirm `nf4` (NF4 + fp16 compute) | Garv (+ Kaggle) | todo | medium | repo pulled, HF token | can start now: `check_gpu.py`; then `run_gpu.md` steps 1–2 once `v2/` is pushed |
-| G2 — 3B activations + probe | Garv or Kaggle | todo | large (code) | G1, H1 | dry run on dataset v1 possible now (Kaggle notebook); proper run after H1 |
+| G1 — GPU setup + 3B smoke, fix precision | Garv | done | medium | — | 2026-10-30: NF4 + bf16 on RTX 2050 (`nf4` in common.py now bf16, user); 0.8305 s/pass (400-tok page), 1.354 GB headroom; `v2/offline/out/` |
+| G2 — 3B activations + probe | Garv | blocked (v1 run done) | large (code) | H1 | 2026-10-30 v1 run, nf4/bf16: layer 12, test 129/132 AUROC 0.9989, Hindi 21/22 (benign FB 0/22), InjecAgent 0/200 (AUROC 0.62), shuffled 0.504. Rerun run_gpu.md 3–6 after H1 |
 | G3 — Anchor-3B on agent benchmarks | Garv | todo | small | G2, H3 | frozen probe, 1 % FPR, comparable with arXiv 2610.03448 |
 | G4 — 3B model actions + live agent runs | Garv | todo | small | G2, H5 | model-sourced leak, Pipelock layer logs |
 | G5 — Adaptive attacks on 3B | Garv | todo | none | G2, H6 | black-box; GCG suffix stretch |

@@ -41,7 +41,8 @@ def load_cache(run):
     meta = run.features / "meta.json"
     check_run_meta(json.loads(meta.read_text()) if meta.exists() else None, run, f"{path}")
     z = np.load(path)
-    return {k: {L: z[f"L{L}"][i] for L in run.layers} for i, k in enumerate(z["keys"])}
+    arrs = {L: z[f"L{L}"] for L in run.layers}  # read each array once; z[...] re-reads the file on every access
+    return {k: {L: arrs[L][i] for L in run.layers} for i, k in enumerate(z["keys"])}
 
 
 def save_cache(run, cache, meta):

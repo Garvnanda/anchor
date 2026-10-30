@@ -43,9 +43,8 @@ def load_env():
 
 
 def precision():
-    """G1 decision: 4-bit NF4 weights; bf16 compute if the GPU supports it, else fp16."""
-    compute = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-    return {"weights": "nf4", "compute_dtype": str(compute).removeprefix("torch."), "double_quant": False}
+    """G1 decision: 4-bit NF4 weights, bf16 compute — same as common.load_model's `nf4`."""
+    return {"weights": "nf4", "compute_dtype": "bfloat16", "double_quant": False}
 
 
 def messages(task, output=None):

@@ -23,10 +23,11 @@ def test_gpu_check_supports_4bit_on_cuda():
 
 
 def test_smoke_precision_is_the_g1_decision():
-    """NF4 weights; bf16 compute exactly when the GPU check says bf16 is supported, else fp16."""
+    """NF4 weights, bf16 compute — the same setup common.load_model uses for `--precision nf4`."""
     prec = load("smoke_llama3b.json")["run_meta"]["precision"]
-    bf16 = load("gpu_check.json")["bf16_supported"]
-    assert prec == {"weights": "nf4", "compute_dtype": "bfloat16" if bf16 else "float16", "double_quant": False}
+    assert prec == {"weights": "nf4", "compute_dtype": "bfloat16", "double_quant": False}
+    assert load("gpu_check.json")["bf16_supported"] is True
+    assert "bnb_4bit_compute_dtype=torch.bfloat16" in (OFFLINE / "common.py").read_text()
 
 
 def test_smoke_run_meta_complete():
