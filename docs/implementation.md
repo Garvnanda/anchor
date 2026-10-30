@@ -16,7 +16,8 @@
   everything that needs no 3B model (data, attack generators, CPU baselines, benchmark-set rebuild, server, site,
   simulation, security). G runs **every Llama-3.2-3B step** on the RTX 2050 (activations, probe, agent runs,
   adaptive attacks, live demo host), using commands H writes in `v2/offline/run_gpu.md`.
-- **Second 3B machine: Kaggle (user, 2026-10-30).** H runs the heavy batch 3B steps (G1 smoke, G2, G3, G5) on a
+- **Second 3B machine: Kaggle, ruled out 2026-10-30** (T4 failed the bf16 check, `decisions.md`). Every 3B step
+  runs on Garv's RTX 2050. Original plan, kept for the record: **Kaggle (user, 2026-10-30).** H runs the heavy batch 3B steps (G1 smoke, G2, G3, G5) on a
   Kaggle T4 with `v2/kaggle/anchor_3b.ipynb`, which runs the same `run_gpu.md` steps. Whoever runs a G phase
   commits its `out/llama3b/` files; if only Garv's laptop is used, nothing changes.
   Split (user, 2026-10-30): **Kaggle** = G1 smoke on T4, G2, G3, G5, G4 model actions; **Garv's laptop (Windows)** =
@@ -24,8 +25,8 @@
 - **Per-model folders:** every script writes under `data/<model>/`, `features/<model>/`, `out/<model>/`
   (`<model>` = `qwen0.5b` or `llama3b`), so the 0.5B and 3B runs never overwrite each other (see `run_gpu.md`).
 - **One 3B setup:** the probe is trained and served with the same model build and precision: `nf4` = 4-bit NF4
-  weights, **bf16 compute**, no double quant (G1 on the RTX 2050, user kept bf16). The Kaggle T4 runs 3B only if the
-  notebook's bf16 check passes; otherwise every 3B step runs on Garv's laptop.
+  weights, **bf16 compute**, no double quant (G1 on the RTX 2050, user kept bf16). The Kaggle T4 failed the bf16
+  check, so every 3B step runs on Garv's laptop.
   Scripts refuse features or a probe whose `run_meta` precision differs. The Arc test (H-X) may add a machine
   only with the identical precision.
 - **Hand-off:** through git. Each side commits its outputs (`v2/offline/out/*.json`, never `.npy`, weights or

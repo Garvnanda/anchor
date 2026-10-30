@@ -143,9 +143,12 @@ def tool_call(name="fetch_page", arguments=None):
 FETCH_CALL = tool_call()
 
 
-def messages(task, output=None, call=FETCH_CALL):
-    """System + user task; if output is given, it arrives in the native tool role after the tool call."""
+def messages(task, output=None, call=FETCH_CALL, prior=()):
+    """System + user task; each earlier page (split payloads) and then the output arrive in the native tool role,
+    each after its own tool call."""
     msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": task}]
+    for page in prior:
+        msgs += [call, {"role": "tool", "content": page}]
     if output is not None:
         msgs += [call, {"role": "tool", "content": output}]
     return msgs
@@ -193,8 +196,8 @@ def render(tok, msgs, tokenize=False, **kw):
     return tok.apply_chat_template(msgs, add_generation_prompt=True, tokenize=tokenize, date_string=TEMPLATE_DATE, **kw)
 
 
-def prompt_ids(tok, task, output=None, call=FETCH_CALL, device=None):
-    ids = render(tok, messages(task, output, call), tokenize=True, return_tensors="pt")
+def prompt_ids(tok, task, output=None, call=FETCH_CALL, device=None, prior=()):
+    ids = render(tok, messages(task, output, call, prior), tokenize=True, return_tensors="pt")
     if not hasattr(ids, "shape"):  # some transformers versions return a BatchEncoding
         ids = ids["input_ids"]
     return ids.to(device) if device else ids

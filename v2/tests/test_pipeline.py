@@ -100,7 +100,8 @@ def test_feature_cache_refuses_other_precision(tmp_path, monkeypatch):
     monkeypatch.setattr(common, "FEATURES_ROOT", tmp_path)
     run = Run("llama3b", "nf4")
     run.features.mkdir()
-    extract.save_cache(run, {"k": {L: np.zeros(2) for L in run.layers}}, run_meta(run, "cuda"))
+    entry = {f"{extract.PREFIX[p]}{L}": np.zeros(2) for p in extract.POSITIONS for L in run.layers}
+    extract.save_cache(run, {"k": entry}, run_meta(run, "cuda"))
     assert list(extract.load_cache(run)) == ["k"]
     with pytest.raises(RunMismatch):
         extract.load_cache(Run("llama3b", "bf16"))
@@ -113,45 +114,70 @@ def test_probe_matches_its_features():
 
 # --- same model, same data → same numbers as the MVP ------------------------------------------------
 
-def test_rows_equal_the_mvp_rows():
-    assert (OFFLINE / "data" / "qwen0.5b" / "rows.jsonl").read_bytes() == (REPO / "mvp/offline/data/rows.jsonl").read_bytes()
+def test_v1_start_features_equal_the_mvp_cache():
+    """H0 showed the qwen run equals the MVP on dataset v1 (commit 9445297). With dataset v2 the probe changes, but
+    the assistant-start Δ of every v1 row must still equal the MVP's cached features."""
+    import numpy as np
+
+    mvp_rows = [json.loads(line) for line in (REPO / "mvp/offline/data/rows.jsonl").read_text(encoding="utf-8").splitlines()]
+    with np.load(REPO / "mvp/offline/features/cache.npz") as m, np.load(QWEN.features / "cache.npz") as v:
+        mpos = {k: i for i, k in enumerate(m["keys"])}
+        vpos = {k: i for i, k in enumerate(v["keys"])}
+        keys = [extract.key(r["task"], r["output"]) for r in mvp_rows]
+        for L in QWEN.layers:
+            np.testing.assert_allclose(v[f"L{L}"][[vpos[k] for k in keys]], m[f"L{L}"][[mpos[k] for k in keys]],
+                                       rtol=1e-4, atol=1e-4)
 
 
-def test_metrics_equal_the_mvp():
-    v2, mvp = out("metrics.json"), json.loads((MVP_OUT / "metrics.json").read_text())
-    for k in ("model", "layer", "threshold", "rows", "anchor", "keyword", "shuffled_label_control", "verdict"):
-        assert v2[k] == mvp[k], k
-    ext_v2 = {k: v for k, v in v2["external"].items() if k != "run_meta"}
-    assert ext_v2 == mvp["external"]
-
-
-def test_scores_equal_the_mvp():
-    assert out("scores.json")["scores"] == json.loads((MVP_OUT / "scores.json").read_text())
-
-
-def test_actions_and_scenarios_equal_the_mvp():
-    a, b = out("actions.json"), json.loads((MVP_OUT / "actions.json").read_text(encoding="utf-8"))
-    assert a["scenarios"] == b["scenarios"] and a["hijacked"] == b["hijacked"]
-    assert out("scenarios.json")["scenarios"] == json.loads((MVP_OUT / "scenarios.json").read_text(encoding="utf-8"))
-
-
-def test_v2_extract_reproduces_the_seeded_mvp_cache():
-    """The qwen cache was copied from the MVP (seed_from_mvp.py); v2's own extract code must give the same Δ."""
+def test_v2_extract_reproduces_its_cache_at_both_positions():
+    """A fresh re-extract of sample rows (prose, JSON, two-page split payload, TAG characters) matches the cache."""
     import numpy as np
 
     rows = [json.loads(line) for line in (OFFLINE / "data" / "qwen0.5b" / "rows.jsonl").read_text(encoding="utf-8").splitlines()]
-    sample = [rows[i] for i in (0, 1, 700, len(rows) - 2, len(rows) - 1)]  # train prose/json + held-out Hindi pair
+    sample = [rows[0], rows[1300], next(r for r in rows if r.get("family") == "split_payload"),
+              next(r for r in rows if r.get("family") == "invisible_unicode")]
+    names = [f"{extract.PREFIX[p]}{L}" for p in extract.POSITIONS for L in QWEN.layers]
     with np.load(QWEN.features / "cache.npz") as z:  # only the sample rows, not the whole cache (RAM)
         pos = {k: i for i, k in enumerate(z["keys"])}
-        idx = [pos[extract.key(r["task"], r["output"])] for r in sample]
-        cached = {L: z[f"L{L}"][idx] for L in QWEN.layers}
+        idx = [pos[extract.key(r["task"], r["output"], r.get("prior_outputs", ()))] for r in sample]
+        cached = {n: z[n][idx] for n in names}
     tok, model, device = common.load_model(QWEN)
     for j, r in enumerate(sample):
+        prior = r.get("prior_outputs", ())
         base = extract.state(tok, model, QWEN.layers, r["task"], device=device)
-        s = extract.state(tok, model, QWEN.layers, r["task"], r["output"], device=device)
-        for L in QWEN.layers:
-            np.testing.assert_allclose(s[L] - base[L], cached[L][j], rtol=1e-4, atol=1e-4)
+        full = extract.state(tok, model, QWEN.layers, r["task"], r["output"], device=device, prior=prior)
+        got = extract.delta(full, base, QWEN.layers)
+        for n in names:
+            np.testing.assert_allclose(got[n], cached[n][j], rtol=1e-4, atol=1e-4)
     del model
+
+
+def test_cache_key_unchanged_for_single_page_rows():
+    import hashlib
+
+    assert extract.key("t", "o") == hashlib.sha1("t\0o".encode()).hexdigest()
+    assert extract.key("t", "o", ["p"]) != extract.key("t", "o")
+
+
+def test_end_index_is_the_last_tool_output_token():
+    for run in (QWEN, Run("llama3b", "nf4")):
+        tok = common.load_tokenizer(run)
+        msgs = common.messages("Summarize this page.", "Alpha beta.", prior=["First page."])
+        text, ids, offsets = extract.encode(tok, msgs)
+        assert ids == common.prompt_ids(tok, "Summarize this page.", "Alpha beta.", prior=["First page."])[0].tolist()
+        e = extract.end_index(text, offsets, "Alpha beta.")
+        assert "beta" in tok.decode(ids[e - 1:e + 1]) and "Alpha" not in tok.decode(ids[e + 1:])
+        assert text.index("First page.") < text.index("Alpha beta.")
+
+
+def test_mvp_era_cache_without_end_position_is_re_extracted(tmp_path, monkeypatch):
+    import numpy as np
+
+    monkeypatch.setattr(common, "FEATURES_ROOT", tmp_path)
+    QWEN.features.mkdir()
+    np.savez(QWEN.features / "cache.npz", keys=np.array(["k"]), **{f"L{L}": np.zeros((1, 2)) for L in QWEN.layers})
+    (QWEN.features / "meta.json").write_text(json.dumps(run_meta(QWEN)))
+    assert extract.load_cache(QWEN) == {}
 
 
 # --- templates -----------------------------------------------------------------------------------

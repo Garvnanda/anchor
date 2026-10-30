@@ -260,3 +260,9 @@ gets date, choice, evidence once decided.
 
 ## 2026-10-30 — Merge of G1 into the H0 scaffold
 - **Decision**: one `run_gpu.md` (the H0 one) with Garv's G1 record, setup (`requirements-gpu.txt`, + `datasets`, `scikit-learn` for the pipeline) and G2 estimate (≤ 14 min per 1,000 rows) folded in. `.claude/test-command` keeps one line (Garv's extra line ran `v2/tests` from `mvp/`, where `api.index` is the MVP's). `common.load_model` uses `bnb_4bit_use_double_quant=False` and bf16 compute like `smoke_llama3b.py`, and `run_meta` records `compute_dtype`.
+
+## 2026-10-30 — Kaggle T4 fails the bf16 check: every 3B step on the RTX 2050
+- **Evidence**: the notebook's first cell on a Kaggle T4 stopped at `bf16 is emulated and too slow on this GPU` (bf16 matmul more than 4x the fp16 time; T4 = sm75, no native bf16).
+- **Decision**: Kaggle is not used for 3B numbers. G2-G5 and G7 run on Garv's RTX 2050 with the G1 build (NF4 + bf16). Time is fine: G1 measured <= 14 min per 1,000 rows, so dataset v2 (~3,800 rows) is ~55 min of extraction.
+- **Kept**: `v2/kaggle/` stays (with the check) in case a bf16 GPU (A100/L4) becomes available; it would run the same build.
+- **Alternative rejected**: fp16 compute everywhere (user kept bf16 for Garv's laptop).

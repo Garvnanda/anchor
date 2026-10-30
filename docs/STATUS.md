@@ -30,9 +30,9 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 | H8 — Frontend redesign (Hallmark) + deploy | Haragam | todo | medium | H7 | security-breaker; manual look approval |
 | H9 — User sim + security + pre-demo checks | Haragam | todo | large | H8, G7 | ≥ 1,000 users vs live server |
 | H-X — Arc iGPU test (optional) | Haragam | todo | half | ≥ 7 GB free RAM, internet | half done: `torch 2.15.0+xpu` in a throwaway env |
-| G1 — GPU setup + 3B smoke | Garv | done (his commit `a01e6f4`) | medium | — | RTX 2050: NF4 + bf16 compute, 0.83 s/400-token pass, 1.35 GB headroom; Kaggle T4 bf16 unverified (notebook checks) |
-| G2 — 3B activations + probe | Garv | todo | large (code) | G1, H1 | layer + position comparison, 1 %/5 % FPR, controls |
-| G1 — GPU setup + 3B smoke | Garv | done (his commit `a01e6f4`) | medium | — | RTX 2050: NF4 + bf16 compute, 0.83 s/400-token pass, 1.35 GB headroom; Kaggle T4 bf16 unverified (notebook checks) |
+| G1 — GPU setup + 3B smoke | Garv | done (his commit `a01e6f4`) | medium | — | RTX 2050: NF4 + bf16 compute, 0.83 s/400-token pass, 1.35 GB headroom; Kaggle T4 failed the bf16 check: all 3B steps on Garv's laptop |
+| G2 — 3B activations + probe | Garv (RTX 2050 only) | todo | large (code) | G1, H1 | layer + position comparison, 1 %/5 % FPR, controls |
+| G1 — GPU setup + 3B smoke | Garv | done (his commit `a01e6f4`) | medium | — | RTX 2050: NF4 + bf16 compute, 0.83 s/400-token pass, 1.35 GB headroom; Kaggle T4 failed the bf16 check: all 3B steps on Garv's laptop |
 | G2 — 3B activations + probe | Garv or Kaggle | todo | large (code) | G1, H1 | dry run on dataset v1 possible now (Kaggle notebook); proper run after H1 |
 | G3 — Anchor-3B on agent benchmarks | Garv | todo | small | G2, H3 | frozen probe, 1 % FPR, comparable with arXiv 2610.03448 |
 | G4 — 3B model actions + live agent runs | Garv | todo | small | G2, H5 | model-sourced leak, Pipelock layer logs |

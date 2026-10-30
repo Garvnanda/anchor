@@ -33,8 +33,8 @@ uv pip install --python .venv/Scripts/python.exe -r requirements-gpu.txt
 template `date_string="26 Jul 2024"` (`decisions.md` 2026-10-30). Every 3B machine runs exactly this build. Scripts
 refuse to mix: `extract.py` stops when `features/llama3b/` holds another precision (delete that folder to start
 over), `external_eval` / `gen_actions` refuse a `probe.json` with a different `run_meta`, and `load_model` stops on
-a GPU without bf16 support. The Kaggle T4 has no native bf16: the notebook checks bf16 on the T4 first and stops if
-it fails or is too slow; then every 3B step runs here.
+a GPU without bf16 support. The Kaggle T4 failed the notebook's bf16 check (2026-10-30), so **every 3B step
+runs on this laptop**.
 
 ## G1 record (done 2026-10-30, `smoke_llama3b.py`)
 | Step | Command | Runtime | Bring back |

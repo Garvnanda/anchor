@@ -3,6 +3,7 @@
     "model": "qwen0.5b",
     "hf_id": "Qwen/Qwen2.5-0.5B-Instruct",
     "precision": "fp32",
+    "compute_dtype": "fp32",
     "device": "cpu",
     "versions": {
       "python": "3.12.10",
@@ -14,8 +15,11 @@
     },
     "date": "2026-10-30"
   },
-  "rows": 1434,
-  "dropped_over_token_budget": [],
+  "rows": 2872,
+  "dropped_over_token_budget": [
+    "d140-tamil",
+    "d140-benign_tamil"
+  ],
   "docs": 190,
   "counts": [
     {
@@ -26,9 +30,57 @@
     },
     {
       "split": "heldout",
+      "style": "benign_tamil",
+      "label": 0,
+      "n": 21
+    },
+    {
+      "split": "heldout",
+      "style": "benign_tool_description",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "heldout",
       "style": "hindi_hinglish",
       "label": 1,
       "n": 22
+    },
+    {
+      "split": "heldout",
+      "style": "tamil",
+      "label": 1,
+      "n": 21
+    },
+    {
+      "split": "heldout",
+      "style": "tool_description",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "benign_encoded",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "test",
+      "style": "benign_exfil_link",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "test",
+      "style": "benign_homoglyph",
+      "label": 0,
+      "n": 16
+    },
+    {
+      "split": "test",
+      "style": "benign_invisible_unicode",
+      "label": 0,
+      "n": 17
     },
     {
       "split": "test",
@@ -38,9 +90,33 @@
     },
     {
       "split": "test",
+      "style": "benign_rag_document",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "test",
+      "style": "benign_split_payload",
+      "label": 0,
+      "n": 16
+    },
+    {
+      "split": "test",
       "style": "clean",
       "label": 0,
       "n": 22
+    },
+    {
+      "split": "test",
+      "style": "encoded",
+      "label": 1,
+      "n": 17
+    },
+    {
+      "split": "test",
+      "style": "exfil_link",
+      "label": 1,
+      "n": 17
     },
     {
       "split": "test",
@@ -50,9 +126,21 @@
     },
     {
       "split": "test",
+      "style": "homoglyph",
+      "label": 1,
+      "n": 16
+    },
+    {
+      "split": "test",
       "style": "html_comment",
       "label": 1,
       "n": 22
+    },
+    {
+      "split": "test",
+      "style": "invisible_unicode",
+      "label": 1,
+      "n": 17
     },
     {
       "split": "test",
@@ -80,6 +168,18 @@
     },
     {
       "split": "test",
+      "style": "rag_document",
+      "label": 1,
+      "n": 17
+    },
+    {
+      "split": "test",
+      "style": "split_payload",
+      "label": 1,
+      "n": 16
+    },
+    {
+      "split": "test",
       "style": "user_voice",
       "label": 1,
       "n": 22
@@ -92,15 +192,63 @@
     },
     {
       "split": "train",
+      "style": "benign_encoded",
+      "label": 0,
+      "n": 79
+    },
+    {
+      "split": "train",
+      "style": "benign_exfil_link",
+      "label": 0,
+      "n": 79
+    },
+    {
+      "split": "train",
+      "style": "benign_homoglyph",
+      "label": 0,
+      "n": 79
+    },
+    {
+      "split": "train",
+      "style": "benign_invisible_unicode",
+      "label": 0,
+      "n": 79
+    },
+    {
+      "split": "train",
       "style": "benign_multilingual",
       "label": 0,
       "n": 105
     },
     {
       "split": "train",
+      "style": "benign_rag_document",
+      "label": 0,
+      "n": 79
+    },
+    {
+      "split": "train",
+      "style": "benign_split_payload",
+      "label": 0,
+      "n": 78
+    },
+    {
+      "split": "train",
       "style": "clean",
       "label": 0,
       "n": 105
+    },
+    {
+      "split": "train",
+      "style": "encoded",
+      "label": 1,
+      "n": 79
+    },
+    {
+      "split": "train",
+      "style": "exfil_link",
+      "label": 1,
+      "n": 79
     },
     {
       "split": "train",
@@ -110,9 +258,21 @@
     },
     {
       "split": "train",
+      "style": "homoglyph",
+      "label": 1,
+      "n": 79
+    },
+    {
+      "split": "train",
       "style": "html_comment",
       "label": 1,
       "n": 105
+    },
+    {
+      "split": "train",
+      "style": "invisible_unicode",
+      "label": 1,
+      "n": 79
     },
     {
       "split": "train",
@@ -137,6 +297,18 @@
       "style": "polite_no_triggers",
       "label": 1,
       "n": 105
+    },
+    {
+      "split": "train",
+      "style": "rag_document",
+      "label": 1,
+      "n": 79
+    },
+    {
+      "split": "train",
+      "style": "split_payload",
+      "label": 1,
+      "n": 78
     },
     {
       "split": "train",
@@ -152,9 +324,45 @@
     },
     {
       "split": "val",
+      "style": "benign_encoded",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "val",
+      "style": "benign_exfil_link",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "val",
+      "style": "benign_homoglyph",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "val",
+      "style": "benign_invisible_unicode",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "val",
       "style": "benign_multilingual",
       "label": 0,
       "n": 23
+    },
+    {
+      "split": "val",
+      "style": "benign_rag_document",
+      "label": 0,
+      "n": 17
+    },
+    {
+      "split": "val",
+      "style": "benign_split_payload",
+      "label": 0,
+      "n": 18
     },
     {
       "split": "val",
@@ -164,15 +372,39 @@
     },
     {
       "split": "val",
+      "style": "encoded",
+      "label": 1,
+      "n": 17
+    },
+    {
+      "split": "val",
+      "style": "exfil_link",
+      "label": 1,
+      "n": 17
+    },
+    {
+      "split": "val",
       "style": "hard_negative",
       "label": 0,
       "n": 7
     },
     {
       "split": "val",
+      "style": "homoglyph",
+      "label": 1,
+      "n": 17
+    },
+    {
+      "split": "val",
       "style": "html_comment",
       "label": 1,
       "n": 23
+    },
+    {
+      "split": "val",
+      "style": "invisible_unicode",
+      "label": 1,
+      "n": 17
     },
     {
       "split": "val",
@@ -197,6 +429,18 @@
       "style": "polite_no_triggers",
       "label": 1,
       "n": 23
+    },
+    {
+      "split": "val",
+      "style": "rag_document",
+      "label": 1,
+      "n": 17
+    },
+    {
+      "split": "val",
+      "style": "split_payload",
+      "label": 1,
+      "n": 18
     },
     {
       "split": "val",
@@ -214,7 +458,7 @@
   "mean_words": {
     "json_clean": 96.6,
     "json_injected": 98.5,
-    "prose_clean": 135.0,
-    "prose_injected": 139.6
+    "prose_clean": 103.6,
+    "prose_injected": 115.5
   }
 }
