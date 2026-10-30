@@ -1,2 +1,1 @@
-cd mvp && offline/.venv/Scripts/python -m pytest tests ../v2/tests -q
 cd mvp && offline/.venv/Scripts/python -m pytest tests -q && cd ../v2 && ../mvp/offline/.venv/Scripts/python -m pytest tests -q

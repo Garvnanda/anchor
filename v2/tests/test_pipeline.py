@@ -254,3 +254,21 @@ def test_build_data_and_train_probe_regenerate_the_stored_qwen_run(tmp_path, mon
     for k in ("layer", "threshold", "rows", "anchor", "keyword", "shuffled_label_control", "verdict"):
         assert new[k] == out("metrics.json")[k], k
     assert json.loads((tmp_path / "out/qwen0.5b/scores.json").read_text())["scores"] == out("scores.json")["scores"]
+
+
+def test_nf4_is_the_g1_build():
+    """G1 (decisions.md 2026-10-30): NF4 weights, bf16 compute, no double quant; recorded in run_meta."""
+    src = (OFFLINE / "common.py").read_text(encoding="utf-8")
+    assert "bnb_4bit_compute_dtype=torch.bfloat16" in src and "bnb_4bit_use_double_quant=False" in src
+    assert run_meta(Run("llama3b", "nf4"))["compute_dtype"] == "bf16"
+    assert run_meta(QWEN)["compute_dtype"] == "fp32"
+
+
+def test_nf4_refuses_cpu():
+    import torch
+
+    if torch.cuda.is_available():  # GPU machine: the CPU branch cannot be reached here; check the guard text
+        assert "needs a CUDA GPU" in (OFFLINE / "common.py").read_text(encoding="utf-8")
+        return
+    with pytest.raises(RuntimeError, match="needs a CUDA GPU"):
+        common.load_model(Run("llama3b", "nf4"))

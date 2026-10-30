@@ -24,7 +24,8 @@
 - **Per-model folders:** every script writes under `data/<model>/`, `features/<model>/`, `out/<model>/`
   (`<model>` = `qwen0.5b` or `llama3b`), so the 0.5B and 3B runs never overwrite each other (see `run_gpu.md`).
 - **One 3B setup:** the probe is trained and served with the same model build and precision: `nf4` = 4-bit NF4
-  weights, **fp16 compute**, on both the RTX 2050 and the Kaggle T4 (the T4 has no bf16). G1 confirms it on both.
+  weights, **bf16 compute**, no double quant (G1 on the RTX 2050, user kept bf16). The Kaggle T4 runs 3B only if the
+  notebook's bf16 check passes; otherwise every 3B step runs on Garv's laptop.
   Scripts refuse features or a probe whose `run_meta` precision differs. The Arc test (H-X) may add a machine
   only with the identical precision.
 - **Hand-off:** through git. Each side commits its outputs (`v2/offline/out/*.json`, never `.npy`, weights or
@@ -72,7 +73,7 @@ covering `v2/tests`; `.gitignore` entries for `v2/` artifacts.
 - [x] `v2/` runs end to end with `--model qwen0.5b` on CPU (build_data → extract → train_probe) and its numbers match the MVP's within rounding (same model, same data) — test.
 - [x] Every output carries `run_meta`; the probe loader refuses a `run_meta` model/precision different from the loaded model — tests.
 - [x] `policy.py` passes the MVP taint tests (ported).
-- [ ] `run_gpu.md` lists G2–G5 commands (test); G confirms they run (first line of G1, on the RTX 2050 or Kaggle).
+- [ ] `run_gpu.md` lists G2–G5 commands (test); G confirms they run: G1 used Garv's own `smoke_llama3b.py`, so the v2 pipeline's `smoke.py --model llama3b` (run_gpu.md step 2) is still to run on the RTX 2050 or Kaggle.
 - [x] `mvp/` unchanged (`git diff --stat mvp/` empty for this phase).
 
 ### Phase 2 (H1) — Attack families and dataset v2
@@ -196,7 +197,7 @@ of `v2/`; optional tunnel bridge to the live laptop (stretch).
 
 ## Garv (G) — RTX 2050 (4 GB), i5-H, all Llama-3.2-3B runs
 
-### Phase G1 — GPU setup and 3B smoke
+### Phase 12 (G1) — GPU setup and 3B smoke
 **Status**: done
 **Reuse (head start: medium):** `mvp/offline/check_gpu.py` (+ test) ready to run; `smoke.py` pattern for the 3B smoke.
 **Prerequisites:** repo pulled; HF token with Llama access in `v2/offline/.env` (git-ignored; Garv's own token or Haragam's shared privately).
@@ -207,9 +208,6 @@ rendered prompt check); precision confirmed.
 - [x] `gpu_check.json` and `smoke_llama3b.json` committed (`v2/offline/out/`); 3B runs with ≥ 0.5 GB VRAM headroom on a 400-token page (1.354 GB measured).
 - [x] Precision fixed (NF4 + bf16 compute, measured; expected: 4-bit NF4 weights, bf16 compute if `bf16_supported`, else fp16) and recorded in `decisions.md`; `QUESTIONS.md` 3B item closed.
 - [x] Time per pass recorded (0.8305 s); G2 runtime estimated in `run_gpu.md` (~14 min / 1,000 rows).
-- [ ] `gpu_check.json` and `out/llama3b/smoke.json` committed; 3B runs with ≥ 0.5 GB VRAM headroom on a 400-token page.
-- [ ] Precision `nf4` (NF4 weights, fp16 compute) confirmed working on the RTX 2050 and recorded in `decisions.md`; `QUESTIONS.md` 3B item closed.
-- [ ] Time per pass recorded; G2 runtime estimated in `run_gpu.md`.
 
 ### Phase 13 (G2) — 3B activations and probe
 **Status**: todo

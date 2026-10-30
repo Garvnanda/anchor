@@ -20,8 +20,9 @@ CELLS = [
     md("""
 # Anchor — Llama-3.2-3B runs on Kaggle (G1 smoke, G2 probe, G4 actions)
 
-Runs the steps of `v2/offline/run_gpu.md` with `--model llama3b --precision nf4`: 4-bit NF4 weights, fp16 compute,
-the same build as Garv's RTX 2050, so one probe serves both machines.
+Runs the steps of `v2/offline/run_gpu.md` with `--model llama3b --precision nf4`: 4-bit NF4 weights, **bf16
+compute**, the G1 build on Garv's RTX 2050, so one probe serves both machines. The T4 has no native bf16: step 1
+checks that bf16 works and is fast enough here, and stops otherwise (then Garv's laptop runs every 3B step).
 
 **Before Run all**
 1. *Settings → Accelerator → GPU T4 x2* (one GPU is used). *Settings → Internet → On*.
@@ -50,6 +51,20 @@ print(subprocess.run(["nvidia-smi"], capture_output=True, text=True).stdout)
 import torch
 assert torch.cuda.is_available(), "No GPU: Settings -> Accelerator -> GPU T4 x2"
 print(torch.__version__, torch.cuda.get_device_name(0))
+# The 3B build computes in bf16 (G1). Check it runs here and is not emulated-slow before spending GPU hours.
+assert torch.cuda.is_bf16_supported(), "this GPU has no bf16: run the 3B steps on Garv's laptop instead"
+a = torch.randn(512, 3072, device="cuda")
+b = torch.randn(3072, 3072, device="cuda")
+ms = {}
+for dt in (torch.float16, torch.bfloat16):
+    x, y = a.to(dt), b.to(dt)
+    torch.mm(x, y); torch.cuda.synchronize(); t = time.perf_counter()
+    for _ in range(20):
+        torch.mm(x, y)
+    torch.cuda.synchronize(); ms[str(dt)] = (time.perf_counter() - t) / 20 * 1000
+print("ms per 512x3072x3072 matmul:", {k: round(v, 3) for k, v in ms.items()})
+BF16_SLOWDOWN_LIMIT = 4.0  # bf16 vs fp16 on this GPU; above this, extraction would take many hours
+assert ms["torch.bfloat16"] <= BF16_SLOWDOWN_LIMIT * ms["torch.float16"], "bf16 is emulated and too slow on this GPU"
 """),
     code("""
 # 2. Code + pinned libraries (torch stays Kaggle's CUDA build)
@@ -62,7 +77,7 @@ else:
 OFFLINE = f"{ROOT}/v2/offline"
 assert os.path.exists(f"{OFFLINE}/run_gpu.md"), "v2/ is not on GitHub yet"
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "transformers==5.21.0", "datasets==5.1.0",
-                "scikit-learn==1.9.1", "bitsandbytes", "accelerate"], check=True)
+                "scikit-learn==1.9.1", "bitsandbytes==0.50.2", "accelerate==1.15.0"], check=True)  # G1 pins
 print(subprocess.run(["git", "-C", ROOT, "log", "-1", "--oneline"], capture_output=True, text=True).stdout)
 """),
     code("""

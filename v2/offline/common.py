@@ -21,12 +21,13 @@ ENV_FILES = (ROOT / ".env", ROOT.parents[1] / "mvp" / "offline" / ".env")  # v2 
 MODELS = {
     "qwen0.5b": {"hf_id": "Qwen/Qwen2.5-0.5B-Instruct", "n_layers": 24, "layers": [6, 9, 12, 15, 18],
                  "precisions": ("fp32",), "default_precision": "fp32"},
-    # 28 layers; every 3rd is swept (user, 2026-10-30). nf4 = 4-bit NF4 weights, fp16 compute: identical on the
-    # Kaggle T4 (no bf16) and the RTX 2050, so one probe serves both machines (decisions.md 2026-10-30).
+    # 28 layers; every 3rd is swept (user, 2026-10-30). nf4 = 4-bit NF4 weights, bf16 compute, no double quant:
+    # the G1 build on the RTX 2050 (decisions.md 2026-10-30). Any other 3B machine must run exactly this.
     "llama3b": {"hf_id": "meta-llama/Llama-3.2-3B-Instruct", "n_layers": 28, "layers": [6, 9, 12, 15, 18, 21, 24, 27],
                 "precisions": ("nf4", "bf16", "fp16", "fp32"), "default_precision": "nf4"},
 }
 PRECISIONS = ("fp32", "bf16", "fp16", "nf4")
+COMPUTE_DTYPE = {"nf4": "bf16"}  # nf4 weights are dequantised to bf16 for every matmul (G1 build)
 # Llama's chat template stamps "Today Date" into the system prompt; fixed so activations do not change by day.
 TEMPLATE_DATE = "26 Jul 2024"
 
@@ -94,7 +95,8 @@ def _version(pkg):
 
 def run_meta(run, device="cpu"):
     """Provenance block written into every output: which model, precision, device and library versions made it."""
-    return {"model": run.model, "hf_id": run.hf_id, "precision": run.precision, "device": device,
+    return {"model": run.model, "hf_id": run.hf_id, "precision": run.precision,
+            "compute_dtype": COMPUTE_DTYPE.get(run.precision, run.precision), "device": device,
             "versions": {"python": platform.python_version(), **{k: _version(k) for k in
                          ("torch", "transformers", "scikit-learn", "numpy", "bitsandbytes")}},
             "date": date.today().isoformat()}
@@ -168,10 +170,13 @@ def load_model(run):
     if run.precision == "nf4":
         if device != "cuda":
             raise RuntimeError("--precision nf4 needs a CUDA GPU (bitsandbytes 4-bit)")
+        if not torch.cuda.is_bf16_supported():
+            raise RuntimeError("--precision nf4 uses bf16 compute (G1 build); this GPU reports no bf16 support")
         from transformers import BitsAndBytesConfig
 
         kw = {"quantization_config": BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
-                                                        bnb_4bit_compute_dtype=torch.float16),
+                                                        bnb_4bit_compute_dtype=torch.bfloat16,
+                                                        bnb_4bit_use_double_quant=False),
               "device_map": {"": 0}}
     else:
         kw = {"dtype": {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}[run.precision]}
