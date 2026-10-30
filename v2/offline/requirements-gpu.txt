@@ -1,0 +1,10 @@
+# GPU laptop (RTX 2050) venv: uv venv --python 3.12 .venv && uv pip install -r requirements-gpu.txt
+--extra-index-url https://download.pytorch.org/whl/cu130
+torch==2.14.1+cu130
+transformers==5.21.0
+accelerate==1.15.0
+bitsandbytes==0.50.2
+numpy==2.5.4
+safetensors==0.8.0
+huggingface_hub==2.4.0
+pytest==9.1.1

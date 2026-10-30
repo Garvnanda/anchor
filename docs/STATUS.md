@@ -1,5 +1,5 @@
 # Status / resume point
-Updated 2026-10-29. Read this first when resuming.
+Updated 2026-10-30. Read this first when resuming.
 
 Active plan (hook-tracked): `docs/implementation_mvp.md` until the MVP is deployed. Then `docs/implementation.md` (full product, H / G phases) becomes active.
 
@@ -16,7 +16,7 @@ Active plan (hook-tracked): `docs/implementation_mvp.md` until the MVP is deploy
 ## Measured results
 `mvp/offline/out/metrics.json`; summary in decisions.md → "Phase 2 results". Layer 9, threshold 0.4313; test AUROC 0.998 (127/132) vs keyword 0.556 (31/132); held-out Hindi 12/22, benign-Hindi FB 2/22; InjecAgent 20/200 (AUROC 0.62) vs keyword 17/200; shuffled 0.494; model hijacked 2/6 demo scenarios.
 
-## Phases (full product, `implementation.md`) — none started; core work 2026-10-30
+## Phases (full product, `implementation.md`) — G1 done 2026-10-30
 | Phase | Owner | Status | Head start from MVP | Waits on | Notes |
 |---|---|---|---|---|---|
 | H0 — Scaffold new folder + model switch + `run_gpu.md` | Haragam | todo | large | MVP deployed; folder name | copy MVP pipeline, `--model`, `run_meta`, shared taint rule |
@@ -30,7 +30,7 @@ Active plan (hook-tracked): `docs/implementation_mvp.md` until the MVP is deploy
 | H8 — Frontend redesign (Hallmark) + deploy | Haragam | todo | medium | H7 | security-breaker; manual look approval |
 | H9 — User sim + security + pre-demo checks | Haragam | todo | large | H8, G7 | ≥ 1,000 users vs live server |
 | H-X — Arc iGPU test (optional) | Haragam | todo | half | ≥ 7 GB free RAM, internet | half done: `torch 2.15.0+xpu` in a throwaway env |
-| G1 — GPU setup + 3B smoke, fix precision | Garv | todo | medium | repo pulled, HF token | run `mvp/offline/check_gpu.py` first |
+| G1 — GPU setup + 3B smoke, fix precision | Garv | done | medium | — | 2026-10-30: NF4 + bf16 on RTX 2050; 0.8305 s/pass (400-tok page), 1.354 GB headroom; `v2/offline/out/` |
 | G2 — 3B activations + probe | Garv | todo | large (code) | G1, H1 | layer + position comparison, 1 %/5 % FPR, controls |
 | G3 — Anchor-3B on agent benchmarks | Garv | todo | small | G2, H3 | frozen probe, 1 % FPR, comparable with arXiv 2610.03448 |
 | G4 — 3B model actions + live agent runs | Garv | todo | small | G2, H5 | model-sourced leak, Pipelock layer logs |
@@ -46,7 +46,8 @@ Active plan (hook-tracked): `docs/implementation_mvp.md` until the MVP is deploy
 - Measured 2026-10-29: 3B cannot run on Haragam's CPU (no native bf16; bf16 matmul ~380× slower than fp32). Arc iGPU test (H-X) half done: `torch 2.15.0+xpu` in a throwaway env; stopped for low RAM + network drop.
 - Next: (1) deploy the MVP (`implementation_mvp.md` Phase 5); (2) core work 2026-10-30: Garv starts G1 (`mvp/offline/check_gpu.py`), Haragam starts H0.
 - Tools installed globally 2026-10-29: NVIDIA SkillSpector (`uv tool`), skills `skill-inspector` and `hallmark`; global `~/.claude/CLAUDE.md` now requires scanning skills before install and running Hallmark on frontend work.
-- Gate: `.claude/test-command` → 124 passed.
+- Gate: `.claude/test-command` (now mvp/tests + v2/tests).
+- Garv's laptop: venvs `mvp/offline/.venv` (CPU, Python 3.12 via `uv`) and `v2/offline/.venv` (CUDA, `requirements-gpu.txt`); Llama-3.2-3B cached in `~/.cache/huggingface`. Next for G: G2 once H0 + H1 land.
 - Pipeline re-run order (from `mvp/offline`): `train_probe → external_eval → gen_actions → build_scenarios` (extract reuses the feature cache; gen_actions ~10 min on CPU).
 - `pip-audit` was installed into `mvp/offline/.venv` by the security run (dev-only, not in requirements).
 
