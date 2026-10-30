@@ -2,7 +2,7 @@
 MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock, live mode) lives with `implementation.md` and is added back when those phases start.
 
 ## Automated
-- Full suite: `.claude/test-command` → `cd mvp && offline/.venv/Scripts/python -m pytest tests -q` (project venv: has fastapi + httpx for API tests). Tests read JSON/JSONL only; no torch imported. Artifact tests fail until the offline pipeline has run.
+- Full suite: `.claude/test-command` → `cd mvp && offline/.venv/Scripts/python -m pytest tests ../v2/tests -q` (project venv: has fastapi + httpx for API tests). Tests read JSON/JSONL only; no torch imported. Artifact tests fail until the offline pipeline has run.
 - Existing:
   - `test_design_mock.py` — `design/mock.html` has light + dark token sets for every colour family, plus the auto/light/dark switch.
   - `test_data.py` (Phase 1) — no doc in two splits; held-out from test docs only, paired one-to-one with benign-Hindi controls; length match; templates, benign and trigger sentences disjoint across train/val/test; insertion survives (no truncation); polite style has no keyword markers. 21 passing with the design tests.
@@ -12,6 +12,8 @@ MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock
   - `test_check_deploy.py` (Phase 5) — `check_deploy.check()` passes on the real app and reports a metrics mismatch when the expected file differs.
   - `test_readme.py` (Phase 5) — README names the live URL; every cell of the README MVP results table and every number in its prose equals `offline/out/metrics.json`; screenshot file exists. Update the README block whenever the pipeline is re-run.
   - `test_check_gpu.py` (full product, Phase 0) — `check_gpu.py` runs and writes its report on a machine without CUDA.
+  - `v2/tests/test_g1.py` (full product, G1) — committed `gpu_check.json` shows CUDA + 4-bit OK; `smoke_llama3b.json` has the G1 precision (NF4, bf16 iff supported), complete `run_meta`, 29 hidden states, ≥ 400-token page, ≥ 0.5 GB headroom, all rendered-prompt checks true, timings; `check_rendered` rejects a page in the user role / prompt not ending at assistant start; `run_gpu.md` carries the measured pass time.
+  - Fresh clone: `test_probe.py` feature tests need `mvp/offline/features/*.npy` (git-ignored) — run `mvp/offline/extract.py` once (CPU, ~30 min) before the gate.
   - `test_api.py` (Phase 3) — taint rule, verdicts per scenario, validation (404/422/413), no ML imports, every served number traced to `offline/out/`.
 - Simulation: `cd mvp && offline/.venv/Scripts/python sim/simulate.py` (in-process) → `sim/report.json`; add `--url http://127.0.0.1:8000` to run the same sessions over HTTP against a running server → `sim/report_http.json`. Exits non-zero if the pass bar fails. Restart the server after code changes (no `--reload`). Results: `docs/user-sim-report.md`.
   - `test_sim.py` (Phase 4.5) — the sim's independent taint-rule oracle agrees with the API on every scenario at 7 thresholds; every invalid sim input gets a 4xx.

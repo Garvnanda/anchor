@@ -17,6 +17,8 @@ Unchecked items block build-all and scheduled runs. Answer under the item, then 
   **Answer**: fresh security-tool look, mock approved before Phase 1. Chrome automation allowed on localhost.
 
 ## Full product (opened 2026-10-29)
+- [x] (all) Where does 3B run for training *and* serving the probe: this laptop (CPU bf16) or the RTX 2050 laptop (4-bit)? Depends on the CPU speed spike (running 2026-10-29). Must be one setup for both.
+  **Answer** (G1, 2026-10-30): RTX 2050, NF4 weights + bf16 compute (measured; see `decisions.md` 2026-10-30).
 - [ ] (all) Where does 3B run for training *and* serving the probe: this laptop (CPU bf16) or the RTX 2050 laptop (4-bit)? Depends on the CPU speed spike (running 2026-10-29). Must be one setup for both.
   **Partial answer** (2026-10-30): not this laptop's CPU (measured). Both the RTX 2050 and a Kaggle T4 (user) run `nf4` = NF4 weights + fp16 compute. Open until G1 confirms it runs on the RTX 2050.
 - [x] (all) Code location: keep growing inside `mvp/` (no churn; Vercel root stays `mvp`) or move to a new top-level package? Recommendation: keep `mvp/` until submission.
@@ -26,6 +28,9 @@ Unchecked items block build-all and scheduled runs. Answer under the item, then 
 - [x] (live) Pipelock install on the demo laptop: build from source (needs Go 1.26+) or verified prebuilt release (includes inactive paid-tier code)? Download needs your OK.
   **Answer**: prebuilt release (user, 2026-10-29). Installed v3.7.1 `windows_amd64` at `~/tools/pipelock/pipelock.exe` (outside the repo); SHA-256 matches the release `checksums.txt` (a06d89e2…2065); signature not checked (no cosign). Repeat on the demo laptop if it is a different machine.
 - [ ] (baselines) Horizon-Labs guard and PIGuard licences: check model cards before running; gated ones need you to accept terms on Hugging Face.
+- [ ] (H0) Name of the new full-product folder (written as `v2/` in the docs until H0 scaffolds it).
+- [x] (G1) HF token on Garv's laptop: his own token with Llama access, or Haragam's shared privately (never via git or chat)?
+  **Answer**: token is in the git-ignored `.env` on Garv's laptop; the Llama-3.2-3B download worked (2026-10-30).
 - [x] (H0) Name of the new full-product folder (written as `v2/` in the docs until H0 scaffolds it).
   **Answer**: `v2/` (user, 2026-10-30).
 - [x] (G1) HF token on Garv's laptop: his own token with Llama access, or Haragam's shared privately (never via git or chat)?

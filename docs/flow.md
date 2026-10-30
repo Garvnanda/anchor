@@ -5,6 +5,8 @@ Update whenever an entry point or data path changes. MVP layout from `implementa
 | Command / route | What starts here | Status |
 |---|---|---|
 | `mvp/offline/check_gpu.py` | capability check for the 3B machine: CUDA, bf16/fp16 support + matmul speed, free VRAM, bitsandbytes 4-bit → `out/gpu_check.json` | exists |
+| `v2/offline/check_gpu.py` | G1: same check (copy of the MVP script) on the RTX 2050 → `v2/offline/out/gpu_check.json` | exists |
+| `v2/offline/smoke_llama3b.py` | G1: Llama-3.2-3B NF4/bf16 on CUDA; tool-role (`ipython`) prompt with fixed `date_string`; 5 timed passes on a 400-token page, peak VRAM, headroom, repeat-pass equality → `v2/offline/out/smoke_llama3b.json` | exists |
 | `mvp/offline/smoke.py` | load model, one tool-role forward pass → `out/smoke.json` | exists |
 | `mvp/offline/build_data.py` | SQuAD docs + injections + hard negatives → `offline/data/rows.jsonl`, `out/data_summary.json` | exists |
 | `mvp/offline/extract.py` | rows → Δ activations per layer → `offline/features/delta_L{n}.npy` | exists |
@@ -75,6 +77,7 @@ Paths below written as `mvp/...` map to `v2/...`. Every script takes `--model {q
 | `mvp/offline/baselines.py` | Prompt Guard 2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword list, length+position control on the same splits → `out/baselines.json` |
 | `mvp/offline/agentbench.py` | rebuild AgentDojo / τ-bench / BIPIA tool-output sets (benign-instruction-bench), score frozen Anchor at 1 % FPR → `out/agentbench.json` |
 | `mvp/offline/adaptive.py` | black-box rewrite attacker (CPU) and GCG suffix (GPU laptop) against the scorer → `out/adaptive.json` |
+| `v2/offline/run_gpu.md` | ordered commands for the GPU laptop run; which files to bring back — **exists** with G1 + G2 estimate; H0 adds G2–G5 commands |
 | `mvp/anchor/scorer.py` | load model + probe once; `score(task, outputs) → drift, attribution, run_meta`; fail closed |
 | `mvp/anchor/policy.py` | steer mode (taint rule already in `v2/anchor/policy.py`) |
 | `mvp/agent/` | live multi-turn loop: model picks JSON action → tool → scorer → act or taint; tools served by a local mock server; outbound via Pipelock |

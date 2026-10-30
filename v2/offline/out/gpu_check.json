@@ -1,0 +1,25 @@
+{
+  "os": "Windows-11-10.0.26300-SP0",
+  "python": "3.12.14",
+  "torch": "2.14.1+cu130",
+  "cuda_available": true,
+  "cuda_version": "13.0",
+  "gpu": "NVIDIA GeForce RTX 2050",
+  "compute_capability": "8.6",
+  "vram_total_gb": 4.29,
+  "vram_free_gb": 3.46,
+  "bf16_supported": true,
+  "ms_per_matmul": {
+    "torch.float32": 4.408,
+    "torch.float16": 1.54,
+    "torch.bfloat16": 1.562
+  },
+  "llama3b_weights_gb_estimate": {
+    "bf16": 6.4,
+    "fp16": 6.4,
+    "4bit": 1.8
+  },
+  "llama3b_bf16_fits": false,
+  "bitsandbytes": "0.50.2",
+  "bitsandbytes_4bit_ok": true
+}

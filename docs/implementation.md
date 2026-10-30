@@ -196,14 +196,17 @@ of `v2/`; optional tunnel bridge to the live laptop (stretch).
 
 ## Garv (G) — RTX 2050 (4 GB), i5-H, all Llama-3.2-3B runs
 
-### Phase 12 (G1) — GPU setup and 3B smoke
-**Status**: todo
+### Phase G1 — GPU setup and 3B smoke
+**Status**: done
 **Reuse (head start: medium):** `mvp/offline/check_gpu.py` (+ test) ready to run; `smoke.py` pattern for the 3B smoke.
 **Prerequisites:** repo pulled; HF token with Llama access in `v2/offline/.env` (git-ignored; Garv's own token or Haragam's shared privately).
 **Deliverables:** `v2/offline/out/gpu_check.json` (`check_gpu.py`: CUDA, bf16 support, VRAM, bitsandbytes 4-bit;
 Kaggle writes `gpu_check_kaggle.json`); `v2/offline/out/llama3b/smoke.json` (hidden-state count, time per pass,
 rendered prompt check); precision confirmed.
 **Done when**:
+- [x] `gpu_check.json` and `smoke_llama3b.json` committed (`v2/offline/out/`); 3B runs with ≥ 0.5 GB VRAM headroom on a 400-token page (1.354 GB measured).
+- [x] Precision fixed (NF4 + bf16 compute, measured; expected: 4-bit NF4 weights, bf16 compute if `bf16_supported`, else fp16) and recorded in `decisions.md`; `QUESTIONS.md` 3B item closed.
+- [x] Time per pass recorded (0.8305 s); G2 runtime estimated in `run_gpu.md` (~14 min / 1,000 rows).
 - [ ] `gpu_check.json` and `out/llama3b/smoke.json` committed; 3B runs with ≥ 0.5 GB VRAM headroom on a 400-token page.
 - [ ] Precision `nf4` (NF4 weights, fp16 compute) confirmed working on the RTX 2050 and recorded in `decisions.md`; `QUESTIONS.md` 3B item closed.
 - [ ] Time per pass recorded; G2 runtime estimated in `run_gpu.md`.

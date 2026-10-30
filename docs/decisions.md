@@ -229,6 +229,19 @@ gets date, choice, evidence once decided.
 - **Fix**: removed `rewrites` (headers kept); regression test `test_vercel_does_not_rewrite_api_paths`. Source: Vercel Academy "Python on Vercel — deploy to prod" (no vercel.json needed; `/api` prefix stays in the route paths).
 - **Lesson**: deploy checks must include fetching `/api/health` on the live URL, not only a local run.
 
+## 2026-10-30 — G1: 3B precision fixed — NF4 weights, bf16 compute, on the RTX 2050
+- **Decision**: every 3B number (probe training, serving, agent, adaptive) uses `meta-llama/Llama-3.2-3B-Instruct` with bitsandbytes 4-bit NF4 weights, **bf16** compute, no double quant, on Garv's RTX 2050. Stack pinned in `v2/offline/requirements-gpu.txt` (torch 2.14.1+cu130, transformers 5.21.0, bitsandbytes 0.50.2, Python 3.12.14). Closes the `QUESTIONS.md` "where does 3B run" item.
+- **Evidence**: `v2/offline/out/gpu_check.json` — compute capability 8.6, `bf16_supported` true, bf16 matmul 1.562 ms ≈ fp16 1.54 ms (fp32 4.408 ms), 4-bit path OK; bf16 weights (6.4 GB) do not fit 4.29 GB. `v2/offline/out/smoke_llama3b.json` — 29 hidden states (28 layers, width 3072), 0.8305 s per pass on a 400-token page (515 prompt tokens), peak reserved 2.94 GB → 1.354 GB headroom (gate ≥ 0.5 GB), five repeat passes bit-identical (`repeat_max_abs_diff` 0.0).
+- **Why bf16 over fp16**: same speed here; bf16 avoids fp16 overflow in hidden states that the probe reads.
+- **Alternatives**: fp16 compute (no gain); 8-bit (more VRAM, no need); CPU on H's laptop (ruled out 2026-10-29).
+
+## 2026-10-30 — Llama chat template: fixed `date_string`
+- **Finding**: Llama 3.2's template writes `Today Date: <today>` into the system header from the clock. Features extracted on different days would see different prompts.
+- **Decision**: every 3B prompt passes `date_string="26 Jul 2024"` to `apply_chat_template` (smoke checks it; H0's shared prompt code must do the same). The page renders in Llama's `ipython` role (its tool role) after the `fetch_page` call, and the prompt ends at the assistant header — checked by `smoke_llama3b.check_rendered`.
+
+## 2026-10-30 — G1 lives in `v2/offline/` before H0 scaffolds it
+- **Decision**: G1 adds only self-contained files under `v2/` (`offline/check_gpu.py` copied unchanged from `mvp/`, `offline/smoke_llama3b.py`, `offline/run_gpu.md`, `offline/requirements-gpu.txt`, `tests/test_g1.py`); no `common.py`, so H0's scaffold merges without conflicts. `run_gpu.md` starts here with G1 + the G2 estimate; H0 appends G2–G5 commands. `.claude/test-command` now also runs `../v2/tests` (G1 tests read committed JSON only, so they run on either laptop with the MVP venv). `mvp/` unchanged.
+- **Folder name**: `v2/` used as written in the plan; H0 may still rename it (QUESTIONS item stays open for Haragam).
 ## 2026-10-30 — H0: `v2/` scaffold, model switch, per-model folders
 - **Decision** (user): folder name `v2/`. Everything reusable from the MVP is copied in (offline pipeline, replay API, site, sim, tests), not only the offline pipeline. The taint rule moves to `v2/anchor/policy.py` (`run_defence(scn, defence, threshold, secret)`), imported by `v2/api/index.py`.
 - **Decision** (user): every script writes under `data/<model>/`, `features/<model>/`, `out/<model>/` (`qwen0.5b`, `llama3b`), documented for Garv in `v2/offline/run_gpu.md`. Alternative: flat files with model suffixes (every filename changes).

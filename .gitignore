@@ -31,6 +31,7 @@ mvp/offline/features/
 # external benchmark (re-downloaded by external_eval.py)
 mvp/offline/data/external/
 
+# v2 regenerable artifacts
 # v2 (full product): features per model and the external benchmark copy (re-downloaded)
 v2/offline/features/
 v2/offline/data/external/
