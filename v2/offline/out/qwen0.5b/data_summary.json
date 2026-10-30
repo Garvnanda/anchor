@@ -1,0 +1,220 @@
+{
+  "run_meta": {
+    "model": "qwen0.5b",
+    "hf_id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "precision": "fp32",
+    "device": "cpu",
+    "versions": {
+      "python": "3.12.10",
+      "torch": "2.14.1+cpu",
+      "transformers": "5.21.0",
+      "scikit-learn": "1.9.1",
+      "numpy": "2.5.4",
+      "bitsandbytes": null
+    },
+    "date": "2026-10-30"
+  },
+  "rows": 1434,
+  "dropped_over_token_budget": [],
+  "docs": 190,
+  "counts": [
+    {
+      "split": "heldout",
+      "style": "benign_hindi",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "heldout",
+      "style": "hindi_hinglish",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "benign_multilingual",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "clean",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "hard_negative",
+      "label": 0,
+      "n": 7
+    },
+    {
+      "split": "test",
+      "style": "html_comment",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "json_clean",
+      "label": 0,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "json_tool",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "markdown_hidden",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "polite_no_triggers",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "user_voice",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "test",
+      "style": "visible_imperative",
+      "label": 1,
+      "n": 22
+    },
+    {
+      "split": "train",
+      "style": "benign_multilingual",
+      "label": 0,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "clean",
+      "label": 0,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "hard_negative",
+      "label": 0,
+      "n": 26
+    },
+    {
+      "split": "train",
+      "style": "html_comment",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "json_clean",
+      "label": 0,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "json_tool",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "markdown_hidden",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "polite_no_triggers",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "user_voice",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "train",
+      "style": "visible_imperative",
+      "label": 1,
+      "n": 105
+    },
+    {
+      "split": "val",
+      "style": "benign_multilingual",
+      "label": 0,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "clean",
+      "label": 0,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "hard_negative",
+      "label": 0,
+      "n": 7
+    },
+    {
+      "split": "val",
+      "style": "html_comment",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "json_clean",
+      "label": 0,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "json_tool",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "markdown_hidden",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "polite_no_triggers",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "user_voice",
+      "label": 1,
+      "n": 23
+    },
+    {
+      "split": "val",
+      "style": "visible_imperative",
+      "label": 1,
+      "n": 23
+    }
+  ],
+  "mean_words": {
+    "json_clean": 96.6,
+    "json_injected": 98.5,
+    "prose_clean": 135.0,
+    "prose_injected": 139.6
+  }
+}

@@ -32,5 +32,6 @@ mvp/offline/features/
 mvp/offline/data/external/
 
 # v2 regenerable artifacts
+# v2 (full product): features per model and the external benchmark copy (re-downloaded)
 v2/offline/features/
 v2/offline/data/external/

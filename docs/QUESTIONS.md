@@ -19,6 +19,8 @@ Unchecked items block build-all and scheduled runs. Answer under the item, then 
 ## Full product (opened 2026-10-29)
 - [x] (all) Where does 3B run for training *and* serving the probe: this laptop (CPU bf16) or the RTX 2050 laptop (4-bit)? Depends on the CPU speed spike (running 2026-10-29). Must be one setup for both.
   **Answer** (G1, 2026-10-30): RTX 2050, NF4 weights + bf16 compute (measured; see `decisions.md` 2026-10-30).
+- [ ] (all) Where does 3B run for training *and* serving the probe: this laptop (CPU bf16) or the RTX 2050 laptop (4-bit)? Depends on the CPU speed spike (running 2026-10-29). Must be one setup for both.
+  **Partial answer** (2026-10-30): not this laptop's CPU (measured). Both the RTX 2050 and a Kaggle T4 (user) run `nf4` = NF4 weights + fp16 compute. Open until G1 confirms it runs on the RTX 2050.
 - [x] (all) Code location: keep growing inside `mvp/` (no churn; Vercel root stays `mvp`) or move to a new top-level package? Recommendation: keep `mvp/` until submission.
   **Answer**: keep the code in `mvp/` (user, 2026-10-29). **Superseded later the same day:** `mvp/` stays frozen as the deployed MVP; the full product goes in a new folder (see below).
 - [x] (attacks) Second held-out language (besides Hindi/Hinglish)? Recommendation: one with a different script (e.g. Tamil or Arabic) to test script transfer.
@@ -29,3 +31,11 @@ Unchecked items block build-all and scheduled runs. Answer under the item, then 
 - [ ] (H0) Name of the new full-product folder (written as `v2/` in the docs until H0 scaffolds it).
 - [x] (G1) HF token on Garv's laptop: his own token with Llama access, or Haragam's shared privately (never via git or chat)?
   **Answer**: token is in the git-ignored `.env` on Garv's laptop; the Llama-3.2-3B download worked (2026-10-30).
+- [x] (H0) Name of the new full-product folder (written as `v2/` in the docs until H0 scaffolds it).
+  **Answer**: `v2/` (user, 2026-10-30).
+- [x] (G1) HF token on Garv's laptop: his own token with Llama access, or Haragam's shared privately (never via git or chat)?
+  **Answer**: Haragam's token, shared privately (user, 2026-10-30). Garv puts it in `v2/offline/.env` (git-ignored); revoke it after the project.
+- [x] (G7) Is the GPU laptop the demo laptop, Windows or Linux?
+  **Answer**: Garv's RTX 2050 laptop, Windows (user, 2026-10-30). Pipelock `windows_amd64` v3.7.1 there too.
+- [x] (Kaggle) How does the notebook get code and token; what does it run?
+  **Answer** (user, 2026-10-30): `git clone` of the public repo + `HF_TOKEN` from Kaggle Secrets. Garv's 3B work is split between Garv's laptop and Kaggle: Kaggle runs the batch steps (G1 smoke on T4, G2, G3, G5, G4 actions), Garv runs G1 on his laptop, G4 live agent runs and the G7 demo host. The notebook runs the full `run_gpu.md` sequence.
