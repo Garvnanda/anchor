@@ -16,7 +16,11 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 ## Measured results
 `mvp/offline/out/metrics.json`; summary in decisions.md → "Phase 2 results". Layer 9, threshold 0.4313; test AUROC 0.998 (127/132) vs keyword 0.556 (31/132); held-out Hindi 12/22, benign-Hindi FB 2/22; InjecAgent 20/200 (AUROC 0.62) vs keyword 17/200; shuffled 0.494; model hijacked 2/6 demo scenarios.
 
+<<<<<<< HEAD
 ## Phases (full product, `implementation.md`) — H0 built 2026-10-30
+=======
+## Phases (full product, `implementation.md`) — H0 manual, G1 done, H1 in progress (2026-10-30)
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
 | Phase | Owner | Status | Head start from MVP | Waits on | Notes |
 |---|---|---|---|---|---|
 | H0 — Scaffold `v2/` + model switch + `run_gpu.md` | Haragam | manual (reviewer PASS; G line pending) | large | G line: run_gpu.md steps 1–2 on RTX 2050 or Kaggle | whole MVP copied; qwen run == MVP exactly; Kaggle notebook `v2/kaggle/anchor_3b.ipynb` |
@@ -30,8 +34,15 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 | H8 — Frontend redesign (Hallmark) + deploy | Haragam | todo | medium | H7 | security-breaker; manual look approval |
 | H9 — User sim + security + pre-demo checks | Haragam | todo | large | H8, G7 | ≥ 1,000 users vs live server |
 | H-X — Arc iGPU test (optional) | Haragam | todo | half | ≥ 7 GB free RAM, internet | half done: `torch 2.15.0+xpu` in a throwaway env |
+<<<<<<< HEAD
 | G1 — GPU setup + 3B smoke, fix precision | Garv | done | medium | — | 2026-10-30: NF4 + bf16 on RTX 2050 (`nf4` in common.py now bf16, user); 0.8305 s/pass (400-tok page), 1.354 GB headroom; `v2/offline/out/` |
 | G2 — 3B activations + probe | Garv | blocked (v1 run done) | large (code) | H1 | 2026-10-30 v1 run, nf4/bf16: layer 12, test 129/132 AUROC 0.9989, Hindi 21/22 (benign FB 0/22), InjecAgent 0/200 (AUROC 0.62), shuffled 0.504. Rerun run_gpu.md 3–6 after H1 |
+=======
+| G1 — GPU setup + 3B smoke | Garv | done (his commit `a01e6f4`) | medium | — | RTX 2050: NF4 + bf16 compute, 0.83 s/400-token pass, 1.35 GB headroom; Kaggle T4 failed the bf16 check: all 3B steps on Garv's laptop |
+| G2 — 3B activations + probe | Garv (RTX 2050 only) | todo | large (code) | G1, H1 | layer + position comparison, 1 %/5 % FPR, controls |
+| G1 — GPU setup + 3B smoke | Garv | done (his commit `a01e6f4`) | medium | — | RTX 2050: NF4 + bf16 compute, 0.83 s/400-token pass, 1.35 GB headroom; Kaggle T4 failed the bf16 check: all 3B steps on Garv's laptop |
+| G2 — 3B activations + probe | Garv or Kaggle | todo | large (code) | G1, H1 | dry run on dataset v1 possible now (Kaggle notebook); proper run after H1 |
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
 | G3 — Anchor-3B on agent benchmarks | Garv | todo | small | G2, H3 | frozen probe, 1 % FPR, comparable with arXiv 2610.03448 |
 | G4 — 3B model actions + live agent runs | Garv | todo | small | G2, H5 | model-sourced leak, Pipelock layer logs |
 | G5 — Adaptive attacks on 3B | Garv | todo | none | G2, H6 | black-box; GCG suffix stretch |
@@ -41,7 +52,7 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 ## Repo state
 - **2026-10-30, H0 built (uncommitted; user commits and pushes):** new `v2/` (offline pipeline with `--model/--precision`, per-model `data|features|out/<model>/`, `run_meta`, `RunMismatch`; `anchor/policy.py`; API/site/sim/tests copied; `offline/run_gpu.md`; `kaggle/make_notebook.py` + `anchor_3b.ipynb`). `.claude/test-command` now runs `mvp/tests` then `v2/tests`. `.gitignore` adds `v2/offline/features/`, `v2/offline/data/external/`. qwen0.5b outputs in `v2/offline/out/qwen0.5b/` (committed); features seeded from the MVP (`seed_from_mvp.py`, not committed).
 - **H0 done except its manual G line** (reviewer PASS 2026-10-30): user pushes `v2/`, then Garv/Kaggle run `run_gpu.md` steps 1–2 (and the Kaggle notebook). Regenerating qwen outputs: from `v2/offline` with `../../mvp/offline/.venv/Scripts/python`: `seed_from_mvp.py → build_data → extract → train_probe → external_eval → gen_actions → build_scenarios`, `smoke.py`.
-- **H1 in progress:** draft generators at `$CLAUDE_JOB_DIR/tmp/h1/attacks.py` (job temp dir; move into `v2/offline/attacks.py`). Decisions: tool_description held out with Hindi/Tamil; trained families on 3 of 4 main docs; also adds 1 %/5 % FPR thresholds and the last-token position for G2.
+- **H1 in progress (uncommitted):** `v2/offline/attacks.py` wired into `build_data.py`; `extract.py` two positions; `train_probe.py` position sweep + 1 % threshold; `external_eval.py` reads at the probe's position; tests `test_attacks.py` + `test_pipeline.py` H1 block. Resume: if `features/qwen0.5b/` lacks `delta_end_L*.npy`, run `extract.py --model qwen0.5b` (~1.5 h CPU), then train_probe → external_eval → gen_actions → build_scenarios → smoke, tests, phase-reviewer. Decisions: tool_description held out with Hindi/Tamil; trained families on 3 of 4 main docs; also adds 1 %/5 % FPR thresholds and the last-token position for G2.
 - **Next after H0:** H1 (attack families + Tamil), then H2/H3 (CPU), then H4–H6. User asked to keep going through all H phases, stopping only for questions or G blockers.
 - Commits: `315ab33` Phase 1, `c60f82e` Phase 2, `3062580` wip Phases 3–4.5 code. Not pushed.
 - Phases 2–4.5 committed 2026-10-29 (see `git log`). MVP is deploy-ready apart from the deferred Phase 5 items.

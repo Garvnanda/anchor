@@ -16,7 +16,8 @@
   everything that needs no 3B model (data, attack generators, CPU baselines, benchmark-set rebuild, server, site,
   simulation, security). G runs **every Llama-3.2-3B step** on the RTX 2050 (activations, probe, agent runs,
   adaptive attacks, live demo host), using commands H writes in `v2/offline/run_gpu.md`.
-- **Second 3B machine: Kaggle (user, 2026-10-30).** H runs the heavy batch 3B steps (G1 smoke, G2, G3, G5) on a
+- **Second 3B machine: Kaggle, ruled out 2026-10-30** (T4 failed the bf16 check, `decisions.md`). Every 3B step
+  runs on Garv's RTX 2050. Original plan, kept for the record: **Kaggle (user, 2026-10-30).** H runs the heavy batch 3B steps (G1 smoke, G2, G3, G5) on a
   Kaggle T4 with `v2/kaggle/anchor_3b.ipynb`, which runs the same `run_gpu.md` steps. Whoever runs a G phase
   commits its `out/llama3b/` files; if only Garv's laptop is used, nothing changes.
   Split (user, 2026-10-30): **Kaggle** = G1 smoke on T4, G2, G3, G5, G4 model actions; **Garv's laptop (Windows)** =
@@ -24,8 +25,13 @@
 - **Per-model folders:** every script writes under `data/<model>/`, `features/<model>/`, `out/<model>/`
   (`<model>` = `qwen0.5b` or `llama3b`), so the 0.5B and 3B runs never overwrite each other (see `run_gpu.md`).
 - **One 3B setup:** the probe is trained and served with the same model build and precision: `nf4` = 4-bit NF4
+<<<<<<< HEAD
   weights, **bf16 compute**, on the RTX 2050 (user, 2026-10-30, supersedes fp16). The Kaggle T4 has no bf16, so it is
   not an identical machine; Kaggle 3B runs need a new decision before use.
+=======
+  weights, **bf16 compute**, no double quant (G1 on the RTX 2050, user kept bf16). The Kaggle T4 failed the bf16
+  check, so every 3B step runs on Garv's laptop.
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
   Scripts refuse features or a probe whose `run_meta` precision differs. The Arc test (H-X) may add a machine
   only with the identical precision.
 - **Hand-off:** through git. Each side commits its outputs (`v2/offline/out/*.json`, never `.npy`, weights or
@@ -59,7 +65,7 @@ G6 steering (stretch, after G4)        H-X Arc iGPU test (optional, any time)
 **Progress (2026-10-30):** built. Whole MVP copied into `v2/` (offline pipeline, API → `anchor/policy.py`, site,
 sim, tests). `--model/--precision`, `run_meta`, per-model folders, mismatch refusal, `run_gpu.md` and the Kaggle
 notebook are in place. The qwen0.5b run equals the MVP exactly (rows, layer 9, threshold 0.431316, all 1,434
-scores). The qwen feature cache is seeded from the MVP's (`seed_from_mvp.py`); a test re-extracts sample rows with
+scores). The qwen feature cache was seeded from the MVP's (seed script removed in H1); a test re-extracts sample rows with
 v2 code. `phase-reviewer` PASS 2026-10-30 (its 4 non-blocking notes fixed). Left (manual): the G line — Garv or
 Kaggle runs `run_gpu.md` steps 1–2 after the user pushes `v2/`.
 **Reuse (head start: large):** whole offline pipeline (`mvp/offline/common.py`, `build_data.py`, `templates.py`, `extract.py` with content-hash feature cache, `train_probe.py`, `external_eval.py`, `gen_actions.py`, `scenario_pick.py`, `build_scenarios.py`), taint rule (`mvp/api/index.py` `run_defence`) and its tests, 127 tests as templates, `.claude/test-command` pattern. New: `--model`/precision switch, `run_meta`, `run_gpu.md`.
@@ -73,7 +79,7 @@ covering `v2/tests`; `.gitignore` entries for `v2/` artifacts.
 - [x] `v2/` runs end to end with `--model qwen0.5b` on CPU (build_data → extract → train_probe) and its numbers match the MVP's within rounding (same model, same data) — test.
 - [x] Every output carries `run_meta`; the probe loader refuses a `run_meta` model/precision different from the loaded model — tests.
 - [x] `policy.py` passes the MVP taint tests (ported).
-- [ ] `run_gpu.md` lists G2–G5 commands (test); G confirms they run (first line of G1, on the RTX 2050 or Kaggle).
+- [ ] `run_gpu.md` lists G2–G5 commands (test); G confirms they run: G1 used Garv's own `smoke_llama3b.py`, so the v2 pipeline's `smoke.py --model llama3b` (run_gpu.md step 2) is still to run on the RTX 2050 or Kaggle.
 - [x] `mvp/` unchanged (`git diff --stat mvp/` empty for this phase).
 
 ### Phase 2 (H1) — Attack families and dataset v2
@@ -82,7 +88,11 @@ covering `v2/tests`; `.gitignore` entries for `v2/` artifacts.
 **Prerequisites:** H0.
 **Deliverables:** `v2/offline/attacks.py` generators (encoded, invisible_unicode, homoglyph, split_payload,
 tool_description, rag_document, Tamil held out with benign-Tamil controls, exfil_link) wired into `build_data.py`;
-`rows.jsonl` + `data_summary.json` v2.
+`rows.jsonl` + `data_summary.json` v2. Added for G2 (H writes all code): two read positions in `extract.py`
+(assistant start, last tool-output token) and thresholds at 5 % and 1 % val FPR in `train_probe.py`.
+**Progress (2026-10-30):** generators + build done (2,872 rows: 1,434 v1 prefix unchanged + 698 family pairs;
+held out: Hindi, Tamil, tool_description). Qwen re-extract (both positions) running; then train_probe →
+external_eval → gen_actions → build_scenarios, tests, phase review, push #2.
 **Done when**:
 - [ ] Every family present with counts per split; held-out families (Hindi, Tamil, + any family chosen as held out) only in test/heldout (pytest).
 - [ ] Invisible-Unicode rows contain TAG / zero-width code points; homoglyph rows contain non-ASCII look-alikes; split payloads have both halves in separate outputs (pytest).
@@ -197,7 +207,7 @@ of `v2/`; optional tunnel bridge to the live laptop (stretch).
 
 ## Garv (G) — RTX 2050 (4 GB), i5-H, all Llama-3.2-3B runs
 
-### Phase G1 — GPU setup and 3B smoke
+### Phase 12 (G1) — GPU setup and 3B smoke
 **Status**: done
 **Reuse (head start: medium):** `mvp/offline/check_gpu.py` (+ test) ready to run; `smoke.py` pattern for the 3B smoke.
 **Prerequisites:** repo pulled; HF token with Llama access in `v2/offline/.env` (git-ignored; Garv's own token or Haragam's shared privately).

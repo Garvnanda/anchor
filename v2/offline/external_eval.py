@@ -9,9 +9,9 @@ import random
 import urllib.request
 
 import numpy as np
-import torch
 
-from common import DATA_ROOT, SEED, load_model, load_probe, parse, prompt_ids, run_meta, tool_call
+import extract
+from common import DATA_ROOT, FETCH_CALL, SEED, load_model, load_probe, parse, run_meta, tool_call
 from templates import keyword_hit
 
 BASE_URL = "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/main/data/"
@@ -69,18 +69,17 @@ def main(argv=None):
     rows = build_rows(load_cases())
     tok, model, device = load_model(run)
 
-    def state(task, output=None, call=None):
-        ids = (prompt_ids(tok, task, output, call, device=device) if output is not None
-               else prompt_ids(tok, task, device=device))
-        with torch.no_grad():
-            return model(ids, output_hidden_states=True).hidden_states[L][0, -1].float().cpu().numpy()
+    pos = probe.get("position", "start")  # the read position chosen on val by train_probe
+
+    def state(task, output=None, call=FETCH_CALL):
+        return extract.state(tok, model, [L], task, output, device=device, call=call)
 
     base, scores = {}, []
     for r in rows:
         args = r["args"] if isinstance(r["args"], dict) else {"input": str(r["args"])}
         if r["task"] not in base:
             base[r["task"]] = state(r["task"])
-        delta = state(r["task"], r["output"], tool_call(r["tool"], args)) - base[r["task"]]
+        delta = state(r["task"], r["output"], tool_call(r["tool"], args))[pos][L] - base[r["task"]]["start"][L]
         z = ((delta - mean) / scale) @ coef + b
         scores.append(round(float(1 / (1 + np.exp(-z))), 6))  # same rounding as train_probe
 

@@ -21,12 +21,18 @@ ENV_FILES = (ROOT / ".env", ROOT.parents[1] / "mvp" / "offline" / ".env")  # v2 
 MODELS = {
     "qwen0.5b": {"hf_id": "Qwen/Qwen2.5-0.5B-Instruct", "n_layers": 24, "layers": [6, 9, 12, 15, 18],
                  "precisions": ("fp32",), "default_precision": "fp32"},
+<<<<<<< HEAD
     # 28 layers; every 3rd is swept (user, 2026-10-30). nf4 = 4-bit NF4 weights, bf16 compute on the RTX 2050
     # (G1, user choice 2026-10-30; decisions.md). Kaggle T4 has no native bf16, so it is not a second 3B machine.
+=======
+    # 28 layers; every 3rd is swept (user, 2026-10-30). nf4 = 4-bit NF4 weights, bf16 compute, no double quant:
+    # the G1 build on the RTX 2050 (decisions.md 2026-10-30). Any other 3B machine must run exactly this.
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
     "llama3b": {"hf_id": "meta-llama/Llama-3.2-3B-Instruct", "n_layers": 28, "layers": [6, 9, 12, 15, 18, 21, 24, 27],
                 "precisions": ("nf4", "bf16", "fp16", "fp32"), "default_precision": "nf4"},
 }
 PRECISIONS = ("fp32", "bf16", "fp16", "nf4")
+COMPUTE_DTYPE = {"nf4": "bf16"}  # nf4 weights are dequantised to bf16 for every matmul (G1 build)
 # Llama's chat template stamps "Today Date" into the system prompt; fixed so activations do not change by day.
 TEMPLATE_DATE = "26 Jul 2024"
 
@@ -94,7 +100,8 @@ def _version(pkg):
 
 def run_meta(run, device="cpu"):
     """Provenance block written into every output: which model, precision, device and library versions made it."""
-    return {"model": run.model, "hf_id": run.hf_id, "precision": run.precision, "device": device,
+    return {"model": run.model, "hf_id": run.hf_id, "precision": run.precision,
+            "compute_dtype": COMPUTE_DTYPE.get(run.precision, run.precision), "device": device,
             "versions": {"python": platform.python_version(), **{k: _version(k) for k in
                          ("torch", "transformers", "scikit-learn", "numpy", "bitsandbytes")}},
             "date": date.today().isoformat()}
@@ -141,9 +148,12 @@ def tool_call(name="fetch_page", arguments=None):
 FETCH_CALL = tool_call()
 
 
-def messages(task, output=None, call=FETCH_CALL):
-    """System + user task; if output is given, it arrives in the native tool role after the tool call."""
+def messages(task, output=None, call=FETCH_CALL, prior=()):
+    """System + user task; each earlier page (split payloads) and then the output arrive in the native tool role,
+    each after its own tool call."""
     msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": task}]
+    for page in prior:
+        msgs += [call, {"role": "tool", "content": page}]
     if output is not None:
         msgs += [call, {"role": "tool", "content": output}]
     return msgs
@@ -168,10 +178,17 @@ def load_model(run):
     if run.precision == "nf4":
         if device != "cuda":
             raise RuntimeError("--precision nf4 needs a CUDA GPU (bitsandbytes 4-bit)")
+        if not torch.cuda.is_bf16_supported():
+            raise RuntimeError("--precision nf4 uses bf16 compute (G1 build); this GPU reports no bf16 support")
         from transformers import BitsAndBytesConfig
 
         kw = {"quantization_config": BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+<<<<<<< HEAD
                                                         bnb_4bit_compute_dtype=torch.bfloat16),
+=======
+                                                        bnb_4bit_compute_dtype=torch.bfloat16,
+                                                        bnb_4bit_use_double_quant=False),
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
               "device_map": {"": 0}}
     else:
         kw = {"dtype": {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}[run.precision]}
@@ -188,8 +205,8 @@ def render(tok, msgs, tokenize=False, **kw):
     return tok.apply_chat_template(msgs, add_generation_prompt=True, tokenize=tokenize, date_string=TEMPLATE_DATE, **kw)
 
 
-def prompt_ids(tok, task, output=None, call=FETCH_CALL, device=None):
-    ids = render(tok, messages(task, output, call), tokenize=True, return_tensors="pt")
+def prompt_ids(tok, task, output=None, call=FETCH_CALL, device=None, prior=()):
+    ids = render(tok, messages(task, output, call, prior), tokenize=True, return_tensors="pt")
     if not hasattr(ids, "shape"):  # some transformers versions return a BatchEncoding
         ids = ids["input_ids"]
     return ids.to(device) if device else ids

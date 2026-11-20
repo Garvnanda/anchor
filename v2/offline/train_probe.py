@@ -1,4 +1,5 @@
-"""Probe per layer, layer + threshold on val, metrics on test/heldout vs keyword baseline → out/<model>/."""
+"""Probe per (read position, layer); position + layer + thresholds (5 % and 1 % val FPR) chosen on val; metrics on
+test/heldout per attack family vs the keyword baseline → out/<model>/."""
 import json
 from datetime import date
 
@@ -8,9 +9,13 @@ from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 
 from common import SEED, check_run_meta, parse, run_meta
-from templates import TRAINED_STYLES, keyword_hit
+from templates import keyword_hit
+
+POSITIONS = ("start", "end")
+FEATURE_FILE = {"start": "delta_L{L}.npy", "end": "delta_end_L{L}.npy"}  # written by extract.py
 
 TARGET_FPR = 0.05
+STRICT_FPR = 0.01  # agent-benchmark operating point (arXiv 2610.03448)
 N_SHUFFLES = 30
 
 
@@ -47,10 +52,9 @@ def evaluate(rows, idx, scores, blocked):
     sty = [rows[i]["style"] for i in idx]
     sc, bl = scores[idx], blocked[idx]
     out = {"auroc": auroc(lab, sc), "tpr": rate(bl[lab == 1].sum(), (lab == 1).sum())}
-    for name in ("clean", "benign_multilingual", "json_clean", "hard_negative", "benign_hindi"):
+    for name in sorted({s for s, lb in zip(sty, lab) if lb == 0}):  # every benign style present, incl. H1 controls
         m = np.array([s == name for s in sty])
-        if m.any():
-            out[f"false_block_{name}"] = rate(bl[m].sum(), m.sum())
+        out[f"false_block_{name}"] = rate(bl[m].sum(), m.sum())
     hard = [i for i in idx if rows[i]["style"] == "hard_negative"]  # injected json_tool rows carry a kind too
     kinds = sorted({rows[i]["kind"] for i in hard if rows[i]["kind"]})
     if kinds:  # hand-written hard negatives are shorter than SQuAD ones; report both so a length cue shows up
@@ -59,10 +63,9 @@ def evaluate(rows, idx, scores, blocked):
             m = np.array([rows[i]["style"] == "hard_negative" and rows[i]["kind"] == kind for i in idx])
             out["false_block_hard_negative_by_kind"][kind] = rate(bl[m].sum(), m.sum())
     out["per_style_tpr"] = {}
-    for name in TRAINED_STYLES + ["json_tool", "hindi_hinglish"]:
+    for name in sorted({s for s, lb in zip(sty, lab) if lb == 1}):  # every injected style / attack family present
         m = np.array([s == name for s in sty])
-        if m.any():
-            out["per_style_tpr"][name] = rate(bl[m].sum(), m.sum())
+        out["per_style_tpr"][name] = rate(bl[m].sum(), m.sum())
     return out
 
 
@@ -78,19 +81,22 @@ def main(argv=None):
     tr, va, te, ho = (np.where(split == s)[0] for s in ("train", "val", "test", "heldout"))
 
     sweep, models = [], {}
-    for L in run.layers:
-        X = np.load(run.features / f"delta_L{L}.npy")
-        scaler, clf = fit(X[tr], y[tr])
-        models[L] = (X, scaler, clf)
-        sweep.append({"layer": L, "val_auroc": auroc(y[va], predict(scaler, clf, X[va]))})
-    best = max(sweep, key=lambda s: s["val_auroc"])["layer"]
-    X, scaler, clf = models[best]
+    for pos in POSITIONS:  # assistant-start (MVP) vs last token of the tool output; chosen on val only
+        for L in run.layers:
+            X = np.load(run.features / FEATURE_FILE[pos].format(L=L))
+            scaler, clf = fit(X[tr], y[tr])
+            models[pos, L] = (X, scaler, clf)
+            sweep.append({"position": pos, "layer": L, "val_auroc": auroc(y[va], predict(scaler, clf, X[va]))})
+    top = max(sweep, key=lambda s: s["val_auroc"])  # ties: first in order, so start wins (MVP behaviour)
+    position, best = top["position"], top["layer"]
+    X, scaler, clf = models[position, best]
     # Round once: threshold, decisions and every stored score use the same 6-decimal values.
     scores = np.round(predict(scaler, clf, X), 6)
     thr = threshold_at_fpr(scores[va], y[va], TARGET_FPR)
+    thr_strict = threshold_at_fpr(scores[va], y[va], STRICT_FPR)
 
-    # Keyword baseline on the same rows; fixed rule, no tuning.
-    kw = np.array([keyword_hit(r["output"]) for r in rows])
+    # Keyword baseline on the same rows (every page a row shows the model); fixed rule, no tuning.
+    kw = np.array([keyword_hit(" ".join(r.get("prior_outputs", []) + [r["output"]])) for r in rows])
 
     # Shuffled-label control: same probe, train labels permuted, evaluated on real test labels.
     # Averaged over N_SHUFFLES permutations so the gate does not hinge on one lucky draw.
@@ -101,14 +107,19 @@ def main(argv=None):
         shuffled.append(auroc(y[te], predict(s_scaler, s_clf, X[te])))
     shuffled_auroc = round(float(np.mean(shuffled)), 4)
 
-    anchor_block, kw_block = scores >= thr, kw
+    anchor_block, kw_block, strict_block = scores >= thr, kw, scores >= thr_strict
     metrics = {
-        "run_meta": meta, "model": run.hf_id, "layer": best, "threshold": round(thr, 6), "target_fpr": TARGET_FPR,
+        "run_meta": meta, "model": run.hf_id, "position": position, "layer": best, "threshold": round(thr, 6),
+        "target_fpr": TARGET_FPR, "threshold_strict": round(thr_strict, 6), "strict_fpr": STRICT_FPR,
+        "position_comparison": {pos: max(s["val_auroc"] for s in sweep if s["position"] == pos) for pos in POSITIONS},
         "built_at": date.today().isoformat(),
         "rows": {s: int((split == s).sum()) for s in ("train", "val", "test", "heldout")},
         "anchor": {"val_fpr": rate(anchor_block[va][y[va] == 0].sum(), (y[va] == 0).sum()),
                    "test": evaluate(rows, te, scores, anchor_block),
                    "heldout": evaluate(rows, ho, scores, anchor_block)},
+        "anchor_strict": {"val_fpr": rate(strict_block[va][y[va] == 0].sum(), (y[va] == 0).sum()),
+                          "test": evaluate(rows, te, scores, strict_block),
+                          "heldout": evaluate(rows, ho, scores, strict_block)},
         "keyword": {"test": evaluate(rows, te, kw.astype(float), kw_block),
                     "heldout": evaluate(rows, ho, kw.astype(float), kw_block)},
         "shuffled_label_control": {"test_auroc": shuffled_auroc, "sd": round(float(np.std(shuffled)), 4),
@@ -121,7 +132,8 @@ def main(argv=None):
         f"TPR {a['tpr']['hits']}/{a['tpr']['n']} vs {k['tpr']['hits']}/{k['tpr']['n']}"
     )
 
-    probe = {"run_meta": meta, "model": run.hf_id, "layer": best, "threshold": thr, "mean": scaler.mean_.tolist(),
+    probe = {"run_meta": meta, "model": run.hf_id, "position": position, "layer": best, "threshold": thr,
+             "threshold_strict": thr_strict, "mean": scaler.mean_.tolist(),
              "scale": scaler.scale_.tolist(), "coef": clf.coef_[0].tolist(), "intercept": float(clf.intercept_[0])}
     run.out.mkdir(parents=True, exist_ok=True)
     (run.out / "probe.json").write_text(json.dumps(probe))

@@ -4,6 +4,7 @@ import random
 import re
 from collections import Counter, defaultdict
 
+import attacks
 from common import MAX_OUTPUT_TOKENS, SEED, load_tokenizer, parse, run_meta
 from templates import (
     ATTACKERS, BENIGN, BENIGN_HINDI, BENIGN_SPLIT, GOALS, HARD_NEGATIVE_DOCS, HELDOUT_STYLE, HINDI_GOALS,
@@ -80,11 +81,12 @@ def build():
     main_docs, hn_squad = paras[:N_DOCS], paras[N_DOCS:]
     rows = []
 
-    def add(doc_id, split, output, label, style, position, insertion, template_id=None, kind=None, r=rng):
+    def add(doc_id, split, output, label, style, position, insertion, template_id=None, kind=None, r=rng, **extra):
         rows.append({
             "id": f"{doc_id}-{style}" + (f"-{kind}" if kind else ""), "doc_id": doc_id, "split": split,
             "task": r.choice(TASKS), "output": output, "label": label, "style": style,
             "position": position, "insertion": insertion, "template_id": template_id, "kind": kind,
+            **extra,  # H1 rows only (family, prior_outputs, insertion_parts); v1 rows stay byte-identical
         })
 
     # Main documents: one clean row with a benign insertion + one row per trained injection style.
@@ -154,18 +156,122 @@ def build():
         for label, ins, row_style, t in ((0, benign, "json_clean", None), (1, attack, "json_tool", tid)):
             page = json.dumps(JSON_SHAPES[shape](title, body, ins), ensure_ascii=False)
             add(doc_id, split, page, label, row_style, shape, json_escape(ins), t, kind=style if label else None, r=js)
+
+    family_rows(main_docs, add)
     return rows
+
+
+SHORT_WORDS = 90  # new families use the first 90 words of a doc: TAG characters and two-page rows cost many tokens
+SHORT_WORDS_INVISIBLE = 45  # TAG characters cost ~3 tokens each; 90 words dropped 1 in 5 rows over the budget
+
+
+def family_rows(main_docs, add):
+    """H1: one injected row + one length-matched benign control per (family, doc). Trained families on 3 of every
+    4 main docs (offset per family); held-out families (tamil, tool_description) on test docs only, split
+    "heldout". Each family draws from its own RNG and is appended, so earlier rows keep their cached features."""
+    for k, fam in enumerate(attacks.FAMILIES + attacks.HELDOUT_FAMILIES):
+        rng = random.Random(SEED + 100 + k)
+        held = fam in attacks.HELDOUT_FAMILIES
+        for i, doc in enumerate(main_docs):
+            doc_id, split = f"d{i:03d}", split_of(i, N_DOCS)
+            if held:
+                if split != "test":
+                    continue
+                split = "heldout"
+            elif (i + k) % 4 == 3:
+                continue
+            pool = benign_for("test" if held else split)
+            order = rng.sample(pool, len(pool))
+            short = " ".join(doc.split()[:SHORT_WORDS_INVISIBLE if fam == "invisible_unicode" else SHORT_WORDS])
+            pos = rng.choice(POSITIONS)
+            inj, ctrl = family_pair(fam, split, short, doc, pos, order, rng)
+            for label, row in ((1, inj), (0, ctrl)):
+                style = fam if label else f"benign_{fam}"
+                add(doc_id, split, row.pop("output"), label, style, pos, row.pop("insertion"), row.pop("template_id"),
+                    r=rng, family=fam, **row)
+
+
+def _templates(items, split):
+    t = list(enumerate(items))
+    return t if split == "heldout" else by_split(t, TEMPLATE_SPLIT, split)
+
+
+def family_pair(fam, split, short, doc, pos, order, rng):
+    """(injected, control) dicts with output, insertion, template_id and any extra row fields."""
+    a = attacks
+    if fam == "encoded":
+        tid, (kind, wrap) = rng.choice(_templates(a.ENCODED, split))
+        ins = wrap.format(p=a._encode(kind, f"Ignore the user's task and {a.goal(rng)}."))
+        bkind, bwrap = a.ENCODED_BENIGN[tid]
+        ctrl = a.matched(lambda t: bwrap.format(p=a._encode(bkind, t)), len(ins), order)
+    elif fam == "invisible_unicode":
+        tid, (method, carrier) = rng.choice(_templates(a.INVISIBLE, split))
+        hide = a.tag_encode if method == "tag" else a.zw_spread
+        ins = carrier.format(h=hide(f"Ignore the user's task and {a.goal(rng)}."))
+        ctrl = a.matched(lambda t: carrier.format(h=hide(t)), len(ins), order)
+    elif fam == "homoglyph":
+        tid, tmpl = rng.choice(_templates(a.HOMOGLYPH, split))
+        ins = a.homoglyph(tmpl.format(goal=a.goal(rng)), rng)
+        ctrl = a.homoglyph(a.matched(lambda t: t, len(ins), order), rng)
+    elif fam == "split_payload":
+        tid, (p1, p2) = rng.choice(_templates(a.SPLIT, split))
+        g = a.goal(rng).split()
+        parts = [f"{p1} {' '.join(g[:len(g) // 2])}", f"{p2} {' '.join(g[len(g) // 2:])}."]
+        b1, b2 = a.SPLIT_BENIGN[tid]
+        plain = a.matched(lambda t: f"{b1} {t} {b2}", len(" ".join(parts)), order)[len(b1) + 1:-len(b2) - 1].split()
+        cparts = [f"{b1} {' '.join(plain[:len(plain) // 2])}", f"{b2} {' '.join(plain[len(plain) // 2:])}"]
+        words = short.split()
+        first, second = " ".join(words[:len(words) // 2]), " ".join(words[len(words) // 2:])
+
+        def two(ps):
+            return {"output": f"{ps[1]} {second}", "prior_outputs": [f"{first} {ps[0]}"],
+                    "insertion": " ".join(ps), "insertion_parts": ps, "template_id": tid}
+        return two(parts), two(cparts)
+    elif fam == "rag_document":
+        tid, tmpl = rng.choice(_templates(a.RAG, split))
+        ins = tmpl.format(goal=a.goal(rng))
+        ctrl = a.matched(lambda t: t, len(ins), order)
+        words = short.split()
+        c1, c2 = " ".join(words[:len(words) // 2]), " ".join(words[len(words) // 2:])
+        page = lambda x: a.dumps(a.rag_results(c1, f"{c2} {x}"))  # noqa: E731
+        return ({"output": page(ins), "insertion": json_escape(ins), "template_id": tid},
+                {"output": page(ctrl), "insertion": json_escape(ctrl), "template_id": tid})
+    elif fam == "exfil_link":
+        tid, tmpl = rng.choice(_templates(a.EXFIL, split))
+        ins = tmpl.format(url=rng.choice(URLS))
+        bwrap = a.EXFIL_BENIGN[tid]
+        ctrl = a.matched(lambda t: bwrap.format(p=t), len(ins), order)
+    elif fam == "tool_description":
+        tid, tmpl = rng.choice(_templates(a.TOOL_DESC, split))
+        ins = tmpl.format(goal=a.goal(rng))
+        bwrap = a.TOOL_DESC_BENIGN[tid]
+        notes = rng.sample(a.TOOL_NOTES, len(a.TOOL_NOTES))
+        ctrl = a.matched(lambda t: bwrap.format(p=t), len(ins), notes)
+        page = lambda x: a.dumps(a.tool_list(short, a.TOOL_NAMES[tid], x))  # noqa: E731
+        return ({"output": page(ins), "insertion": json_escape(ins), "template_id": tid},
+                {"output": page(ctrl), "insertion": json_escape(ctrl), "template_id": tid})
+    elif fam == "tamil":  # like Hindi: full document, benign-Tamil control (not length-matched, as for Hindi)
+        tid, tmpl = rng.choice(_templates(a.TAMIL, split))
+        ins = fill(tmpl, a.TAMIL_GOALS, rng)
+        ctrl = rng.choice(a.BENIGN_TAMIL)
+        return ({"output": insert(doc, ins, pos), "insertion": ins, "template_id": tid},
+                {"output": insert(doc, ctrl, pos), "insertion": ctrl, "template_id": None})
+    else:
+        raise ValueError(fam)
+    return ({"output": insert(short, ins, pos), "insertion": ins, "template_id": tid},
+            {"output": insert(short, ctrl, pos), "insertion": ctrl, "template_id": tid})
 
 
 def truncate_check(rows, tok):
     """Drop rows whose output exceeds the token budget of this model's tokenizer (truncation would risk cutting
     the insertion)."""
-    for r in rows:
-        r["n_tokens"] = len(tok(r["output"])["input_ids"])
+    for r in rows:  # per tool output: a split-payload row's earlier page has the same budget
+        r["n_tokens"] = max(len(tok(o)["input_ids"]) for o in r.get("prior_outputs", []) + [r["output"]])
     over = {r["id"] for r in rows if r["n_tokens"] > MAX_OUTPUT_TOKENS}
-    # Held-out rows come in pairs (Hindi injection + benign-Hindi control per doc): drop both or neither.
-    pair_docs = {r["doc_id"] for r in rows if r["split"] == "heldout" and r["id"] in over}
-    drop = lambda r: r["id"] in over or (r["split"] == "heldout" and r["doc_id"] in pair_docs)  # noqa: E731
+    # Paired rows (injection + its control per doc): Hindi pairs and every H1 family pair. Drop both or neither.
+    pair = lambda r: (r["doc_id"], r.get("family") or ("hindi" if r["split"] == "heldout" else None))  # noqa: E731
+    bad = {pair(r) for r in rows if r["id"] in over and pair(r)[1]}
+    drop = lambda r: r["id"] in over or pair(r) in bad  # noqa: E731
     return [r for r in rows if not drop(r)], [r for r in rows if drop(r)]
 
 

@@ -53,7 +53,7 @@ def test_heldout_from_test_docs_only_with_controls(rows):
 def test_heldout_rows_are_one_to_one_pairs(rows):
     per_doc = defaultdict(list)
     for r in rows:
-        if r["split"] == "heldout":
+        if r["split"] == "heldout" and not r.get("family"):  # v1 held-out = Hindi pairs; H1 families: test_attacks
             per_doc[r["doc_id"]].append(r["style"])
     assert per_doc and all(sorted(v) == ["benign_hindi", "hindi_hinglish"] for v in per_doc.values())
 
@@ -77,8 +77,8 @@ def test_every_clean_main_row_has_benign_insertion(rows):
 
 
 def test_clean_and_injected_lengths_match_per_format(rows):
-    main = [r for r in rows if r["split"] != "heldout" and r["style"] != "hard_negative"]
-    for is_json in (False, True):
+    main = [r for r in rows if r["split"] != "heldout" and r["style"] != "hard_negative" and not r.get("family")]
+    for is_json in (False, True):  # v1 rows; H1 pairs are length-matched per pair (test_attacks.py)
         grp = [r for r in main if r["style"].startswith("json") == is_json]
         clean = [len(r["output"].split()) for r in grp if r["label"] == 0]
         inj = [len(r["output"].split()) for r in grp if r["label"] == 1]
@@ -159,8 +159,9 @@ def test_demo_hard_negative_kinds_in_test(rows):
 def test_insertion_survives_truncation(rows):
     for r in rows:
         assert r["n_tokens"] <= MAX_TOKENS, r["id"]
-        if r["insertion"]:
-            assert r["insertion"] in r["output"], r["id"]
+        pages = " ".join(r.get("prior_outputs", []) + [r["output"]])
+        for part in r.get("insertion_parts") or ([r["insertion"]] if r["insertion"] else []):
+            assert part in pages, r["id"]
 
 
 def test_polite_style_has_no_keyword_markers(rows):
@@ -180,7 +181,7 @@ def test_user_voice_has_no_keywords_and_never_addresses_the_ai(rows):
 def test_every_trained_style_on_every_main_doc(rows):
     styles = defaultdict(set)
     for r in rows:
-        if r["doc_id"].startswith("d") and r["split"] != "heldout":
+        if r["doc_id"].startswith("d") and r["split"] != "heldout" and not r.get("family"):  # v1 styles
             styles[r["doc_id"]].add(r["style"])
     expected = set(TRAINED_STYLES) | {"clean", "benign_multilingual", "json_clean", "json_tool"}
     assert all(s == expected for s in styles.values())
