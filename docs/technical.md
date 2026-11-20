@@ -63,8 +63,10 @@ train/val/test template split as today. Families are tagged **trained** or **hel
 
 ### 1.3 Anchor scorer (`mvp/anchor/scorer.py`, planned; logic from `extract.py`)
 - Input: task, tool name, tool output (and, for split payloads, the run's earlier tool outputs).
-- Δ = state(task + outputs so far) − state(task + outputs before this one), read at the assistant-start token,
-  probe layer from the sweep. Cached task-only state per task.
+- Δ = state(task + outputs so far) − state(task), read at the probe's position (assistant start or last
+  tool-output token) and layer, both chosen on val. Exactly the training definition (`extract.py`); cached
+  task-only state per task. (Corrected 2026-10-30: an earlier draft subtracted the state before this output,
+  which is not what the probe is trained on.)
 - Output: `drift_score` ∈ [0, 1], `layer`, `probe_version`, `run_meta`, latency.
 - **Attribution** for the playground: which sentences pushed the score. Method decided in its phase by comparing
   a cheap one-pass method (projection of per-token states onto the probe direction) against leave-one-sentence-out
