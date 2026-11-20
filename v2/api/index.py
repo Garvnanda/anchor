@@ -14,6 +14,8 @@ from anchor.policy import DEFENCES, run_defence  # noqa: E402
 
 DATA = Path(__file__).parent / "data"
 MAX_BODY = 2048
+BODY_LIMITS = {}  # per-path caps; the live server adds /api/score (api/live.py)
+LIVE = {}  # set by api/live.py: mode + the live scorer's run_meta; empty on Vercel (replay)
 
 
 def _load(name):
@@ -66,8 +68,9 @@ class BodyCap:
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
         too_large = JSONResponse({"detail": "request body too large"}, status_code=413)
+        cap = BODY_LIMITS.get(scope.get("path"), MAX_BODY)
         size = dict(scope["headers"]).get(b"content-length")
-        if size is not None and (not size.isdigit() or len(size) > 6 or int(size) > MAX_BODY):  # len: int() cap
+        if size is not None and (not size.isdigit() or len(size) > 6 or int(size) > cap):  # len: int() cap
             return await too_large(scope, receive, send)
         body, more = b"", True
         while more:
@@ -76,7 +79,7 @@ class BodyCap:
                 return
             body += msg.get("body", b"")
             more = msg.get("more_body", False)
-            if len(body) > MAX_BODY:
+            if len(body) > cap:
                 return await too_large(scope, receive, send)
         problem = _json_problem(body) if body else None
         if problem:
@@ -111,7 +114,8 @@ class RunRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"mode": "replay", "model": META["model"], "probe_version": META["probe_version"],
+    return {"mode": LIVE.get("mode", "replay"), **({"live_run_meta": LIVE["run_meta"]} if LIVE else {}),
+            "model": META["model"], "probe_version": META["probe_version"],
             "probe_layer": META["layer"], "threshold": META["threshold"], "built_at": META["built_at"],
             "run_meta": META["run_meta"]}
 

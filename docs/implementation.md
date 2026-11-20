@@ -97,6 +97,10 @@ external_eval → gen_actions → build_scenarios, tests, phase review, push #2.
 
 ### Phase 3 (H2) — Baselines on our data (CPU)
 **Status**: todo
+**Scope (user, 2026-10-30):** Prompt Guard 2 22M + 86M only (access pending), plus keyword, length+position
+control and the Pipelock scanner. ProtectAI v2, PIGuard and Horizon guard are not downloaded (`decisions.md`).
+**Progress (2026-10-30):** `baselines.py` + tests done; keyword, length+position control and Pipelock scored on the
+v2 rows. Left: Prompt Guard 2 22M/86M (`--detectors prompt_guard2_22m,prompt_guard2_86m`, after access), review.
 **Reuse (head start: small):** MVP keyword baseline + metric code in `train_probe.py` (`threshold_at_fpr`, `evaluate`, counts beside rates); Pipelock v3.7.1 installed (`~/tools/pipelock`). New: loading/running 6 detectors, length+position control.
 **Prerequisites:** H1. Runs in parallel with G2.
 **Deliverables:** `v2/offline/baselines.py` → `out/baselines.json`: Prompt Guard 2 22M + 86M, Horizon-Labs
@@ -110,6 +114,9 @@ list, length+position-only control.
 
 ### Phase 4 (H3) — Agent-benchmark sets (CPU)
 **Status**: todo
+**Progress (2026-10-30):** sets rebuilt and recorded (`agentbench_sets.py`, `out/agentbench_sets.json`); found and
+fixed AgentDojo's clock artefact (51 paper positives are timestamp-only, `decisions.md`); rebuild deterministic
+under `frozen_clock.py` (`--check` passed). Left: the Prompt Guard 2 22M check (gated access pending) and the phase review.
 **Reuse (head start: none):** nothing in the repo; `lzwhehe/benign-instruction-bench` (MIT) provides the rebuild scripts. InjecAgent loader in `external_eval.py` is a pattern.
 **Prerequisites:** H0. Independent of H1.
 **Deliverables:** `v2/offline/agentbench_sets.py`: rebuild AgentDojo, τ-bench and BIPIA tool-output sets with
@@ -122,6 +129,9 @@ them; `out/agentbench_sets.json` (counts, hashes) for G3.
 
 ### Phase 5 (H4) — Live scorer and playground API
 **Status**: todo
+**Progress (2026-10-30):** `anchor/scorer.py`, `api/live.py`, `offline/attribution_eval.py` + `test_live.py` built;
+live = offline scores. Left: attribution measurement (after the H1 probe), the split-payload test against the H1
+scores, security-breaker on `v2/api`, review.
 **Reuse (head start: medium):** prompt building + Δ at assistant start (`common.py`, `extract.py`), hardened FastAPI app (`mvp/api/index.py`: BodyCap, strict models, 422 handler, headers in `vercel.json`) and its tests. New: model kept in memory, `/api/score`, attribution, rate limit.
 **Prerequisites:** H0.
 **Deliverables:** `v2/anchor/scorer.py` (model + probe loaded once, Δ with earlier outputs, fail closed, attribution);

@@ -21,9 +21,9 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 |---|---|---|---|---|---|
 | H0 — Scaffold `v2/` + model switch + `run_gpu.md` | Haragam | manual (reviewer PASS; G line pending) | large | G line: run_gpu.md steps 1–2 on RTX 2050 or Kaggle | whole MVP copied; qwen run == MVP exactly; Kaggle notebook `v2/kaggle/anchor_3b.ipynb` |
 | H1 — Attack families + dataset v2 (incl. Tamil) | Haragam | todo | medium | H0 | 8 new families, benign controls; manual spot-read by both |
-| H2 — Baselines on our data (CPU) | Haragam | todo | small | H1 | PG2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword, length+position control |
-| H3 — Agent-benchmark sets (CPU) | Haragam | todo | none | H0 | rebuild AgentDojo/τ-bench/BIPIA sets; check PG2 22M vs published |
-| H4 — Live scorer + playground API | Haragam | todo | medium | H0 | fail closed, attribution by measurement; security-breaker |
+| H2 — Baselines on our data (CPU) | Haragam | todo (PG2 access pending; scope: PG2 only + keyword, length control, Pipelock) | small | H1 | PG2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword, length+position control |
+| H3 — Agent-benchmark sets (CPU) | Haragam | todo (sets rebuilt + clock fix; PG2 check pending) | none | H0 | rebuild AgentDojo/τ-bench/BIPIA sets; check PG2 22M vs published |
+| H4 — Live scorer + playground API | Haragam | todo (built; attribution eval + security pass left) | medium | H0 | fail closed, attribution by measurement; security-breaker |
 | H5 — Live agent loop + Pipelock | Haragam | todo | small | H4 | Pipelock v3.7.1 installed here (`~/tools/pipelock`); security-breaker |
 | H6 — Black-box adaptive attacker (code) | Haragam | todo | none | H4 | runs on 0.5B here, on 3B in G5 |
 | H7 — Evaluation report + replay data | Haragam | todo | medium | G2, H2, G3–G5 | every number from output files |
@@ -62,3 +62,9 @@ Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases
 - Last-token read without chat template → fixed: chat template, tool role, assistant-start.
 - Norm score grew with output length → replaced by a trained probe; clean rows carry length-matched insertions.
 - Silent fallback to mock → MVP shows `REPLAY` badge; no mock scorer exists.
+
+## Resume point (2026-10-30 ~14:10, usage limit hit)
+- **Running:** qwen re-extract (`v2/offline/extract.py --model qwen0.5b`, both positions, ~15:05 done; log in job tmp `h1/extract.log`). Security-breaker on `v2/api` (H4) was running; re-run it if no report.
+- **Then, in order:** from `v2/offline` with `../../mvp/offline/.venv/Scripts/python`: `train_probe → external_eval → gen_actions → build_scenarios → smoke` (`--model qwen0.5b`); check scenario 9 (held-out miss) still exists; `baselines.py --detectors keyword,length_position,pipelock` (rows unchanged, re-run only if rows change); `attribution_eval.py`; full `.claude/test-command`; phase-reviewer for H1 → push #2.
+- **Built, uncommitted:** H1 (`attacks.py`, build_data families, extract two positions, train_probe position sweep + 1 % threshold, `test_attacks.py`), H2 (`baselines.py`, `test_baselines.py`; PG2 waits for gated access), H3 (`agentbench_sets.py`, `frozen_clock.py`, `test_agentbench_sets.py`; `--check` passed), H4 (`anchor/scorer.py`, `api/live.py`, `attribution_eval.py`, `test_live.py`), H5 (`agent/{mock,pipelock,loop}.py`, `test_agent.py`: 10/10 with the real Pipelock binary; Qwen-chooser test not yet run; `/api/agent/run` and H5 docs in flow/testing/decisions not written yet).
+- **H5 facts to record:** Pipelock config = balanced + `ssrf.ip_allowlist 127.0.0.1/32` + forward proxy on + demo secret as canary token; body DLP blocks secret mail (403 Canary Token); no direct network fallback.
