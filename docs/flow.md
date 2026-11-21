@@ -58,11 +58,17 @@ each with `--model {qwen0.5b,llama3b}` (default `qwen0.5b`) and an optional `--p
 | Entry point | What it does |
 |---|---|
 | `v2/offline/common.py` | `MODELS` table, `parse()` → `Run` (paths `data/<model>/`, `features/<model>/`, `out/<model>/`), `run_meta()`, `check_run_meta`/`load_probe` (raise `RunMismatch`), `load_env()` (HF token: `v2/offline/.env`, then `mvp/offline/.env`), `load_model(run)` → (tok, model, device), `render()` (fixed template date) |
+| `v2/offline/baselines.py [--detectors keyword,length_position,pipelock,prompt_guard2_22m,prompt_guard2_86m]` | H2: score every row with each detector, val-only thresholds (5 %, 1 %) + native rule for binary ones → `out/<model>/baselines.json`, `baseline_scores.json`; Pipelock via `pipelock mcp scan` (`$PIPELOCK`, default `~/tools/pipelock/pipelock.exe`) |
+| `v2/offline/agentbench_sets.py` [`--check`] | H3: rebuild AgentDojo / tau-bench / BIPIA tool-output sets with benign-instruction-bench (outside the repo: `~/tools/bib`, `~/agentsec/`, `~/tools/agentdojo-venv`) → `data/agentbench/*.jsonl` (git-ignored), `out/agentbench_sets.json` (counts, sha256, source commits, labels vs the paper); `--check` rebuilds in a temp folder and compares hashes |
+| `v2/offline/frozen_clock.py <script>` | runs an AgentDojo script with its tool clock frozen (deterministic differential labels) |
 | `v2/offline/attacks.py` | H1 attack families + Tamil: templates, encoders (base64/ROT13/hex, TAG, zero-width, Cyrillic), JSON shapes, length matching (`matched`, ±10 %) |
 | `v2/offline/{smoke,build_data,extract,train_probe,external_eval,gen_actions,build_scenarios}.py` | same as the MVP steps; outputs in `out/<model>/`, each with `run_meta`; `build_scenarios` copies the given model's files into `v2/api/data/` |
 | `v2/offline/check_gpu.py` | unchanged copy → `out/gpu_check.json` |
 | `v2/offline/run_gpu.md` | ordered, resumable 3B commands (G1–G5), folder table, files to bring back |
 | `v2/kaggle/make_notebook.py` → `anchor_3b.ipynb` | Kaggle T4: clone repo, `HF_TOKEN` from Kaggle Secrets (env only), run `run_gpu.md` steps 1–8 with `--model llama3b --precision nf4`, zip `out/llama3b/` + `data/llama3b/` + `out/gpu_check_kaggle.json` |
+| `v2/anchor/scorer.py` | H4: `Scorer(run)` loads model + probe once; `score(task, output, prior, attribution)` → drift score, tainted, position/layer, run_meta, latency; fail closed; `projection` / `leave_one_out` attribution (spans index the output) |
+| `v2/api/live.py` (`cd v2 && ANCHOR_MODEL=qwen0.5b uvicorn api.live:app`) | H4 live server: replay app + `POST /api/score` (strict, 32 KB, 30/min per client, 503 fail-closed); `/api/health` → `mode: live` |
+| `v2/offline/attribution_eval.py` | H4: projection vs leave-one-out on 50 injected val rows → `out/<model>/attribution.json` (`chosen`) |
 | `v2/anchor/policy.py` | `run_defence(scn, defence, threshold, secret)`: the taint rule, shared |
 | `v2/api/index.py` | MVP replay API importing `anchor.policy`; serves the model that `build_scenarios` copied; `/api/health` adds `run_meta` |
 | `v2/public/`, `v2/sim/` | MVP site and simulation copies; sim compares with `out/<served model>/` |
@@ -74,14 +80,11 @@ Paths below written as `mvp/...` map to `v2/...`. Every script takes `--model {q
 
 | Command / route | What it will do |
 |---|---|
-| `mvp/offline/baselines.py` | Prompt Guard 2 22M/86M, Horizon guard, PIGuard, ProtectAI v2, Pipelock scanner, keyword list, length+position control on the same splits → `out/baselines.json` |
 | `mvp/offline/agentbench.py` | rebuild AgentDojo / τ-bench / BIPIA tool-output sets (benign-instruction-bench), score frozen Anchor at 1 % FPR → `out/agentbench.json` |
 | `mvp/offline/adaptive.py` | black-box rewrite attacker (CPU) and GCG suffix (GPU laptop) against the scorer → `out/adaptive.json` |
 | `v2/offline/run_gpu.md` | ordered commands for the GPU laptop run; which files to bring back — **exists** with G1 + G2 estimate; H0 adds G2–G5 commands |
-| `mvp/anchor/scorer.py` | load model + probe once; `score(task, outputs) → drift, attribution, run_meta`; fail closed |
 | `mvp/anchor/policy.py` | steer mode (taint rule already in `v2/anchor/policy.py`) |
 | `mvp/agent/` | live multi-turn loop: model picks JSON action → tool → scorer → act or taint; tools served by a local mock server; outbound via Pipelock |
-| `POST /api/score` (live) | playground: text → drift score + highlighted sentences |
 | `POST /api/agent/run` (live) | one live agent run, vanilla vs Anchor, with per-layer log (Anchor / Pipelock) |
 | `GET /api/health` | adds `mode: live|replay` and `run_meta` |
 

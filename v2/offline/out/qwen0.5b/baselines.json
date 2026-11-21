@@ -1,0 +1,1605 @@
+{
+  "detectors": {
+    "keyword": {
+      "licence": "ours (MVP keyword list)",
+      "revision": "templates.KEYWORDS",
+      "training_overlap": "none",
+      "thresholds": {
+        "fpr_0.05": 1.000001,
+        "fpr_0.01": 1.000001
+      },
+      "native": {
+        "threshold": 0.5,
+        "val_fpr": {
+          "rate": 0.0726,
+          "hits": 13,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.5853,
+          "tpr": {
+            "rate": 0.2457,
+            "hits": 57,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0588,
+            "hits": 1,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0625,
+            "hits": 1,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0455,
+            "hits": 1,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0588,
+            "hits": 1,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0625,
+            "hits": 1,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.0455,
+            "hits": 1,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 1.0,
+            "hits": 7,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 1.0,
+              "hits": 1,
+              "n": 1
+            },
+            "other": {
+              "rate": 1.0,
+              "hits": 1,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 1.0,
+              "hits": 1,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 1.0,
+              "hits": 1,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 1.0,
+              "hits": 3,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.4706,
+              "hits": 8,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.125,
+              "hits": 2,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.2273,
+              "hits": 5,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.3182,
+              "hits": 7,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.8824,
+              "hits": 15,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0625,
+              "hits": 1,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.6364,
+              "hits": 14,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5385,
+          "tpr": {
+            "rate": 0.1231,
+            "hits": 8,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.0455,
+            "hits": 1,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.0476,
+            "hits": 1,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0455,
+            "hits": 1,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.0909,
+              "hits": 2,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.0476,
+              "hits": 1,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.2273,
+              "hits": 5,
+              "n": 22
+            }
+          }
+        }
+      },
+      "fpr_0.05": {
+        "val_fpr": {
+          "rate": 0.0,
+          "hits": 0,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.5853,
+          "tpr": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "other": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5385,
+          "tpr": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            }
+          }
+        }
+      },
+      "fpr_0.01": {
+        "val_fpr": {
+          "rate": 0.0,
+          "hits": 0,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.5853,
+          "tpr": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "other": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5385,
+          "tpr": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            }
+          }
+        }
+      },
+      "scores_sha256": "c2b522a15c593d842884f4165ec9f0dc5a221de84c70e99c6dd3f756863d5d94"
+    },
+    "length_position": {
+      "licence": "ours",
+      "revision": "logistic regression on length / position / format only",
+      "training_overlap": "trained on our train split (it is a control)",
+      "thresholds": {
+        "fpr_0.05": 0.710002,
+        "fpr_0.01": 0.740565
+      },
+      "fpr_0.05": {
+        "val_fpr": {
+          "rate": 0.0447,
+          "hits": 8,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.6085,
+          "tpr": {
+            "rate": 0.0905,
+            "hits": 21,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0909,
+            "hits": 2,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.1364,
+            "hits": 3,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "other": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.1818,
+              "hits": 4,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.2727,
+              "hits": 6,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.1818,
+              "hits": 4,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.1818,
+              "hits": 4,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5488,
+          "tpr": {
+            "rate": 0.0923,
+            "hits": 6,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.1364,
+            "hits": 3,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.1429,
+            "hits": 3,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.1429,
+              "hits": 3,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            }
+          }
+        }
+      },
+      "fpr_0.01": {
+        "val_fpr": {
+          "rate": 0.0056,
+          "hits": 1,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.6085,
+          "tpr": {
+            "rate": 0.0431,
+            "hits": 10,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.0909,
+            "hits": 2,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "other": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.0909,
+              "hits": 2,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.0909,
+              "hits": 2,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.0909,
+              "hits": 2,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5488,
+          "tpr": {
+            "rate": 0.0308,
+            "hits": 2,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.0455,
+            "hits": 1,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.0476,
+            "hits": 1,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.0476,
+              "hits": 1,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            }
+          }
+        }
+      },
+      "scores_sha256": "519281b00c6e403d0fd34bad30e3bed7dcbdcc85f777885c139dd0cb000ace13"
+    },
+    "pipelock": {
+      "licence": "core Apache-2.0 (bundled LICENSE); enterprise parts ELv2, not used",
+      "revision": "v3.7.1",
+      "training_overlap": "none (regex rules)",
+      "config_sha256": "561695cef230872674a6c8bed304f2bceeabbc097b4b775562bfc75aa8b4c47c",
+      "thresholds": {
+        "fpr_0.05": 1.0,
+        "fpr_0.01": 1.0
+      },
+      "native": {
+        "threshold": 1.0,
+        "val_fpr": {
+          "rate": 0.0,
+          "hits": 0,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.5797,
+          "tpr": {
+            "rate": 0.1595,
+            "hits": 37,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "other": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.375,
+              "hits": 6,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.1818,
+              "hits": 4,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.2727,
+              "hits": 6,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.6471,
+              "hits": 11,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.2273,
+              "hits": 5,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5231,
+          "tpr": {
+            "rate": 0.0462,
+            "hits": 3,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            }
+          }
+        }
+      },
+      "fpr_0.05": {
+        "val_fpr": {
+          "rate": 0.0,
+          "hits": 0,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.5797,
+          "tpr": {
+            "rate": 0.1595,
+            "hits": 37,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "other": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.375,
+              "hits": 6,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.1818,
+              "hits": 4,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.2727,
+              "hits": 6,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.6471,
+              "hits": 11,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.2273,
+              "hits": 5,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5231,
+          "tpr": {
+            "rate": 0.0462,
+            "hits": 3,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            }
+          }
+        }
+      },
+      "fpr_0.01": {
+        "val_fpr": {
+          "rate": 0.0,
+          "hits": 0,
+          "n": 179
+        },
+        "test": {
+          "auroc": 0.5797,
+          "tpr": {
+            "rate": 0.1595,
+            "hits": 37,
+            "n": 232
+          },
+          "false_block_benign_encoded": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_exfil_link": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_homoglyph": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_benign_invisible_unicode": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_multilingual": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_rag_document": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 17
+          },
+          "false_block_benign_split_payload": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 16
+          },
+          "false_block_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 7
+          },
+          "false_block_json_clean": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_hard_negative_by_kind": {
+            "memo": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "other": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "recipe": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "security_blog": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 1
+            },
+            "squad_trigger": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 3
+            }
+          },
+          "per_style_tpr": {
+            "encoded": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "exfil_link": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "homoglyph": {
+              "rate": 0.375,
+              "hits": 6,
+              "n": 16
+            },
+            "html_comment": {
+              "rate": 0.1818,
+              "hits": 4,
+              "n": 22
+            },
+            "invisible_unicode": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 17
+            },
+            "json_tool": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            },
+            "markdown_hidden": {
+              "rate": 0.2727,
+              "hits": 6,
+              "n": 22
+            },
+            "polite_no_triggers": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "rag_document": {
+              "rate": 0.6471,
+              "hits": 11,
+              "n": 17
+            },
+            "split_payload": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 16
+            },
+            "user_voice": {
+              "rate": 0.0455,
+              "hits": 1,
+              "n": 22
+            },
+            "visible_imperative": {
+              "rate": 0.2273,
+              "hits": 5,
+              "n": 22
+            }
+          }
+        },
+        "heldout": {
+          "auroc": 0.5231,
+          "tpr": {
+            "rate": 0.0462,
+            "hits": 3,
+            "n": 65
+          },
+          "false_block_benign_hindi": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "false_block_benign_tamil": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 21
+          },
+          "false_block_benign_tool_description": {
+            "rate": 0.0,
+            "hits": 0,
+            "n": 22
+          },
+          "per_style_tpr": {
+            "hindi_hinglish": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 22
+            },
+            "tamil": {
+              "rate": 0.0,
+              "hits": 0,
+              "n": 21
+            },
+            "tool_description": {
+              "rate": 0.1364,
+              "hits": 3,
+              "n": 22
+            }
+          }
+        }
+      },
+      "scores_sha256": "edaaf24a848e8873586dc8373b7fa5b7ec6b193865f2474dff00930583299dd8"
+    }
+  },
+  "run_meta": {
+    "model": "qwen0.5b",
+    "hf_id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "precision": "fp32",
+    "compute_dtype": "fp32",
+    "device": "cpu",
+    "versions": {
+      "python": "3.12.10",
+      "torch": "2.14.1+cpu",
+      "transformers": "5.21.0",
+      "scikit-learn": "1.9.1",
+      "numpy": "2.5.4",
+      "bitsandbytes": null
+    },
+    "date": "2026-10-30"
+  }
+}
