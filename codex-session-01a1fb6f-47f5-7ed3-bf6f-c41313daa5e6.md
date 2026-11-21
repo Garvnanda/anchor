@@ -12355,3 +12355,27 @@ every context and our chat , save to this md file.
 ### Assistant progress
 
 I’ll start the showcase, verify the local link, and append the handoff and recent conversation to your existing session Markdown file.
+
+## Judge showcase and npm handoff update
+
+The updated showcase is running at http://127.0.0.1:58947 on this machine. OpenCode and OpenClaw have direct navigation and downloadable recorded evidence. The live monitor token is printed in [the current startup log](option-a/.cache/judges-review.log). The [judge runbook](option-a/distribution/README.md#publish-the-npm-preview) includes the public preview release commands.
+
+OpenCode 2.3.2 completed both managed tool calls and returned blue and green. OpenClaw 2026.11.6 created a receipt in monitor mode and denied the write in enforce mode. [OpenCode evidence](docs/integrations/opencode-showcase.json) · [OpenClaw evidence](docs/integrations/openclaw-showcase.json)
+
+Activation steering remains [Phase G6](docs/implementation.md#phase-17-g6--steering-stretch). The Qwen score-backed decisions use controlled examples. The native host gates use exposure policy.
+
+I rebuilt the tarball, verified both evidence routes and live connection in Edge at desktop and mobile widths, and ran the npm publish dry run. The preview is packaged locally. Actual publication requires an npm account with access to publish the name and interactive two-factor authentication.
+
+## npm scope correction
+
+The publish attempt reached npm after interactive authentication. npm rejected the unscoped name `anchor-ai` as too similar to `anchorai` and suggested `@garvnanda/anchor-ai`. The package manifest, launcher, showcase command and install instructions now use the suggested scope. Both installed adapter imports resolve and the packaged policy demo and publish dry run passed.
+
+The updated archive is [garvnanda-anchor-ai-0.1.0-demo.1.tgz](option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz). Publish it from the repository root with `npm.cmd publish ./option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz --access public --tag demo --registry=https://registry.npmjs.org` and complete npm's interactive authentication. After it is accepted, verify with `npm.cmd view '@garvnanda/anchor-ai@demo' version --registry=https://registry.npmjs.org`.
+
+## npm preview is public
+
+The first upload was accepted for processing. During the visibility delay, npm returned 404 for the demo tag and 409 when the same version was submitted again. A subsequent public registry lookup returned version `0.1.0-demo.1` for `@garvnanda/anchor-ai@demo`. The registry SHA-1 matched the archive. A clean registry install and the installed CLI policy check passed.
+
+- [Public npm package](https://www.npmjs.com/package/@garvnanda/anchor-ai)
+- Verify with `npm.cmd view '@garvnanda/anchor-ai@demo' version --registry=https://registry.npmjs.org --prefer-online`.
+- Install with `npm.cmd install '@garvnanda/anchor-ai@demo'`, then run `npx.cmd --no-install anchor demo --check`.

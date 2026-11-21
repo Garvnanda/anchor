@@ -93,3 +93,23 @@ select {
   outline: 3px solid #935d00;
   outline-offset: 2px;
 }
+
+header { justify-content: space-between; flex-wrap: wrap; gap: .65rem 2rem; }
+nav { display: flex; flex-wrap: wrap; gap: .55rem 1.35rem; }
+nav a { color: #f9f3e5; text-decoration-thickness: 1px; text-underline-offset: .28em; }
+main a { color: #754700; }
+h1 { line-height: 1.08; letter-spacing: -.038em; max-width: 19ch; margin-top: 1rem; }
+h2, h3 { line-height: 1.25; margin-bottom: .4rem; }
+h3 { margin-top: 0; }
+h3 small { margin-left: .35rem; font-size: .78rem; color: #754700; font-weight: 600; }
+p { max-width: 70ch; margin: .4rem 0 .95rem; }
+.intro { font-size: 1.14rem; max-width: 57ch; margin-top: 1rem; }
+.host { border-top: 1px solid #dedcd5; padding: 1rem 0; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: .4rem 1.7rem; align-items: start; }
+.host p { margin-bottom: 0; }
+.host pre, #publish pre { margin: 0; background: #eeeae0; color: #342c21; padding: .7rem .9rem; border-radius: .35rem; }
+#publish pre { width: fit-content; max-width: 100%; margin-bottom: .8rem; }
+#status { margin-bottom: .65rem; }
+@media (max-width: 46rem) {
+  .host { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+  .host pre { width: fit-content; max-width: 100%; }
+}

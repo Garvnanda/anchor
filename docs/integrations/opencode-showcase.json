@@ -1,0 +1,69 @@
+{
+  "host": "OpenCode 2.3.2",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "finalReply": "The first color is blue and the second color is green.",
+  "observations": [
+    {
+      "kind": "tool_output_observed",
+      "sequence": 5,
+      "toolCallId": "call_12ae707e52f641b98833dc88b2456edc",
+      "details": {
+        "toolName": "get_first_color",
+        "trust": "untrusted",
+        "byteCount": 31,
+        "contentHash": "c3440d0045dec89d1db5c75b3d89c5d7e00003e5767fb405e27d608c682aedb8",
+        "truncated": false
+      }
+    },
+    {
+      "kind": "tool_finished",
+      "sequence": 6,
+      "toolCallId": "call_12ae707e52f641b98833dc88b2456edc",
+      "details": {
+        "toolName": "get_first_color",
+        "status": "completed"
+      }
+    },
+    {
+      "kind": "tool_output_observed",
+      "sequence": 7,
+      "toolCallId": "call_58780e2c02854fa49529915341b79cb0",
+      "details": {
+        "toolName": "get_second_color",
+        "trust": "unknown",
+        "byteCount": 32,
+        "contentHash": "d67a8449b31b7c1c987c17206bf879e8719454c40da3df3f0cd1888a30acf3cc",
+        "truncated": false
+      }
+    },
+    {
+      "kind": "tool_finished",
+      "sequence": 8,
+      "toolCallId": "call_58780e2c02854fa49529915341b79cb0",
+      "details": {
+        "toolName": "get_second_color",
+        "status": "completed"
+      }
+    }
+  ],
+  "providerTurns": [
+    {
+      "event": "generated",
+      "usage": {
+        "prompt_tokens": 6307,
+        "completion_tokens": 34,
+        "total_tokens": 6341
+      },
+      "seconds": 29.559
+    },
+    {
+      "event": "generated",
+      "usage": {
+        "prompt_tokens": 6370,
+        "completion_tokens": 13,
+        "total_tokens": 6383
+      },
+      "seconds": 26.786
+    }
+  ]
+}

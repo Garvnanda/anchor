@@ -51,7 +51,13 @@ export async function createLocalServer(options: Options) {
       return json(response, 405, { errorCode: "METHOD_NOT_ALLOWED" });
     }
     const path = new URL(request.url, origin).pathname;
-    const assets = new Map([["/", ["index.html", "text/html"]], ["/style.css", ["style.css", "text/css"]], ["/app.js", ["app.js", "text/javascript"]]]);
+    const assets = new Map([
+      ["/", ["index.html", "text/html"]],
+      ["/style.css", ["style.css", "text/css"]],
+      ["/app.js", ["app.js", "text/javascript"]],
+      ["/opencode-showcase.json", ["opencode-showcase.json", "application/json"]],
+      ["/openclaw-showcase.json", ["openclaw-showcase.json", "application/json"]],
+    ]);
     const asset = assets.get(path);
     if (options.dashboardDirectory && asset?.[0]) {
       try {

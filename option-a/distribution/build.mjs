@@ -67,3 +67,7 @@ await writeFile(at("dist/server/contracts.js"), [
   'export const contract = name => validators[name.replaceAll("-","_")];',
   'export const responseContract = path => validators[path.slice(1)];',
 ].join("\n"));
+
+for (const name of ["opencode-showcase.json","openclaw-showcase.json"]) {
+  await cp(at("../../docs/integrations/" + name), at("dist/dashboard/" + name));
+}

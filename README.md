@@ -9,7 +9,7 @@ On the prepared Windows machine, run the judge demo from the repository root:
 ```
 
 **An open-source AI project — a task-drift firewall for AI agents.**
-Anchor reads an open-weight model's activations to catch prompt injection hidden in tool outputs, then blocks or steers the agent back to the user's task.
+Anchor uses open-weight model activations to score suspicious tool results and can block protected tool calls. The judge showcase includes verified OpenCode and OpenClaw runs. Activation steering is planned.
 
 > Pipelock guards the network. **We guard the model's intent.**
 

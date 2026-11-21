@@ -3,7 +3,7 @@
 From the repository root on the prepared Windows demo machine, run the packaged CLI:
 
 ```powershell
-npm install --prefix option-a/.cache/showcase ./option-a/anchor-ai-0.1.0-demo.1.tgz
+npm install --prefix option-a/.cache/showcase ./option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz
 $env:ANCHOR_PYTHON = (Resolve-Path option-a/.cache/b7-verify/Scripts/python.exe).Path
 & option-a/.cache/showcase/node_modules/.bin/anchor.cmd demo --qwen
 ```
@@ -17,7 +17,7 @@ Open the printed loopback address, enter the printed token and select a run. The
 ## Install the local distribution
 
 ```powershell
-npm install ./option-a/anchor-ai-0.1.0-demo.1.tgz
+npm install ./option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz
 npx --no-install anchor demo --check
 ```
 
@@ -28,19 +28,19 @@ The policy demonstration runs with Node alone. For the activation demonstration,
 In a project with the package installed, create `.opencode/plugins/anchor.ts` containing:
 
 ```typescript
-export { default } from "anchor-ai/opencode";
+export { default } from "@garvnanda/anchor-ai/opencode";
 ```
 
 Set `ANCHOR_OBSERVATION_LOG` to an absolute file path with an existing parent. Set `ANCHOR_POLICY_MODE` to `monitor` or `enforce`. Set `ANCHOR_UNTRUSTED_TOOLS` and `ANCHOR_PROTECTED_TOOLS` to disjoint comma-separated lists of actual tool IDs. To exercise the installed adapter and managed Qwen from this repository:
 
 ```powershell
-$env:ANCHOR_PACKED_OPENCODE = (Resolve-Path node_modules/anchor-ai/dist/opencode/index.js).Path
+$env:ANCHOR_PACKED_OPENCODE = (Resolve-Path node_modules/@garvnanda/anchor-ai/dist/opencode/index.js).Path
 node option-a/python/b1_smoke.mjs --managed
 ```
 
 ## OpenClaw 2026.11.6
 
-Use Node 24.16 or newer in the 24.x line. Point `plugins.load.paths` to the absolute installed `node_modules/anchor-ai` directory and explicitly enable the plugin. Set `ANCHOR_OBSERVATION_LOG` before starting the host. For a controlled workspace the relevant entry is:
+Use Node 24.16 or newer in the 24.x line. Point `plugins.load.paths` to the absolute installed `node_modules/@garvnanda/anchor-ai` directory and explicitly enable the plugin. Set `ANCHOR_OBSERVATION_LOG` before starting the host. For a controlled workspace the relevant entry is:
 
 ```json
 {"plugins":{"entries":{"anchor-ai":{"enabled":true,"config":{"mode":"enforce","protectedTools":["write"],"untrustedTools":["read"],"markToolResults":true}}}}}
@@ -49,7 +49,7 @@ Use Node 24.16 or newer in the 24.x line. Point `plugins.load.paths` to the abso
 Run the isolated host check from the repository root. It creates a temporary workspace, pins a local provider, limits the tools and records the host output and JSONL audit trail under `option-a/.cache`. Its exit status checks the audit evidence independently from the agent's final message.
 
 ```powershell
-$env:ANCHOR_PACKAGE = (Resolve-Path node_modules/anchor-ai).Path
+$env:ANCHOR_PACKAGE = (Resolve-Path node_modules/@garvnanda/anchor-ai).Path
 & $env:ANCHOR_PYTHON option-a/python/openclaw_smoke.py enforce
 ```
 
@@ -80,3 +80,27 @@ To run either real host using the installed package on this machine:
 The OpenClaw showcase caps the local provider at three generations because the small model sometimes retries a denied write. The test checks tool decisions, the receipt on disk and real provider continuations. It reports middleware marking independently. The observed read-only run carried the file contents through to the model, but the middleware marker was absent. Add `--require-marker` to make missing marker coverage a failing test.
 
 From the repository root the scripts discover the pinned host binaries under `option-a/.cache`. On another machine, install the corresponding host versions and set `ANCHOR_OPENCODE` to the OpenCode executable, `ANCHOR_NODE` to Node and `ANCHOR_OPENCLAW` to OpenClaw's `openclaw.mjs`. OpenCode plugin authors using TypeScript can install the matching `@opencode/plugin@2.3.2` development types.
+
+## Publish the npm preview
+
+Build and pack from the repository root using the commands above. Review the exact archive before publishing. The package contains the CLI, adapters, portal, provider scripts and probe. The host executables, Python environment and Qwen weights are installed separately.
+
+```powershell
+tar -tf ./option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz
+npm.cmd publish ./option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz --dry-run --access public --tag demo
+npm.cmd login --registry=https://registry.npmjs.org
+npm.cmd whoami --registry=https://registry.npmjs.org
+npm.cmd publish ./option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz --access public --tag demo --registry=https://registry.npmjs.org
+```
+
+Enable two-factor authentication before signing in and complete the publish prompt. The `demo` tag makes the prerelease an explicit opt-in. npm rejected the unscoped `anchor-ai` name because it resembles `anchorai`. The preview uses the personal scope recommended by npm. A version already on the registry requires a version bump for a changed artifact. [npm publishing guide](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/) · [npm two-factor authentication](https://docs.npmjs.com/requiring-2fa-for-package-publishing-and-settings-modification/)
+
+After npm accepts the publish, test the registry install from a fresh project:
+
+```powershell
+npm.cmd view @garvnanda/anchor-ai@demo version
+npm.cmd install @garvnanda/anchor-ai@demo
+npx.cmd anchor demo --check
+```
+
+Share the package page at `https://www.npmjs.com/package/@garvnanda/anchor-ai` once it resolves. The webpage served by the CLI is local to the machine running it. Judges can install the package and run the CLI themselves.

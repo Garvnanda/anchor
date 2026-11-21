@@ -1,9 +1,9 @@
 param([switch]$Check, [switch]$PolicyOnly)
 $ErrorActionPreference = 'Stop'
-$archive = Join-Path $PSScriptRoot 'anchor-ai-0.1.0-demo.1.tgz'
+$archive = Join-Path $PSScriptRoot 'garvnanda-anchor-ai-0.1.0-demo.1.tgz'
 $digest = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.Substring(0,16)
 $install = Join-Path $PSScriptRoot ".cache/showcase-$digest"
-$cli = Join-Path $install 'node_modules/anchor-ai/cli.mjs'
+$cli = Join-Path $install 'node_modules/@garvnanda/anchor-ai/cli.mjs'
 if (!(Test-Path -LiteralPath $cli)) {
     & npm.cmd install --prefix $install $archive --offline --no-audit --no-fund
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -1,5 +1,5 @@
 {
-  "name": "anchor-ai",
+  "name": "@garvnanda/anchor-ai",
   "version": "0.1.0-demo.1",
   "type": "module",
   "description": "Local tool-call policy and audit runtime for OpenClaw and OpenCode",

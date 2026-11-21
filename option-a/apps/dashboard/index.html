@@ -5,9 +5,45 @@
     content="width=device-width,initial-scale=1"
   /><title>Anchor · Run monitor</title
   ><link rel="stylesheet" href="style.css" />
-  <header><strong>Anchor</strong><span>Local security monitor</span></header>
+  <header>
+    <strong>Anchor</strong>
+    <nav aria-label="Showcase">
+      <a href="#opencode">OpenCode</a>
+      <a href="#openclaw">OpenClaw</a>
+      <a href="#steering">Steering</a>
+      <a href="#live">Live monitor</a>
+      <a href="#publish">npm</a>
+    </nav>
+  </header>
   <main>
-    <h1>Run monitor</h1>
+    <h1>See what Anchor catches and blocks</h1>
+    <p class="intro">Inspect the evidence from both agent hosts, then connect to the live Qwen demo to see how an activation score becomes a policy decision.</p>
+    <section aria-labelledby="hosts">
+      <h2 id="hosts">Verified host runs</h2>
+      <p>These outcomes were recorded on the demo machine. Run the commands from the installed package to reproduce them.</p>
+      <article id="opencode" class="host">
+        <div><h3>OpenCode <small>2.3.2</small></h3>
+          <p>Managed Qwen called <code>get_first_color</code> and <code>get_second_color</code>. OpenCode returned both results to Qwen and Anchor recorded the tool results in the audit log.</p>
+          <a href="opencode-showcase.json">View recorded evidence</a>
+        </div>
+        <pre><code>npx anchor opencode-demo</code></pre>
+      </article>
+      <article id="openclaw" class="host">
+        <div><h3>OpenClaw <small>2026.11.6</small></h3>
+          <p>Qwen read a local file and attempted to write a receipt. Monitor mode created the file. Enforce mode denied the writes before execution.</p>
+          <a href="openclaw-showcase.json">View recorded evidence</a>
+        </div>
+        <pre><code>npx anchor openclaw-demo monitor
+npx anchor openclaw-demo enforce</code></pre>
+      </article>
+    </section>
+    <section id="steering">
+      <h2>Steering</h2>
+      <p>Activation steering remains a research milestone. The live demo shows activation scoring and tool blocking. The native host runs use a policy based on tool exposure.</p>
+    </section>
+    <section id="live">
+      <h2>Live monitor</h2>
+      <p>Paste the token printed by the local launcher to inspect the two Qwen controls and the policy comparison.</p>
     <p id="status" role="status">Disconnected</p>
     <form>
       <label
@@ -15,6 +51,7 @@
         <input type="password" autocomplete="off" required /></label
       ><button>Connect</button>
     </form>
+    </section>
     <section>
       <h2>Run comparison</h2>
       <div id="runs"></div>
@@ -32,6 +69,13 @@
     <section>
       <h2>Tool coverage</h2>
       <pre id="coverage">Awaiting coverage report.</pre>
+    </section>
+    <section id="publish">
+      <h2>Publish the npm preview</h2>
+      <p>Use the packaged tarball from the repository root. Sign in and complete npm account two-factor authentication before publishing.</p>
+      <pre><code>npm login
+npm publish ./option-a/garvnanda-anchor-ai-0.1.0-demo.1.tgz --access public --tag demo</code></pre>
+      <p><a href="https://docs.npmjs.com/creating-and-publishing-unscoped-public-packages/">npm publishing documentation</a></p>
     </section>
   </main>
   <script defer src="app.js"></script>
