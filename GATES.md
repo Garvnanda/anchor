@@ -28,3 +28,24 @@ Scope: Verify the OpenCode boundary, prepare the shared C0 contract, and verify 
   EXPECT: A1 live observation verified
   CWD: option-a
   EVIDENCE: automatic-evidence=v1; definition-sha256=277dfc2c5f07f3c68cd550c87e5b8a9eba54084d8beb1d17223ff1fdd5987c14; exit=0; EXPECT=matched; output-sha256=9fcbfe885ac853a5fbbfd2f13f3b2169303d1d6cc347c3f03db9119d0c51d3aa; output-bytes=331; shell=C:\WINDOWS\system32\cmd.exe; cwd=C:\Users\harag\Documents\coding\anchor\option-a; path=f29d444f29d9/43 entries
+
+- [ ] A2: Protected effects remain uncalled on denial, detector failure and exposure races
+  CHECK: npm test
+  EXPECT: authorization rejects missing, stale, and failed detector evidence
+  CWD: option-a
+  EVIDENCE: pending
+
+- [ ] A3: Real OpenCode attempts the same controlled sink in OFF and enforce and only OFF produces a receipt
+  CHECK: npm run test:policy-demo
+  EXPECT: A3 policy-only sink verified
+  CWD: option-a
+  EVIDENCE: pending
+
+- [ ] A4: The authenticated loopback API streams real runtime events and detector transport failures cannot authorize effects
+  CHECK: npm test
+  EXPECT: loopback API streams runtime events and resumes after disconnect
+  CWD: option-a
+  EVIDENCE: pending
+
+- [ ] C1: The real managed service and A runtime verify generation correlation and fail-closed behavior together
+  EVIDENCE: pending
