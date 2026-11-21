@@ -12106,3 +12106,252 @@ I ran the managed provider’s generation code and the original MVP extractor on
 3. **Choose the threshold on validation data, then lock it.** Define the false-alarm budget with its denominator. For example, one false alarm among 24 benign pages is a different rate from one among 73. On fresh, untouched test pages, report **injections caught out of total injections** and **benign pages flagged out of total benign pages**. Use those measured numbers for the OpenCode pitch.
 
 The **17/24** result is a reason to test a shorter instruction. It does not establish that this is the best demo configuration. The immediate milestone is a **frozen, runnable OpenCode profile that fits on Garv’s machine through the post-tool turn**. Once that exists, training the new probe is the right next experiment.
+
+
+---
+
+## Anchor dual-host showcase handoff ? 2026-11-21
+
+The original session export above is the project baseline. This section records the follow-up planning and implementation session.
+
+### Running build
+
+- [Open the local showcase](http://127.0.0.1:56368). The address is on this Windows machine and lasts for the current process.
+- Paste the value next to **Local bearer token** in the [current startup log](option-a/.cache/handover-20261121-125044.log). A restart generates a fresh address and token.
+- Relaunch from the repository root with `.\option-a\showcase.ps1`. Use `-Check` for a terminal verification or `-PolicyOnly` for the fixture without Qwen.
+- The live instance returned HTTP 200 and its authenticated API exposed four runs, four policy decisions and two detector scores.
+
+### Deliverables and reproduction
+
+| Built | Location |
+| --- | --- |
+| Installable npm tarball | [anchor-ai-0.1.0-demo.1.tgz](option-a/anchor-ai-0.1.0-demo.1.tgz) |
+| Judge runbook, setup and rebuild commands | [Distribution README](option-a/distribution/README.md) |
+| CLI, package manifest, both host entrypoints and build script | [Distribution source](option-a/distribution/) |
+| TypeScript policy, taint, audit and local server | [Runtime packages](option-a/packages/) |
+| Managed Qwen provider and host checks | [Python and host tooling](option-a/python/) |
+| Local audit dashboard and developer guide | [Applications](option-a/apps/) |
+| Dual-host decisions and milestone plan | [Delivery plan](docs/dual-host-plan.md) |
+| Recorded native host proof | [OpenClaw results](docs/integrations/openclaw-showcase.json) |
+
+The release artifact installs with `npm install ./option-a/anchor-ai-0.1.0-demo.1.tgz`. The installed CLI provides `anchor demo --qwen`, `anchor opencode-demo`, `anchor openclaw-demo monitor`, `anchor openclaw-demo enforce`, `anchor monitor <jsonl>`, `anchor controls`, and `anchor provider`. The host checks use OpenCode 2.3.2 and OpenClaw 2026.11.6. OpenClaw was tested with Node 24.16.0. The runbook documents host executable locations, the Python environment, and the pinned Qwen snapshot.
+
+### Verified behavior and open work
+
+- The Edge browser check verified the installed bundle, four runs and correlated detector events. TypeScript runtime tests, dashboard tests, the OpenClaw adapter test and Python contract and transport tests passed.
+- The live matched-profile Qwen run scored the clean control at 0.0652475 and the injected control at 0.9908227. At 0.431316, the core allowed the clean receipt and blocked the injected receipt. These scores correspond to two controlled examples from the historical prompt format.
+- Real OpenCode completed managed Qwen tool calls and emitted audit events. Real OpenClaw monitor mode created a receipt on disk, and enforce mode denied the attempted writes and left the receipt absent. Both bounded packaged commands completed successfully.
+- Native host demos enforce exposure policy. A host-validated probe and live score-backed host denial remain open. The optional OpenClaw result marker was absent in the tested provider input. Registry publication remains pending.
+
+## Follow-up session conversation
+
+The transcript below includes the user messages and visible assistant replies and progress from the follow-up session through the handoff request.
+
+### User
+
+hey this is my context of everything about my this project, in this file : codex-session-01a1fb6f-47f5-7ed3-bf6f-c41313daa5e6.md .
+go ahead read it and tell me what to do now, what's to be done now, also there's to be other things to be made right now : "Worked for 10s
+
+Yes. We can build one Anchor npm package that supports both OpenCode and OpenClaw. And after reviewing OpenClaw's current plugin architecture, I think OpenClaw is a promising primary integration target for Anchor, particularly because of its tool interception and agent lifecycle hooks.
+
+However, the same npm package should contain two separate adapters, not one identical plugin implementation.
+
+### 1\. Why OpenClaw may be a better fit
+
+OpenClaw's plugin API provides `before_tool_call`, `after_tool_call`, model lifecycle hooks, and controlled access to tool results before they return to the model. These are particularly relevant to Anchor's prompt-injection detection and enforcement workflow. OpenClaw +2
+
+| Feature                                      | OpenCode                   | OpenClaw                              |
+| -------------------------------------------- | -------------------------- | ------------------------------------- |
+| Native TypeScript plugins                    | Yes                        | Yes                                   |
+| Intercept tool calls before execution        | Yes                        | Yes                                   |
+| Observe tool results                         | Yes                        | Yes                                   |
+| Block dangerous actions                      | Supported hook boundaries  | Explicit tool-blocking hooks          |
+| Inspect model requests/responses             | Supported interfaces       | Supported hooks with permissions      |
+| Modify tool results before model consumption | Supported interfaces       | Dedicated middleware with permissions |
+| Access actual model activations              | Requires managed inference | Requires managed inference            |
+
+OpenClaw's dedicated pre-tool blocking capabilities make it particularly attractive for our security demo. Its tool-result middleware also provides a useful interception point, although the required plugin permissions and runtime coverage must be verified. OpenClaw +1
+
+### 2\. The new architecture
+
+@anchor-ai/core
+
+One shared TypeScript security engine
+
+OpenCode Adapter
+
+OpenCode hooks · Tool interception · Session events
+
+OpenClaw Adapter
+
+Agent lifecycle · Pre-tool blocking · Tool-result middleware
+
+Shared Anchor Runtime
+
+Policy enforcement · Taint propagation · Audit events
+
+Option A: Anchor-managed Python Qwen Engine
+
+Qwen2.5-0.5B · Compatible activations · Trained probe
+
+Anchor Local Live Portal
+
+Both agent types · Live events · Risk scores · Enforcement decisions
+
+The key is that both adapters translate their platform-specific events into one common Anchor event format.
+
+### 3\. How we should package it
+
+I recommend publishing one developer-facing npm package named `anchor-ai`, with explicit exports:
+
+```text
+anchor-ai
+├── core/
+│   ├── runtime
+│   ├── policy
+│   ├── taint
+│   └── events
+├── adapters/
+│   ├── opencode
+│   └── openclaw
+├── detector/
+│   └── python-client
+├── cli/
+└── dashboard/
+```
+
+Developers could import the integration appropriate to their agent platform:
+
+```typescript
+import { createOpenCodeAdapter } from "anchor-ai/opencode";
+```
+
+Or:
+
+```typescript
+import { createOpenClawAdapter } from "anchor-ai/openclaw";
+```
+
+These would be Anchor-defined interfaces, not existing APIs. Each adapter would expose the host-specific plugin entrypoint and installation metadata required by its platform.
+
+### 4\. What happens to our two-developer plan?
+
+We don't need to restructure the entire project.
+
+| Developer A                       | Developer B                  |
+| --------------------------------- | ---------------------------- |
+| Shared TypeScript security engine | Qwen inference engine        |
+| OpenClaw adapter — primary        | Activation extraction        |
+| OpenCode adapter — secondary      | Probe integration            |
+| npm package and CLI               | Detector API                 |
+| Policy enforcement                | Live dashboard               |
+| MCP compatibility                 | Documentation and evaluation |
+
+The best implementation sequence is to build and validate the OpenClaw adapter first, then reuse the security engine for OpenCode.
+
+One important condition: Option A must remain mandatory for the final detector-backed demonstration. OpenClaw plugin access does not provide the model's hidden states. We still need an Anchor-managed Qwen inference path that OpenClaw can actually use, and we must verify its compatibility with the trained probe.
+
+### 5\. My recommendation
+
+Make OpenClaw the primary target and OpenCode the secondary supported integration.
+
+This gives Anchor a broader audience while avoiding two separate security products.
+
+Before finalizing the handoff, I would add one dedicated phase for verifying OpenClaw's tool interception, blocking, model-provider compatibility, and tool-result middleware. That proof should happen before extensive adapter development.
+
+The result would be one Anchor security engine, one npm distribution, two agent integrations, and one shared ML detection backend."
+
+analyze this idea, properly and tell me what to do now, and provide me a plan properly and , change all the docs according to what's the new idea , that has not been in documents.
+update the docs according to the new idea,
+ask me anything if needed, i don't want you to assume anything.
+
+### Assistant progress
+
+I’ll read the session handoff and project docs, then check the host APIs before updating the plan. I’ll flag any product decisions the handoff leaves open.
+
+### Assistant progress
+
+The handoff records an exact activation match on two identical-token controls, but the held-out OpenCode run caught only 9 of 22 injections. I’m putting the OpenClaw tool round trip ahead of probe training so the team can measure the actual prompt and tool-result path first.
+
+### Assistant
+
+**Make OpenClaw the primary integration target. The next milestone is one real OpenClaw tool round trip through Anchor-managed Qwen, with evidence that Anchor can stop a follow-up action before it executes.** Keep the existing OpenCode integration as the secondary host and regression baseline.
+
+One npm distribution makes sense because policy, taint tracking, detector transport and audit events can be shared. The adapters need separate entrypoints because the hosts expose different hooks and installation contracts. OpenClaw documents both pre-execution blocking and middleware that can change a tool result before the model sees it. That middleware requires explicit enablement and a matching manifest contract. Those capabilities justify testing OpenClaw first. Whether they cover your demo path is still an open engineering question. [OpenClaw host hooks](https://docs.openclaw.ai/plugins/sdk-overview/host-hooks) · [OpenClaw tool policy](https://docs.openclaw.ai/plugins/hooks/tool-policy)
+
+### What to do now
+
+| Order | Owner | Deliverable |
+|---|---|---|
+| 1 | Developer A | Pin an OpenClaw version and load a minimal Anchor plugin. Use a harmless local tool that increments a counter. Show that an allowed call increments it once and a denied call leaves it unchanged. Record the hook order and required grants. |
+| 2 | Developer B, alongside A | Connect that same session to the existing managed Qwen provider. Put a harmless marker in a tool result, verify that it reaches the next model request, and measure prompt size, memory and latency through the follow-up turn. |
+| 3 | Both | Freeze the smallest real profile that supports the intended demo. Record the host version, instructions, tools, model revision and tokenizer. This matters because the previous OpenCode capture was already about **10,400 tokens before tool output**, while the provider limit was **8,192**. |
+| 4 | A and B in parallel | A integrates both adapters with the shared runtime and versions the event contract so the portal can identify the host and still replay existing events. B evaluates the probe on the frozen profile, locks the threshold on validation data, and reports detections and false alarms separately for each tested host. |
+| 5 | Both | Test a clean install of the packed npm artifact in each host. Finish with a primary-host demonstration that connects a real managed score to a policy decision and an observable tool outcome. |
+
+**Defer probe training until step 3.** The session recorded exact agreement across all 896 layer-9 delta values on two identical-token controls. That supports the extraction implementation on those examples. The held-out OpenCode evaluation tells you something different about detector quality under a real host prompt. It caught **9 of 22 injections** and flagged **3 of 22 benign examples**. OpenClaw needs its own measurement before you make a detector-performance claim. [Evaluation report](C:/projects/anchor/docs/ml/evaluation-report.md)
+
+### Documentation updated
+
+The [dual-host delivery plan](C:/projects/anchor/docs/dual-host-plan.md) contains the architecture, owners, dependencies, evidence required at each milestone and open decisions. I updated the [two-developer execution plan](C:/projects/anchor/docs/ANCHOR_TWO_DEVELOPER_EXECUTION_PLAN.md), [Option A handoff](<C:/projects/anchor/docs/ANCHOR_PROJECT_HANDOFF_OPTION_A (1).md>), project entry points, status pages, contract guidance and local developer guide. The earlier OpenCode-first specifications are labeled as historical so the team can still trace completed work. `git diff --check` passed. This was a documentation change. OpenClaw runtime validation and package installation remain pending.
+
+**Two decisions need your input before the profile and threshold are frozen.** Which tools must the final demo exercise? And what benign false-alarm budget would you accept, expressed as flags per 100 benign tool results? Developers A and B can start the first two steps while those are open.
+
+### User
+
+yes go ahead with what you thought, and also do the work of developer A and B both. as for now A is not available.
+so go ahead with building it and building with the whole npm package, open code, open claw.
+everything.
+i want to showcase our project. so to demonstrate that against the judges. make it.
+
+### Assistant progress
+
+I’ll check the existing runtime and host tooling, then build the package and run the demo checks this machine supports.
+
+### Assistant progress
+
+The packed runtime now produces a visible policy decision in the local monitor. The controlled fixture counted one receipt in monitor mode and zero in enforce mode. I also reran the real OpenCode-to-Qwen tool round trip successfully. I’m checking OpenClaw separately so the judges’ demo can distinguish host evidence from fixture results.
+
+### Assistant progress
+
+The installed tarball passed a browser check. The portal showed all four runs, including the clean control scoring 0.0652 and the injected control scoring 0.9908 against a 0.4313 threshold. OpenClaw also completed a real read and returned the correct file content through Qwen. I’m now checking the stronger claim that an attempted write is actually stopped.
+
+### User
+
+how much time will you need more ?
+
+### Assistant progress
+
+Allow about **5–10 more minutes** for the two final OpenClaw runs and the handoff. The npm package and browser demo are already usable. I’ve observed the real host create a receipt in monitor mode and block it in enforce mode. I’m checking that both outcomes repeat from the packaged command. The ML showcase is verified on its matched controls. Host-specific detector calibration is still open and is outside that estimate.
+
+### Assistant
+
+**The judges’ showcase is ready now.** From `C:\projects\anchor`, run:
+
+```powershell
+.\option-a\showcase.ps1
+```
+
+Open the local address it prints and enter the token. I verified the packaged build in Edge.
+
+| What you can show | Verified result |
+|---|---|
+| **Live Qwen detection** | On two held-out examples in the probe’s validated prompt format, the clean page scored **0.0652** and the injected page scored **0.9908**. At the **0.4313** threshold, Anchor allowed the clean receipt and blocked the injected one. |
+| **Real OpenClaw enforcement** | OpenClaw read a local file through managed Qwen. Monitor mode let it create `receipt.txt`. Enforce mode blocked the attempted writes, and the file was absent. Both packaged commands passed. |
+| **Real OpenCode integration** | OpenCode 2.3.2 called two tools through managed Qwen, received their results, and emitted audit events through the packaged adapter. |
+
+For the presentation, **lead with the two scores, then show the OpenClaw receipt on disk**. The scores demonstrate detection. The receipt demonstrates that Anchor can stop a real host action.
+
+One important claim is still open. The native host demos use exposure-based policy. A live host denial driven by a host-qualified probe still requires calibration. OpenClaw’s optional tool-result marker also failed to appear in the model input. The npm package is available as a local tarball and has not been published to the registry.
+
+[Judge guide](C:/projects/anchor/option-a/distribution/README.md) · [Installable npm package](C:/projects/anchor/option-a/anchor-ai-0.1.0-demo.1.tgz) · [Measured OpenClaw results](C:/projects/anchor/docs/integrations/openclaw-showcase.json)
+
+### User
+
+first of all , hand me over everything that's built. proper running, so that i can check, hand me over the link
+and save everything to an md file that's already existing md file : codex-session-01a1fb6f-47f5-7ed3-bf6f-c41313daa5e6.md .
+every context and our chat , save to this md file.
+
+### Assistant progress
+
+I’ll start the showcase, verify the local link, and append the handoff and recent conversation to your existing session Markdown file.
