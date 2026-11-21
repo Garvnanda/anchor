@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anchor.invalid/contracts/v1/detector-result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "unavailable",
+        "incompatible",
+        "error",
+        "timeout"
+      ]
+    },
+    "detectorMode": {
+      "const": "direct_managed_qwen"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "inferenceRequestId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "toolCallId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "modelId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 192
+            },
+            "modelRevision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 192
+            },
+            "probeHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "featureExtractionHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "precision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 192
+            },
+            "layer": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "provenanceType": {
+              "enum": [
+                "generation_forward_pass",
+                "auxiliary_forward_pass"
+              ]
+            }
+          },
+          "required": [
+            "modelId",
+            "modelRevision",
+            "probeHash",
+            "featureExtractionHash",
+            "precision",
+            "layer",
+            "provenanceType"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "score": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "threshold": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "latencyMs": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "errorCode": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "status",
+    "detectorMode",
+    "runId",
+    "sessionId",
+    "inferenceRequestId",
+    "toolCallId",
+    "provenance",
+    "score",
+    "threshold",
+    "latencyMs",
+    "errorCode"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ready"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "modelId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 192
+              },
+              "modelRevision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 192
+              },
+              "probeHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "featureExtractionHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "precision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 192
+              },
+              "layer": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "provenanceType": {
+                "enum": [
+                  "generation_forward_pass",
+                  "auxiliary_forward_pass"
+                ]
+              }
+            },
+            "required": [
+              "modelId",
+              "modelRevision",
+              "probeHash",
+              "featureExtractionHash",
+              "precision",
+              "layer",
+              "provenanceType"
+            ]
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "latencyMs": {
+            "type": "number",
+            "minimum": 0
+          },
+          "errorCode": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "score": {
+            "type": "null"
+          },
+          "threshold": {
+            "type": "null"
+          },
+          "errorCode": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          }
+        }
+      }
+    }
+  ]
+}

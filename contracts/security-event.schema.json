@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anchor.invalid/contracts/v1/security-event.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "source": {
+      "enum": [
+        "opencode_plugin",
+        "typescript_core",
+        "detector_client",
+        "demo_sink",
+        "local_server"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "off",
+        "monitor",
+        "enforce"
+      ]
+    },
+    "detectorMode": {
+      "enum": [
+        "policy_only",
+        "direct_managed_qwen"
+      ]
+    },
+    "taintState": {
+      "enum": [
+        "clean",
+        "tainted"
+      ]
+    },
+    "redacted": {
+      "const": true
+    },
+    "toolCallId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "inferenceRequestId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "kind": {
+      "enum": [
+        "run_started",
+        "run_closed",
+        "tool_pre_execution",
+        "tool_output_observed",
+        "detector_result",
+        "taint_updated",
+        "policy_decision",
+        "tool_finished",
+        "sink_verification",
+        "coverage_report",
+        "error"
+      ]
+    },
+    "details": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "runId",
+    "sessionId",
+    "sequence",
+    "timestamp",
+    "source",
+    "mode",
+    "detectorMode",
+    "taintState",
+    "redacted",
+    "kind",
+    "details"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "run_started"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "taskFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "taskFingerprint"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "run_closed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              }
+            },
+            "required": [
+              "reasonCode"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "tool_pre_execution"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "toolName": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              "actionClass": {
+                "enum": [
+                  "read_only",
+                  "side_effect",
+                  "unknown"
+                ]
+              }
+            },
+            "required": [
+              "toolName",
+              "actionClass"
+            ]
+          }
+        },
+        "required": [
+          "toolCallId"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "tool_output_observed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "toolName": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              "trust": {
+                "enum": [
+                  "trusted",
+                  "untrusted",
+                  "unknown"
+                ]
+              },
+              "byteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "toolName",
+              "trust",
+              "byteCount",
+              "contentHash",
+              "truncated"
+            ]
+          }
+        },
+        "required": [
+          "toolCallId"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "detector_result"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "$ref": "https://anchor.invalid/contracts/v1/detector-result.schema.json"
+          },
+          "detectorMode": {
+            "const": "direct_managed_qwen"
+          }
+        },
+        "required": [
+          "toolCallId",
+          "inferenceRequestId"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "taint_updated"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              }
+            },
+            "required": [
+              "reasonCode"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "policy_decision"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "toolName": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              "verdict": {
+                "enum": [
+                  "allow",
+                  "block",
+                  "require_approval"
+                ]
+              },
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              "enforced": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "toolName",
+              "verdict",
+              "reasonCode",
+              "enforced"
+            ]
+          }
+        },
+        "required": [
+          "toolCallId"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "tool_finished"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "toolName": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              "status": {
+                "enum": [
+                  "completed",
+                  "error",
+                  "denied"
+                ]
+              }
+            },
+            "required": [
+              "toolName",
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "toolCallId"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "sink_verification"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "receiptHash": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "count",
+              "receiptHash"
+            ]
+          }
+        },
+        "required": [
+          "toolCallId"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "coverage_report"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "report": {
+                "$ref": "coverage.schema.json"
+              }
+            },
+            "required": [
+              "report"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "error"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "errorCode": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              }
+            },
+            "required": [
+              "errorCode"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

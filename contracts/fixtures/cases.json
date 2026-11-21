@@ -1,0 +1,268 @@
+[
+  {
+    "schema": "security-event",
+    "valid": true,
+    "data": {
+      "schemaVersion": 1,
+      "eventId": "event-example",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "sequence": 1,
+      "timestamp": "2026-11-21T00:00:00Z",
+      "source": "typescript_core",
+      "mode": "enforce",
+      "detectorMode": "policy_only",
+      "taintState": "tainted",
+      "redacted": true,
+      "toolCallId": "call-example",
+      "kind": "policy_decision",
+      "details": {
+        "toolName": "controlled_sink",
+        "verdict": "block",
+        "reasonCode": "TAINTED_SIDE_EFFECT",
+        "enforced": true
+      }
+    }
+  },
+  {
+    "schema": "security-event",
+    "valid": false,
+    "data": {
+      "schemaVersion": 1,
+      "eventId": "event-example",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "sequence": 1,
+      "timestamp": "2026-11-21T00:00:00Z",
+      "source": "typescript_core",
+      "mode": "enforce",
+      "detectorMode": "policy_only",
+      "taintState": "tainted",
+      "redacted": true,
+      "toolCallId": "call-example",
+      "kind": "policy_decision",
+      "details": {
+        "toolName": "controlled_sink",
+        "verdict": "block",
+        "reasonCode": "TAINTED_SIDE_EFFECT",
+        "enforced": true
+      },
+      "rawContent": "fixture text"
+    }
+  },
+  {
+    "schema": "security-event",
+    "valid": false,
+    "data": {
+      "schemaVersion": 1,
+      "eventId": "event-example",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "sequence": 1,
+      "timestamp": "2026-11-21T00:00:00Z",
+      "source": "typescript_core",
+      "mode": "enforce",
+      "detectorMode": "policy_only",
+      "taintState": "tainted",
+      "redacted": true,
+      "toolCallId": "call-example",
+      "kind": "policy_decision",
+      "details": {
+        "toolName": "controlled_sink",
+        "verdict": "block",
+        "reasonCode": "TAINTED_SIDE_EFFECT",
+        "enforced": true,
+        "score": 0.6
+      }
+    }
+  },
+  {
+    "schema": "security-event",
+    "valid": true,
+    "data": {
+      "schemaVersion": 1,
+      "eventId": "event-example",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "sequence": 1,
+      "timestamp": "2026-11-21T00:00:00Z",
+      "source": "typescript_core",
+      "mode": "enforce",
+      "detectorMode": "direct_managed_qwen",
+      "taintState": "tainted",
+      "redacted": true,
+      "toolCallId": "call-example",
+      "kind": "detector_result",
+      "details": {
+        "schemaVersion": 1,
+        "status": "ready",
+        "detectorMode": "direct_managed_qwen",
+        "runId": "run-example",
+        "sessionId": "session-example",
+        "inferenceRequestId": "inference-example",
+        "toolCallId": "call-example",
+        "provenance": {
+          "modelId": "example-model",
+          "modelRevision": "example-revision",
+          "probeHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "featureExtractionHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "precision": "fp32",
+          "layer": 9,
+          "provenanceType": "generation_forward_pass"
+        },
+        "score": 0.6,
+        "threshold": 0.5,
+        "latencyMs": 12,
+        "errorCode": null
+      },
+      "inferenceRequestId": "inference-example"
+    }
+  },
+  {
+    "schema": "security-event",
+    "valid": false,
+    "data": {
+      "schemaVersion": 1,
+      "eventId": "event-example",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "sequence": 1,
+      "timestamp": "2026-11-21T00:00:00Z",
+      "source": "typescript_core",
+      "mode": "enforce",
+      "detectorMode": "direct_managed_qwen",
+      "taintState": "tainted",
+      "redacted": true,
+      "toolCallId": "call-example",
+      "kind": "detector_result",
+      "details": {
+        "schemaVersion": 1,
+        "status": "ready",
+        "detectorMode": "direct_managed_qwen",
+        "runId": "run-example",
+        "sessionId": "session-example",
+        "inferenceRequestId": "inference-example",
+        "toolCallId": "call-example",
+        "provenance": {
+          "modelId": "example-model",
+          "modelRevision": "example-revision",
+          "probeHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "featureExtractionHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "precision": "fp32",
+          "layer": 9,
+          "provenanceType": "generation_forward_pass"
+        },
+        "score": 0.6,
+        "threshold": 0.5,
+        "latencyMs": 12,
+        "errorCode": null
+      }
+    }
+  },
+  {
+    "schema": "detector-result",
+    "valid": true,
+    "data": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "detectorMode": "direct_managed_qwen",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "inferenceRequestId": "inference-example",
+      "toolCallId": "call-example",
+      "provenance": {
+        "modelId": "example-model",
+        "modelRevision": "example-revision",
+        "probeHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "featureExtractionHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "precision": "fp32",
+        "layer": 9,
+        "provenanceType": "generation_forward_pass"
+      },
+      "score": 0.6,
+      "threshold": 0.5,
+      "latencyMs": 12,
+      "errorCode": null
+    }
+  },
+  {
+    "schema": "detector-result",
+    "valid": true,
+    "data": {
+      "schemaVersion": 1,
+      "status": "timeout",
+      "detectorMode": "direct_managed_qwen",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "inferenceRequestId": "inference-example",
+      "toolCallId": "call-example",
+      "provenance": null,
+      "score": null,
+      "threshold": null,
+      "latencyMs": 5000,
+      "errorCode": "DETECTOR_TIMEOUT"
+    }
+  },
+  {
+    "schema": "detector-result",
+    "valid": false,
+    "data": {
+      "schemaVersion": 1,
+      "status": "timeout",
+      "detectorMode": "direct_managed_qwen",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "inferenceRequestId": "inference-example",
+      "toolCallId": "call-example",
+      "provenance": null,
+      "score": 0.6,
+      "threshold": null,
+      "latencyMs": 5000,
+      "errorCode": "DETECTOR_TIMEOUT"
+    }
+  },
+  {
+    "schema": "detector-result",
+    "valid": false,
+    "data": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "detectorMode": "direct_managed_qwen",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "inferenceRequestId": "inference-example",
+      "toolCallId": "call-example",
+      "provenance": null,
+      "score": 0.6,
+      "threshold": 0.5,
+      "latencyMs": 12,
+      "errorCode": null
+    }
+  },
+  {
+    "schema": "detector-result",
+    "valid": false,
+    "data": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "detectorMode": "direct_managed_qwen",
+      "runId": "run-example",
+      "sessionId": "session-example",
+      "inferenceRequestId": "inference-example",
+      "toolCallId": "call-example",
+      "provenance": {
+        "modelId": "example-model",
+        "modelRevision": "example-revision",
+        "probeHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "featureExtractionHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "precision": "fp32",
+        "layer": 9,
+        "provenanceType": "generation_forward_pass"
+      },
+      "score": 2,
+      "threshold": 0.5,
+      "latencyMs": 12,
+      "errorCode": null
+    }
+  }
+]

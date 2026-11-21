@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anchor.invalid/contracts/v1/coverage.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "openCodeVersion": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 192
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 192
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "toolName": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "route": {
+            "enum": [
+              "built_in",
+              "custom",
+              "mcp",
+              "subagent",
+              "outside_adapter"
+            ]
+          },
+          "capabilities": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {
+              "enum": [
+                "observed",
+                "pre_execution_gated",
+                "post_execution_observed",
+                "ungated",
+                "unknown"
+              ]
+            }
+          },
+          "evidenceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "toolName",
+          "route",
+          "capabilities",
+          "evidenceId"
+        ]
+      }
+    }
+  },
+  "required": [
+    "openCodeVersion",
+    "platform",
+    "tools"
+  ]
+}
