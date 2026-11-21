@@ -32,6 +32,8 @@
     "source": {
       "enum": [
         "opencode_plugin",
+        "openclaw_plugin",
+        "managed_demo",
         "typescript_core",
         "detector_client",
         "demo_sink",

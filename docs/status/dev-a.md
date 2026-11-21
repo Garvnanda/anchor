@@ -1,5 +1,10 @@
 # Developer A status
 
+> **Current direction (2026-11-21).** Next, prove OpenClaw pre-execution denial with a counted local sink and retain the pinned OpenCode regression. [Dual-host delivery plan](../dual-host-plan.md)
+
+
+The packed adapters now run on both pinned hosts. OpenClaw blocked a real local write. OpenCode observed real managed tool calls. The shared monitor can follow either JSONL stream. [Judge guide](../../option-a/distribution/README.md)
+
 2026-11-21. A0 and the C0 proposal are on `main`. Implementation lives under `option-a/`. Shared interfaces live under `contracts/`.
 
 | Gate | Status | Evidence or next prerequisite |

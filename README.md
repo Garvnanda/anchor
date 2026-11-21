@@ -1,5 +1,13 @@
 # Anchor.
 
+> **Current direction (2026-11-21).** Run the [judge showcase](option-a/distribution/README.md) for live Qwen controls, policy decisions and host integration instructions. [Dual-host delivery plan](docs/dual-host-plan.md)
+
+On the prepared Windows machine, run the judge demo from the repository root:
+
+```powershell
+.\option-a\showcase.ps1
+```
+
 **An open-source AI project — a task-drift firewall for AI agents.**
 Anchor reads an open-weight model's activations to catch prompt injection hidden in tool outputs, then blocks or steers the agent back to the user's task.
 

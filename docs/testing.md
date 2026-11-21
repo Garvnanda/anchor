@@ -1,4 +1,6 @@
 # Testing guide
+
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
 MVP testing (`implementation_mvp.md`). Post-MVP test plan (fail-closed, Pipelock, live mode) lives with `implementation.md` and is added back when those phases start.
 
 ## Automated

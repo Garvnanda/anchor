@@ -1,0 +1,43 @@
+{
+  "id": "anchor-ai",
+  "name": "Anchor",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "mode": {
+        "enum": [
+          "enforce",
+          "monitor"
+        ]
+      },
+      "protectedTools": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "untrustedTools": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "markToolResults": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "protectedTools",
+      "untrustedTools"
+    ]
+  },
+  "contracts": {
+    "agentToolResultMiddleware": [
+      "openclaw"
+    ]
+  },
+  "activation": {
+    "onStartup": true
+  }
+}

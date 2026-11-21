@@ -1,5 +1,13 @@
 # Anchor — Complete Project Direction, Hybrid Architecture & Codex Implementation Handoff
 
+> **Current direction (2026-11-21).** The current handoff targets one public distribution and two host adapters. The original package split, primary host and execution order below are superseded. [Dual-host delivery plan](dual-host-plan.md)
+
+## Current handoff
+
+Developer A owns the OpenClaw hook audit, OpenCode regression, shared policy and package entrypoints. Developer B owns the managed Qwen round trip, profile-specific detector qualification and portal. Pair on a real tool call and a verified pre-execution denial before freezing the training profile. Use the linked delivery plan for acceptance evidence.
+
+## Historical OpenCode-first specification
+
 **Revision:** 2026-11-21 (Option A locked)  
 **Status:** Authoritative proposed implementation blueprint; not a statement of completed features  
 **Primary repository:** https://github.com/haragam22/anchor  

@@ -1,4 +1,6 @@
 # Status / resume point
+
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
 Updated 2026-10-30. Read this first when resuming.
 
 Active plan (hook-tracked): `docs/implementation.md` (full product, H / G phases; headings `Phase <n> (H0)`). MVP Phase 5 manual items (phone check, walkthrough, submission) stay with the user, below.

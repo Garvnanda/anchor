@@ -1,4 +1,6 @@
 # Questions for the user
+
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
 Unchecked items block build-all and scheduled runs. Answer under the item, then tick it.
 
 - [x] (Phase 5) Submission deadline (time today) and where it is submitted — decides how much of the cut list (§Phase 4 fallback) we use.

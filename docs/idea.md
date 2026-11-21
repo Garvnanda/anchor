@@ -1,5 +1,7 @@
 # Idea — Anchor, a task-drift firewall for AI agents
 
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
+
 ## Problem in one paragraph
 Prompt injection hides in what an agent reads (web pages, files, tool outputs, tool descriptions, retrieved
 documents), not in what the user types. The user asks "summarize this page and email me the notes", the agent

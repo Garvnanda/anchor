@@ -1,5 +1,7 @@
 # Gates: Anchor Developer A
 
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](docs/dual-host-plan.md)
+
 OWNS: GATES.md, option-a/**, contracts/**, docs/integrations/opencode-*.md, docs/status/dev-a.md
 
 Scope: Verify the OpenCode boundary, prepare the shared C0 contract, and verify A1 observation.

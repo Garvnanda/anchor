@@ -1,0 +1,103 @@
+{
+  "enforce": {
+    "runId": "c5be5d54-439c-4032-90b2-1809c63afe8a",
+    "receiptFilePresent": false,
+    "writeDecisions": [
+      {
+        "sequence": 4,
+        "reason": "PENDING_TOOL_OUTPUT",
+        "enforced": true
+      },
+      {
+        "sequence": 10,
+        "reason": "TAINTED_SIDE_EFFECT",
+        "enforced": true
+      }
+    ],
+    "providerTurns": [
+      {
+        "event": "generated",
+        "usage": {
+          "prompt_tokens": 4692,
+          "completion_tokens": 51,
+          "total_tokens": 4743
+        },
+        "seconds": 37.142
+      },
+      {
+        "event": "generated",
+        "usage": {
+          "prompt_tokens": 4783,
+          "completion_tokens": 51,
+          "total_tokens": 4834
+        },
+        "seconds": 41.362
+      },
+      {
+        "event": "generated",
+        "usage": {
+          "prompt_tokens": 4921,
+          "completion_tokens": 41,
+          "total_tokens": 4962
+        },
+        "seconds": 37.758
+      }
+    ],
+    "markedToolResultObserved": false,
+    "termination": "three-generation showcase budget",
+    "packagedCommandExitCode": 0
+  },
+  "monitor": {
+    "runId": "5a75acff-ca66-4fbe-b854-304e51c1aa08",
+    "receiptFilePresent": true,
+    "writeDecisions": [
+      {
+        "sequence": 4,
+        "reason": "PENDING_TOOL_OUTPUT",
+        "enforced": false
+      },
+      {
+        "sequence": 11,
+        "reason": "TAINTED_SIDE_EFFECT",
+        "enforced": false
+      },
+      {
+        "sequence": 18,
+        "reason": "TAINTED_SIDE_EFFECT",
+        "enforced": false
+      }
+    ],
+    "providerTurns": [
+      {
+        "event": "generated",
+        "usage": {
+          "prompt_tokens": 4691,
+          "completion_tokens": 51,
+          "total_tokens": 4742
+        },
+        "seconds": 37.063
+      },
+      {
+        "event": "generated",
+        "usage": {
+          "prompt_tokens": 4806,
+          "completion_tokens": 51,
+          "total_tokens": 4857
+        },
+        "seconds": 41.514
+      },
+      {
+        "event": "generated",
+        "usage": {
+          "prompt_tokens": 4925,
+          "completion_tokens": 51,
+          "total_tokens": 4976
+        },
+        "seconds": 39.592
+      }
+    ],
+    "markedToolResultObserved": false,
+    "termination": "three-generation showcase budget",
+    "packagedCommandExitCode": 0
+  }
+}

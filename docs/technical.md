@@ -1,5 +1,7 @@
 # Technical design (full product)
 
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
+
 > Builds on the MVP in `mvp/` (`implementation_mvp.md`). Everything marked **exists** is shipped and tested;
 > everything else is planned in `implementation.md`. **Planned code lives in a new folder (`v2/`, named at H0), not in `mvp/`** — `mvp/` is frozen as the deployed MVP. Planned paths below written as `mvp/...` map to the same place under `v2/`. Who builds what: `implementation.md` (H / G phases).
 

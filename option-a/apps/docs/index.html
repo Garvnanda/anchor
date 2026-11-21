@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Anchor · Local developer guide</title
+  ><style>
+    body {
+      max-width: 52rem;
+      margin: auto;
+      padding: 2rem 1.3rem 6rem;
+      font: 1.05rem/1.65 system-ui;
+      color: #24231f;
+      background: #fafaf8;
+    }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-block: 1px solid #ccc;
+      padding: 1rem 0;
+    }
+    a {
+      color: #795100;
+    }
+    pre {
+      overflow-x: auto;
+      background: #eeede7;
+      padding: 1rem;
+    }
+    h2 {
+      margin-top: 2.5rem;
+    }
+    code {
+      overflow-wrap: anywhere;
+    }
+  </style>
+  <main>
+    <p>Anchor / Developer guide</p>
+    <h1>Run Anchor locally</h1>
+    <p>The commands below reproduce the OpenCode baseline. OpenClaw is the primary integration under evaluation. Its first milestone is a real tool call, a verified denial and a managed Qwen continuation. Both adapters will share the local runtime and portal.</p>
+    <nav aria-label="Contents">
+      <a href="#provider">Python provider</a><a href="#opencode">OpenCode</a
+      ><a href="#portal">Portal</a><a href="#api">API</a
+      ><a href="#coverage">Coverage</a>
+    </nav>
+    <h2 id="provider">Start the Python provider</h2>
+    <p>
+      From the repository root on Windows x64, use uv and Python 3.12.14. Setup
+      installs pinned packages in a local environment and checks startup against
+      the approved cached Qwen snapshot. The service runs inference in CPU FP32.
+      The lock records the torch wheel tested on Windows.
+    </p>
+    <pre>./option-a/python/setup-windows.ps1</pre>
+    <p>
+      The provider checks the SHA-256 of seven model and tokenizer files. The
+      approved Qwen2.5-0.5B-Instruct snapshot revision is
+      <code>7ae557604adf67be50417f59c2c2f167def9a775</code>. Supply a local
+      snapshot directory with <code>--snapshot</code> if your Hugging Face cache
+      lives outside the default location. Missing files or mismatched hashes
+      stop startup. The model weights live outside this repository.
+    </p>
+    <pre>
+$env:ANCHOR_DETECTOR_TOKEN = [guid]::NewGuid().ToString('N')
+./option-a/python/.venv/Scripts/python.exe option-a/python/serve.py --port 8081</pre
+    >
+    <p>
+      Use Ctrl+C to stop. Supply the bearer token in the Authorization header.
+      Accepted requests use the numeric loopback host and port. Browser-origin
+      requests to the detector are rejected.
+    </p>
+    <h2 id="opencode">Verify model tool calling</h2>
+    <p>
+      The B1 smoke harness selects OpenCode 2.3.2, restricts the test session to
+      two harmless color tools and checks the returned tool IDs. Its default
+      Python is the original offline environment. You can point it to the new
+      environment.
+    </p>
+    <pre>
+$env:ANCHOR_PYTHON = (Resolve-Path option-a/python/.venv/Scripts/python.exe).Path
+npm install --prefix option-a/.cache/b1 --no-audit --no-fund --save-exact @opencode/cli@2.3.2
+node option-a/python/b1_smoke.mjs</pre
+    >
+    <p>
+      The harness prints its evidence directory under the ignored local cache. A
+      final detector-backed OFF/ON demonstration requires the C2 integration
+      gate.
+    </p>
+    <h2 id="portal">Build and open the portal</h2>
+    <pre>
+cd option-a/apps/dashboard
+npm ci
+npm test
+npm run build</pre
+    >
+    <p>
+      Serve the contents of <code>dist/</code> from the same loopback origin as
+      Person A’s portal API. Enter the portal bearer token to load history and
+      connect to the event stream. The UI shows redacted events, decisions,
+      provenance and independent sink receipts as supplied by the server. A
+      disconnected stream displays a warning. An expired cursor triggers a new
+      snapshot.
+    </p>
+    <p>
+      For local development run <code>node build.mjs --fixtures</code>, serve
+      <code>dist/</code> on loopback and open <code>/?mode=fixture</code>. This
+      mode displays synthetic fixtures. The production build excludes the
+      fixture file.
+    </p>
+    <h2 id="api">Local interfaces</h2>
+    <p>
+      The Python service exposes <code>/health</code>, <code>/metadata</code>,
+      <code>/v1/models</code>, <code>POST /v1/chat/completions</code> and
+      activation lookup. Health reports <code>incompatible</code> because the
+      current probe failed live-format validation. Activation lookup returns
+      an incompatible result with a null score for a recorded request and tool
+      pair. Unknown pairs return HTTP 404. Use <code>/api/health</code>,
+      <code>/api/coverage</code>, <code>/api/runs</code>, per-run event
+      snapshots and <code>/api/events/stream</code> on the separate portal
+      service. Exact fields and errors are in
+      <a href="contracts/api.openapi.json">the versioned API reference</a>.
+    </p>
+    <h2 id="coverage">Coverage and limitations</h2>
+    <p>
+      Person A’s A0 audit demonstrated pre-execution blocking for a controlled
+      custom tool. Check the runtime coverage report for each tool and route.
+      The TypeScript runtime owns policy decisions. The portal only displays
+      evidence. Public SDK installation, CLI onboarding and live SSE acceptance
+      depend on Person A’s packages and server.
+    </p>
+    <p>
+      The frozen detector caught 37 of 132 labeled injections and flagged 8 of
+      73 benign results in the observed OpenCode prompt format. The original MVP
+      format yielded 127 detections and one benign flag on the same offline
+      split. See <code>docs/ml/parity-report.md</code> for the methodology.
+      Multiple tool results in one generation currently yield one aggregate
+      activation measurement.
+    </p>
+  </main>
+</html>

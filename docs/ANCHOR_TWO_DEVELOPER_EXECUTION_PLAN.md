@@ -1,5 +1,13 @@
 # Anchor — Two-Developer Parallel Execution Plan
 
+> **Current direction (2026-11-21).** Use the linked plan for current assignments, dependencies and acceptance gates. The phases below document the earlier OpenCode-first work. [Dual-host delivery plan](dual-host-plan.md)
+
+## Current handoff
+
+Developer A owns the OpenClaw hook audit, OpenCode regression, shared policy and package entrypoints. Developer B owns the managed Qwen round trip, profile-specific detector qualification and portal. Pair on a real tool call and a verified pre-execution denial before freezing the training profile. Use the linked delivery plan for acceptance evidence.
+
+## Historical OpenCode-first specification
+
 **Revision:** 2026-11-21  
 **Companion specification:** `ANCHOR_PROJECT_HANDOFF_OPTION_A.md`  
 **Status:** Proposed allocation; no phase is assumed complete.  

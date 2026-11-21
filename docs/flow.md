@@ -1,4 +1,6 @@
 # Code flow
+
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
 Update whenever an entry point or data path changes. MVP layout from `implementation_mvp.md` §2: rows marked `exists` are shipped. Full-product additions (`implementation.md`, `technical.md`) are listed under **Planned (full product)** below until built.
 
 ## Entry points

@@ -6,6 +6,7 @@ import type { Detector, DetectorResult, InferenceIdentity } from "./detector.js"
 export * from "./detector.js";
 export type Mode = "off" | "monitor" | "enforce";
 export type PolicyOptions = {
+  source?: "openclaw_plugin" | "opencode_plugin" | "managed_demo";
   mode?: Mode;
   isolatedDemo?: boolean;
   protectedTools?: readonly string[];
@@ -35,7 +36,7 @@ export type ObservationEvent = Readonly<EventDetails & {
   sessionId: string;
   sequence: number;
   timestamp: string;
-  source: "opencode_plugin";
+  source: "opencode_plugin" | "openclaw_plugin" | "managed_demo";
   mode: Mode;
   detectorMode: "policy_only" | "direct_managed_qwen";
   taintState: "clean" | "tainted";
@@ -53,6 +54,7 @@ const wireId = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/;
 export class ObservationRuntime {
   readonly #runs = new Map<string, Run>();
   readonly #fingerprintKey = randomBytes(32);
+  readonly #source: ObservationEvent["source"];
   readonly #mode: Mode;
   readonly #protected: Set<string>;
   readonly #untrusted: Set<string>;
@@ -62,6 +64,7 @@ export class ObservationRuntime {
 
   constructor(publish: (event: ObservationEvent) => void, options: PolicyOptions = {}) {
     this.#publish = publish;
+    this.#source = options.source ?? "opencode_plugin";
     this.#mode = options.mode ?? "monitor";
     if (!["off", "monitor", "enforce"].includes(this.#mode)) throw new Error("Invalid Anchor mode");
     if (this.#mode === "off" && options.isolatedDemo !== true) throw new Error("OFF requires an isolated demo");
@@ -82,7 +85,7 @@ export class ObservationRuntime {
   }
 
   observePrompt(sessionId: string, text: string): void {
-    if (!wireId.test(sessionId) || this.#runs.has(sessionId)) return;
+    if (typeof sessionId !== "string" || !wireId.test(sessionId) || this.#runs.has(sessionId)) return;
     if (this.#runs.size >= maxSessions) return;
     const run: Run = {
       id: randomUUID(), sequence: 0, tainted: false, generation: 0,
@@ -198,7 +201,7 @@ export class ObservationRuntime {
   }
 
   #callRun(call: Call): Run | undefined {
-    if (!wireId.test(call.toolCallId) || !wireId.test(call.toolName)) return;
+    if (typeof call.toolCallId !== "string" || !wireId.test(call.toolCallId) || !wireId.test(call.toolName)) return;
     return this.#runs.get(call.sessionId);
   }
 
@@ -217,7 +220,7 @@ export class ObservationRuntime {
     try {
       this.#publish({
         schemaVersion: 1, eventId: randomUUID(), runId: run.id, sessionId, sequence: ++run.sequence,
-        timestamp: new Date().toISOString(), source: "opencode_plugin", mode: this.#mode,
+        timestamp: new Date().toISOString(), source: this.#source, mode: this.#mode,
         detectorMode: this.#detector ? "direct_managed_qwen" : "policy_only",
         taintState: run.tainted ? "tainted" : "clean", redacted: true, ...event,
       });

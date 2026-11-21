@@ -2,11 +2,11 @@ import { appendFileSync } from "node:fs";
 import { isAbsolute } from "node:path";
 import { ObservationRuntime } from "@anchor-ai/core";
 import type { Mode, ObservationEvent, PolicyOptions } from "@anchor-ai/core";
-import { Plugin } from "@opencode/plugin";
+import type { Plugin } from "@opencode/plugin";
 
 const supportedVersion = "2.3.2";
 export function createAnchorPlugin(options?: PolicyOptions, publish?: (event: ObservationEvent) => void) {
-  return Plugin.define({ id: "anchor.observe", setup });
+  return { id: "anchor.observe", setup };
 
   async function setup(ctx: Plugin.Context) {
     if (ctx.app.version !== supportedVersion) {
@@ -54,3 +54,5 @@ export function createAnchorPlugin(options?: PolicyOptions, publish?: (event: Ob
 }
 
 export default createAnchorPlugin();
+
+export { createAnchorPlugin as createOpenCodeAdapter };

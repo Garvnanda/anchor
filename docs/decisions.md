@@ -1,4 +1,6 @@
 # Decisions
+
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
 Append-only log at the bottom (newest last). The topic headings below are the open measured choices; each
 gets date, choice, evidence once decided.
 

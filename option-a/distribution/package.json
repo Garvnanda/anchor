@@ -1,0 +1,34 @@
+{
+  "name": "anchor-ai",
+  "version": "0.1.0-demo.1",
+  "type": "module",
+  "description": "Local tool-call policy and audit runtime for OpenClaw and OpenCode",
+  "bin": {
+    "anchor": "./cli.mjs"
+  },
+  "exports": {
+    ".": "./dist/core/index.js",
+    "./opencode": "./dist/opencode/index.js",
+    "./openclaw": "./openclaw.mjs",
+    "./server": "./dist/server/index.js"
+  },
+  "openclaw": {
+    "extensions": [
+      "./openclaw.mjs"
+    ],
+    "runtimeExtensions": [
+      "./openclaw.mjs"
+    ]
+  },
+  "files": [
+    "*.mjs",
+    "!build.mjs",
+    "openclaw.plugin.json",
+    "dist",
+    "README.md",
+    "!**/__pycache__/**",
+    "!**/.tsbuildinfo",
+    "!**/*.pyc",
+    "!**/development-fixtures.json"
+  ]
+}

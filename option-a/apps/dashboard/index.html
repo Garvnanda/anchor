@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Anchor · Run monitor</title
+  ><link rel="stylesheet" href="style.css" />
+  <header><strong>Anchor</strong><span>Local security monitor</span></header>
+  <main>
+    <h1>Run monitor</h1>
+    <p id="status" role="status">Disconnected</p>
+    <form>
+      <label
+        >Local bearer token
+        <input type="password" autocomplete="off" required /></label
+      ><button>Connect</button>
+    </form>
+    <section>
+      <h2>Run comparison</h2>
+      <div id="runs"></div>
+    </section>
+    <section>
+      <h2>Event timeline</h2>
+      <label
+        >Filter by run
+        <select id="filter">
+          <option value="">All runs</option>
+        </select></label
+      >
+      <div id="timeline"></div>
+    </section>
+    <section>
+      <h2>Tool coverage</h2>
+      <pre id="coverage">Awaiting coverage report.</pre>
+    </section>
+  </main>
+  <script defer src="app.js"></script>
+</html>

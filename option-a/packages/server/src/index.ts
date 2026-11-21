@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
 import type { ServerResponse } from "node:http";
@@ -8,7 +10,7 @@ export * from "./detector-http.js";
 
 type Run = Pick<ObservationEvent, "runId" | "sessionId" | "mode" | "detectorMode" | "taintState"> &
   { state: "active" | "closed"; sequence: number };
-type Options = { token: string; port?: number; capacity?: number; coverage?: unknown };
+type Options = { dashboardDirectory?: string; token: string; port?: number; capacity?: number; coverage?: unknown };
 const validEvent = contract("security-event");
 const validCoverage = contract("coverage");
 
@@ -48,11 +50,20 @@ export async function createLocalServer(options: Options) {
     if (request.method !== "GET" || !request.url?.startsWith("/") || request.url.startsWith("//")) {
       return json(response, 405, { errorCode: "METHOD_NOT_ALLOWED" });
     }
+    const path = new URL(request.url, origin).pathname;
+    const assets = new Map([["/", ["index.html", "text/html"]], ["/style.css", ["style.css", "text/css"]], ["/app.js", ["app.js", "text/javascript"]]]);
+    const asset = assets.get(path);
+    if (options.dashboardDirectory && asset?.[0]) {
+      try {
+        const bytes = readFileSync(join(options.dashboardDirectory, asset[0]));
+        response.writeHead(200, { "Content-Type": asset[1] + "; charset=utf-8", "X-Content-Type-Options": "nosniff" });
+        return response.end(bytes);
+      } catch { return json(response, 404, { errorCode: "ASSET_UNAVAILABLE" }); }
+    }
     const given = Buffer.from(request.headers.authorization ?? "");
     if (given.length !== bearer.length || !timingSafeEqual(given, bearer)) {
       return json(response, 401, { errorCode: "AUTH_REQUIRED" });
     }
-    const path = new URL(request.url, origin).pathname;
     if (path === "/api/health") return json(response, 200, { schemaVersion: 1, status: "ready" });
     if (path === "/api/coverage") return json(response, 200, coverage);
     if (path === "/api/runs") return json(response, 200, {

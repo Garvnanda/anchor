@@ -1,5 +1,7 @@
 # Implementation plan — full product (two people, two laptops)
 
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](dual-host-plan.md)
+
 > **Active, hook-tracked plan since 2026-10-30** (MVP deployed; its Phase 5 manual items are in `STATUS.md`).
 > Headings read `Phase <n> (H0)` because the workflow hook counts only `Phase <digit>` headings; the H/G name in
 > brackets is the phase's real name. Design: `technical.md`. Decisions:

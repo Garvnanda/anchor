@@ -1,5 +1,7 @@
 # C0 contract proposal
 
+> **Current direction (2026-11-21).** Dual-host support requires a coordinated schema revision and v1 replay checks before emitting OpenClaw events. [Dual-host delivery plan](../docs/dual-host-plan.md)
+
 Status: **proposed v1**. The project owner approved the architecture on 2026-11-21. A0 and B0 passed. Developer A's fixture validation passed. Freeze after Garv's independent validation and both owners' sign-off on the same revision.
 
 The new implementation root is `option-a/`. A owns the npm workspaces, TypeScript runtime, native adapter, and loopback API. B owns managed Qwen, probe validation, dashboard, and public docs. Shared wire contracts live here. The TypeScript core is the sole runtime authorization authority.

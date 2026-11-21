@@ -1,4 +1,6 @@
 # Anchor
+
+> **Current direction (2026-11-21).** The current Option A roadmap prioritizes OpenClaw validation, retains the OpenCode baseline and requires managed Qwen for the detector-backed demo. [Dual-host delivery plan](docs/dual-host-plan.md)
 Task-drift firewall for AI agents: reads an open-weight model's activations to catch prompt injection in tool outputs, then taints the run and blocks later side effects. MVP shipped (`mvp/`, frozen, https://anchor-nu-three.vercel.app). Current target: full product in `v2/` (Llama-3.2-3B, H/G phases).
 
 ## Stack
