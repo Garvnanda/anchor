@@ -258,7 +258,6 @@ gets date, choice, evidence once decided.
 - ~~**Decision**: precision `nf4` means NF4 4-bit weights with **fp16** compute (was bf16) on both machines.~~ Why: the Kaggle T4 (sm75) has no bf16; fp16 runs on the T4 and the RTX 2050 alike, so one probe serves both ("one 3B setup" rule kept). Alternative: fp16 full weights on Kaggle + a separate nf4 probe for the demo (two probes, two sets of numbers).
 - **Decision**: notebook code comes from `git clone` of `haragam22/anchor` (v2 must be on GitHub first); the alternative, a Kaggle Dataset upload, needs re-uploading after every change.
 
-<<<<<<< HEAD
 ## 2026-10-30 — `nf4` = NF4 weights + **bf16** compute (user, supersedes H0's fp16 default)
 - **Decision**: user kept G1's bf16 compute. `v2/offline/common.py` `nf4` now loads with `bnb_4bit_compute_dtype=torch.bfloat16`. RTX 2050 is the only 3B machine; the Kaggle T4 (no native bf16) is not the same setup, so a Kaggle run cannot produce probe numbers that are served here.
 - **Why**: measured bf16 ≈ fp16 speed on the RTX 2050 (`gpu_check.json`); bf16 avoids fp16 overflow in hidden states.
@@ -273,7 +272,6 @@ gets date, choice, evidence once decided.
 - **Not yet done (G2 gate items waiting on H1, user choice)**: 1 % FPR threshold, assistant-start vs last-token position comparison, Tamil + per-family TPR. Haragam's H1 adds that code; rerun steps 3–6 of `run_gpu.md` when it lands (only changed rows re-extract).
 - **Fix**: `extract.load_cache` read each npz array once per row (`z[key][i]` re-reads the file), which ran out of memory on this 16 GB laptop; now reads each array once.
 - **Reproducibility note**: the 0.5B features on Garv's laptop were re-extracted here, not copied from Haragam's cache; CPU float differences move the qwen threshold 0.431316 → 0.423323, so `test_build_data_and_train_probe_regenerate_the_stored_qwen_run` fails on this laptop only. Copy Haragam's `mvp/offline/features/cache.npz` to fix locally; no code change.
-=======
 ## 2026-10-30 — Merge of G1 into the H0 scaffold
 - **Decision**: one `run_gpu.md` (the H0 one) with Garv's G1 record, setup (`requirements-gpu.txt`, + `datasets`, `scikit-learn` for the pipeline) and G2 estimate (≤ 14 min per 1,000 rows) folded in. `.claude/test-command` keeps one line (Garv's extra line ran `v2/tests` from `mvp/`, where `api.index` is the MVP's). `common.load_model` uses `bnb_4bit_use_double_quant=False` and bf16 compute like `smoke_llama3b.py`, and `run_meta` records `compute_dtype`.
 
@@ -292,7 +290,7 @@ gets date, choice, evidence once decided.
 - **Decision**: split-payload rows store the first page in `prior_outputs`; the model sees each page after its own `fetch_page` call. The cache key adds earlier pages (unchanged for single-page rows). The keyword baseline reads every page.
 - **Decision** (for G2, code is H's): `extract.py` stores two read positions per layer: `start` (assistant-start token, the MVP's) and `end` (last token of the last tool output); both as Δ against the task-only assistant-start state. `train_probe.py` sweeps (position, layer) on val, records `position_comparison`, and sets two thresholds: 5 % val FPR (`threshold`, as before) and 1 % (`threshold_strict`, the agent-benchmark operating point), with `anchor_strict` metrics. `external_eval.py` reads at the probe's position. An MVP-era cache (start only) is treated as empty and re-extracted.
 - **Removed**: `seed_from_mvp.py` (the copied cache has no end position). The H0 equivalence is kept as a test: the v1 rows' start-position features equal the MVP's cache.
->>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
+
 
 ## 2026-10-30 — H3: agent-benchmark sets rebuilt; AgentDojo clock artefact found and fixed
 - **Decision**: `v2/offline/agentbench_sets.py` runs steps 2-3 of benign-instruction-bench's `reproduce.sh` (AgentDojo v1.2 replay + matched pairs, BIPIA, tau-bench; the general corpus of step 1 is not needed) with `PYTHONHASHSEED=0` and `PYTHONUTF8=1` (its scripts open files with the platform encoding; `build_bipia.py` failed with cp1252). Sources outside the repo: `~/tools/bib` (commit 5d0ae7c), `~/agentsec/{BIPIA,tau-bench,InjecAgent}`, `~/tools/agentdojo-venv` (agentdojo 0.1.34). Sets in git-ignored `data/agentbench/`; counts + hashes in `out/agentbench_sets.json`.
