@@ -1,0 +1,16 @@
+{
+  "name": "@anchor-ai/opencode",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@anchor-ai/core": "0.0.0",
+    "@opencode/plugin": "2.3.2"
+  }
+}

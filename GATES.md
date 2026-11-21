@@ -2,7 +2,7 @@
 
 OWNS: GATES.md, option-a/**, contracts/**, docs/integrations/opencode-*.md, docs/status/dev-a.md
 
-Scope: Verify the OpenCode boundary and prepare the shared C0 contract before starting A1.
+Scope: Verify the OpenCode boundary, prepare the shared C0 contract, and verify A1 observation.
 
 - [x] A0: OpenCode runs the same harmless sentinel tool when allowed and stops it before execution when denied
   CHECK: node option-a/audit/verify.mjs
@@ -16,3 +16,15 @@ Scope: Verify the OpenCode boundary and prepare the shared C0 contract before st
 
 - [ ] C0: Garv's B0 and independent Python validation and both owners' approval are recorded for the same contract revision
   EVIDENCE: pending
+
+- [x] A1B: The locked TypeScript workspace compiles and its redacted events validate against C0
+  CHECK: npm ci --no-audit --no-fund && npm test
+  EXPECT: interleaved sessions keep independent run IDs and sequence, with redacted output
+  CWD: option-a
+  EVIDENCE: automatic-evidence=v1; definition-sha256=416ac5282016e30ff81625e91147f10b27907966b3bc14e95ffccd0643b97fb0; exit=0; EXPECT=matched; output-sha256=006e446721723810916974e294287853befb4ed3ba902914b9a5cea3c7c74e0e; output-bytes=871; shell=C:\WINDOWS\system32\cmd.exe; cwd=C:\Users\harag\Documents\coding\anchor\option-a; path=f29d444f29d9/43 entries
+
+- [x] A1R: OpenCode loads the built plugin and emits schema-valid prompt and tool events with matching session and call IDs
+  CHECK: npm run test:opencode
+  EXPECT: A1 live observation verified
+  CWD: option-a
+  EVIDENCE: automatic-evidence=v1; definition-sha256=277dfc2c5f07f3c68cd550c87e5b8a9eba54084d8beb1d17223ff1fdd5987c14; exit=0; EXPECT=matched; output-sha256=9fcbfe885ac853a5fbbfd2f13f3b2169303d1d6cc347c3f03db9119d0c51d3aa; output-bytes=331; shell=C:\WINDOWS\system32\cmd.exe; cwd=C:\Users\harag\Documents\coding\anchor\option-a; path=f29d444f29d9/43 entries
