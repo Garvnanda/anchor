@@ -28,6 +28,14 @@ uv pip install --python .venv/Scripts/python.exe -r requirements-gpu.txt
 - Close other GPU/RAM users (browsers, games, RGB tools) before long runs.
 - Kaggle: `v2/kaggle/anchor_3b.ipynb` runs the same steps; it installs its own pins.
 
+<<<<<<< HEAD
+## Precision (one 3B setup)
+Default `--precision nf4` = 4-bit NF4 weights with **bf16** compute on Garv's RTX 2050 (G1, user choice
+2026-10-30). The Kaggle T4 has no native bf16, so a Kaggle run is not the same setup; its probe would not match. If G1 picks another value, pass the
+same `--precision` to **every** command. Scripts refuse to mix precisions: `extract.py` stops when `features/llama3b/`
+holds another precision (delete that folder to start over), and `external_eval` / `gen_actions` refuse a `probe.json`
+with a different `run_meta`.
+=======
 ## Precision (one 3B setup, fixed at G1)
 `--precision nf4` (default for llama3b) = bitsandbytes 4-bit NF4 weights, **bf16 compute**, no double quant, chat
 template `date_string="26 Jul 2024"` (`decisions.md` 2026-10-30). Every 3B machine runs exactly this build. Scripts
@@ -49,6 +57,7 @@ G2 estimate:
 Extraction = one pass per row (+ one task-only pass per distinct task, negligible). At 0.8305 s per worst-case
 (400-token) pass: **~14 min per 1,000 rows**; MVP dataset size (1,434 rows) ≈ 20 min; ~1 min model load.
 Pages shorter than 400 tokens run faster, so this is an upper bound.
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
 
 ## Steps
 
@@ -57,7 +66,11 @@ Pages shorter than 400 tokens run faster, so this is an upper bound.
 | 1 | G1 | `python check_gpu.py` | `out/gpu_check.json` | < 1 min |
 | 2 | G1 | `python smoke.py --model llama3b` (pipeline smoke; G1 itself used `smoke_llama3b.py`) | `out/llama3b/smoke.json` (hidden states 29, pass time) | ~1 min |
 | 3 | G2 | `python build_data.py --model llama3b` | `data/llama3b/rows.jsonl`, `out/llama3b/data_summary.json` | ~1 min |
+<<<<<<< HEAD
+| 4 | G2 | `python extract.py --model llama3b` | `features/llama3b/` (checkpoint every 100 rows) | ≤ 0.83 s/row (G1 smoke) → ~14 min per 1,000 rows |
+=======
 | 4 | G2 | `python extract.py --model llama3b` | `features/llama3b/` (checkpoint every 100 rows) | ≤ 14 min per 1,000 rows (G1: 0.83 s per 400-token pass) |
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
 | 5 | G2 | `python train_probe.py --model llama3b` | `out/llama3b/probe.json`, `metrics.json`, `layer_sweep.json`, `scores.json` | ~2 min (CPU) |
 | 6 | G2 | `python external_eval.py --model llama3b` | `external` block in `metrics.json`, `out/llama3b/external_scores.json` | ~400 rows × 2 passes |
 | 7 | G4 | `python gen_actions.py --model llama3b` | `out/llama3b/actions.json` (9 generations) | ~5 min |
@@ -91,3 +104,8 @@ Before committing, `git status` must not list `.env`, `features/`, `*.npy` or we
 - the probe's layer is the best on val; the threshold has val FPR ≤ target;
 - the shuffled-label AUROC is in [0.4, 0.6]; scores cover every row of `data/<model>/rows.jsonl`.
 More G2 checks (1 % FPR, position comparison, per-family TPR) are added with H1.
+
+## G1 measurements (`out/smoke_llama3b.json`, `smoke_llama3b.py`)
+- 0.8305 s per pass on a 400-token page (515 prompt tokens); task-only pass 0.2273 s.
+- Peak reserved 2.94 GB of 4.29 GB → 1.354 GB headroom; repeat passes bit-identical.
+- GPU venv: `uv venv --python 3.12 .venv && uv pip install --python .venv/Scripts/python.exe -r requirements-gpu.txt scikit-learn==1.9.1 datasets==5.1.0`.

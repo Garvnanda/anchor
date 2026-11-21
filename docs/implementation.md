@@ -25,8 +25,13 @@
 - **Per-model folders:** every script writes under `data/<model>/`, `features/<model>/`, `out/<model>/`
   (`<model>` = `qwen0.5b` or `llama3b`), so the 0.5B and 3B runs never overwrite each other (see `run_gpu.md`).
 - **One 3B setup:** the probe is trained and served with the same model build and precision: `nf4` = 4-bit NF4
+<<<<<<< HEAD
+  weights, **bf16 compute**, on the RTX 2050 (user, 2026-10-30, supersedes fp16). The Kaggle T4 has no bf16, so it is
+  not an identical machine; Kaggle 3B runs need a new decision before use.
+=======
   weights, **bf16 compute**, no double quant (G1 on the RTX 2050, user kept bf16). The Kaggle T4 failed the bf16
   check, so every 3B step runs on Garv's laptop.
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
   Scripts refuse features or a probe whose `run_meta` precision differs. The Arc test (H-X) may add a machine
   only with the identical precision.
 - **Hand-off:** through git. Each side commits its outputs (`v2/offline/out/*.json`, never `.npy`, weights or
@@ -225,12 +230,13 @@ rendered prompt check); precision confirmed.
 - [x] Time per pass recorded (0.8305 s); G2 runtime estimated in `run_gpu.md` (~14 min / 1,000 rows).
 
 ### Phase 13 (G2) — 3B activations and probe
-**Status**: todo
+**Status**: blocked
 **Reuse (head start: large (code)):** `extract.py` + `train_probe.py` do this end to end on 0.5B; only the 3B run, more layers, the position comparison and the 1 % FPR threshold are new.
 **Prerequisites:** G1, H1.
 **Deliverables (run `run_gpu.md` steps):** Δ features for all v2 rows (kept local, not committed); `out/probe.json`,
 `metrics.json`, `layer_sweep.json`, `scores.json` with `run_meta`; layer sweep over a spread of the 28 layers;
 assistant-start vs last-token position comparison; thresholds at 1 % and 5 % val FPR; shuffled-label control.
+**Progress (2026-10-30):** 3B run on dataset v1 done on the RTX 2050 (`out/llama3b/`, `decisions.md`); blocked on H1 for dataset v2, 1 % FPR, position comparison, Tamil/family TPR (user: leave that code to H1).
 **Done when** (checked by H's tests on the committed files):
 - [ ] Every row scored; layer and position chosen on val only, with the comparison recorded in `decisions.md`.
 - [ ] Shuffled-label AUROC in [0.4, 0.6]; length+position control (H2) clearly below the probe — or the result reported as a shortcut.

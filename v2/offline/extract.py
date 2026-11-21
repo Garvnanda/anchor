@@ -82,10 +82,15 @@ def load_cache(run):
     meta = run.features / "meta.json"
     check_run_meta(json.loads(meta.read_text()) if meta.exists() else None, run, f"{path}")
     z = np.load(path)
+<<<<<<< HEAD
+    arrs = {L: z[f"L{L}"] for L in run.layers}  # read each array once; z[...] re-reads the file on every access
+    return {k: {L: arrs[L][i] for L in run.layers} for i, k in enumerate(z["keys"])}
+=======
     names = [f"{PREFIX[p]}{L}" for p in POSITIONS for L in run.layers]
     have = [n for n in names if n in z.files]
     # An MVP-era cache has only the start position: those rows count as not cached and are re-extracted.
     return {k: {n: z[n][i] for n in have} for i, k in enumerate(z["keys"])} if have == names else {}
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
 
 
 def save_cache(run, cache, meta):

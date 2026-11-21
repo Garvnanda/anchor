@@ -21,8 +21,13 @@ ENV_FILES = (ROOT / ".env", ROOT.parents[1] / "mvp" / "offline" / ".env")  # v2 
 MODELS = {
     "qwen0.5b": {"hf_id": "Qwen/Qwen2.5-0.5B-Instruct", "n_layers": 24, "layers": [6, 9, 12, 15, 18],
                  "precisions": ("fp32",), "default_precision": "fp32"},
+<<<<<<< HEAD
+    # 28 layers; every 3rd is swept (user, 2026-10-30). nf4 = 4-bit NF4 weights, bf16 compute on the RTX 2050
+    # (G1, user choice 2026-10-30; decisions.md). Kaggle T4 has no native bf16, so it is not a second 3B machine.
+=======
     # 28 layers; every 3rd is swept (user, 2026-10-30). nf4 = 4-bit NF4 weights, bf16 compute, no double quant:
     # the G1 build on the RTX 2050 (decisions.md 2026-10-30). Any other 3B machine must run exactly this.
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
     "llama3b": {"hf_id": "meta-llama/Llama-3.2-3B-Instruct", "n_layers": 28, "layers": [6, 9, 12, 15, 18, 21, 24, 27],
                 "precisions": ("nf4", "bf16", "fp16", "fp32"), "default_precision": "nf4"},
 }
@@ -178,8 +183,12 @@ def load_model(run):
         from transformers import BitsAndBytesConfig
 
         kw = {"quantization_config": BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+<<<<<<< HEAD
+                                                        bnb_4bit_compute_dtype=torch.bfloat16),
+=======
                                                         bnb_4bit_compute_dtype=torch.bfloat16,
                                                         bnb_4bit_use_double_quant=False),
+>>>>>>> 9f79ba0aea771fa32ec47859e580afdb0feb80ad
               "device_map": {"": 0}}
     else:
         kw = {"dtype": {"fp32": torch.float32, "bf16": torch.bfloat16, "fp16": torch.float16}[run.precision]}
